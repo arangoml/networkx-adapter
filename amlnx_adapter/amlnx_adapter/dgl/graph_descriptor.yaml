@@ -1,0 +1,35 @@
+arango_graph:
+  graph_name: 'ITSMg'
+edge_sep: '-'
+edge_data:
+  incident-support_org: ../data/incident_support_org.json
+  incident-customer: ../data/incident_customer.json
+  incident-vendor: ../data/incident_vendor.json
+vertex_data:
+  incident: ../data/incident.json  
+  support_org: ../data/support_org.json
+  customer: ../data/customer.json
+  vendor: ../data/vendor.json
+exclude_attributes:
+  all: ['bipartite', '_key', '_rev', 'node_id', '_id']
+  incident: ['reassigned']
+arangodb:
+  DB_end_point: createDB
+  DB_service_host: localhost
+  DB_service_name: createDB
+  DB_service_port: 8529
+  arangodb_replication_factor: null
+  conn_protocol: http
+  dbName: MLbxzq0yqdandnip3ie6j3fr
+  password: MLpj3slfsjspss8scekyuq9
+  username: ML2qtoerkij6c6ld3yfhg0i
+queries:
+  load_data: >
+    WITH support_org, customer, vendor
+    FOR doc in incident
+    FOR s IN 1..1 OUTBOUND doc `incident-support_org`
+    FOR c IN 1..1 OUTBOUND doc `incident-customer`
+    FOR v IN 1..1 OUTBOUND doc `incident-vendor`
+    RETURN { incident: doc, support_org: s, customer: c, vendor: v, reassigned: doc.reassigned } 
+  
+ 
