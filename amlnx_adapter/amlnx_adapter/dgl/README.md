@@ -38,7 +38,9 @@ You can specify the particular mode to use in an application by specifying the `
 
 5. queries: The keys specified in this section are applicable when data is obtained by connecting to a database.
 
-Plese see `dgl_networkx_arango_adapter.py` for the details of how data is loaded using the options specified in the
+Plese see `dgl_networkx_arango_adapter.py` for the details of how data is loaded using the options specified in the graph descriptor file.
+
+
 
 
 
