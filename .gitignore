@@ -1,0 +1,9 @@
+# Compiled python modules.
+**/*.pyc
+# log files
+**/*.log
+# egg-info
+**/*.egg-info
+#ipynb checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
