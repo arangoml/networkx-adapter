@@ -9,21 +9,24 @@ The details of the implementation are as follows. The adapter can obtain data to
 
 You can specify the particular mode to use in an application by specifying the `load_from_db` parameter in the adapter. When a database dump is used to load the data, you will need to specify the details of the graph representation in a graph descriptor file (see `graph_descriptor.yaml`). Each facet of the graph is described in a section of the descriptor file. The details of the sections are as follows:
 
-1. `edge_data`: Use this section to provide the details of the edge data for the graph. For each edge provide an edge name and the data file location for that data. For example, the line:
+1. `data_dir`: This is the directory to load the data files from. You have to specify this if you are loading files from a data dump.
 
-    `incident-support_org: ../data/incident_support_org.json`
 
-    indicates that the data for the edge `incident-support_org` is found in the file ../data/incident_support_org.json. Relative paths are used in this example, but you could use an absolute path if you prefer.
+2. `edge_data`: Use this section to provide the details of the edge data for the graph. For each edge provide an edge name and the data file location for that data. For example, the line:
+
+    `incident-support_org: incident_support_org.json`
+
+    indicates that the data for the edge `incident-support_org` is found in the file incident_support_org.json. 
     
 2. `vertex_data: Use this section to provide the details of the vertex data for the graph. For each vertex, provide the vertex name and the data file location for that vertex. For example, the line:
 
-    `incident: ../data/incident.json `  
+    `incident: incident.json `  
 
-    indicates that the data for the vertex `incident` is found in the file ../data/incident.json
+    indicates that the data for the vertex `incident` is found in the file incident.json
 
 3. exclude_attributes: The data for vertices and nodes store system generated attributes like keys and version numbers associated with the vertex and the node. You can indicate that the attributes you want to be excluded from the vertex properties by specifying them here. For example:
 
-    `exclude_attributes:
+    ` exclude_attributes:
 
             all: ['bipartite', '_key', '_rev', 'node_id', '_id']
    
@@ -38,9 +41,7 @@ You can specify the particular mode to use in an application by specifying the `
 
 5. queries: The keys specified in this section are applicable when data is obtained by connecting to a database.
 
-Plese see `dgl_networkx_arango_adapter.py` for the details of how data is loaded using the options specified in the graph descriptor file.
-
-
+ 
 
 
 
