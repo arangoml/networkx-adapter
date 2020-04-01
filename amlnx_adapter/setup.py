@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
 # This call to setup() does all the work
 setup(
     name="amlnx_adapter",
-    version="0.0.0.2",
+    version="0.0.0.3.3",
     description="package for creating networkx adapters for arangodb",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -22,6 +22,6 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7"],
-    packages=["amlnx_adapter"])
+    packages=["amlnx_adapter", "amlnx_adapter.dgl"])
 
 
