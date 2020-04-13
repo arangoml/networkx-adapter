@@ -1,2 +1,2 @@
 dgl/graph_descriptor.yaml
-
+include amlnx_adapter/dgl/cert/ca-b9b556df.crt
