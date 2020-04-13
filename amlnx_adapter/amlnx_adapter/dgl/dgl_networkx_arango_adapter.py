@@ -20,12 +20,15 @@ from amlnx_adapter.dgl.custom_http_client import CustomHTTPClient
 class DGL_Networkx_Arango_Adapter(Networkx_Arango_Adapter):
     
     def __init__(self, graph_desc_fp = "graph_descriptor.yaml", load_from_db = True):
+        file_exists = os.path.exists(graph_desc_fp)
+        if not file_exists:
+            print("Graph descriptor file does not exist, please check and try again !")
         self.gdesc_file = graph_desc_fp
         self.cfg = self.get_conn_config()
         self.db = None
         self.emlg = None
         self.load_from_db = load_from_db
-
+        
         
         return
     
@@ -39,18 +42,12 @@ class DGL_Networkx_Arango_Adapter(Networkx_Arango_Adapter):
         return labels, graph
     
     def get_conn_config(self):
-        file_name = os.path.join(os.path.dirname(__file__), self.gdesc_file)
-        with open(file_name, "r") as file_descriptor:
+        #file_name = os.path.join(os.path.dirname(__file__), self.gdesc_file)
+        with open(self.gdesc_file, "r") as file_descriptor:
             cfg = yaml.load(file_descriptor, Loader=yaml.FullLoader)
         return cfg
     
-    def dump_data(self):
-        file_name = os.path.join(os.path.dirname(__file__),
-                                 self.gdesc_file)
-        with open(file_name, "w") as file_descriptor:
-            cfg = yaml.dump(self.cfg, file_descriptor)
-        return cfg
-        
+
    
         
     def load_from_data_files(self):
@@ -58,10 +55,18 @@ class DGL_Networkx_Arango_Adapter(Networkx_Arango_Adapter):
         edge_names = [*self.cfg['edge_data']]
         fgraph = {ename : nx.DiGraph() for ename in edge_names}
         rgraph = {ename : nx.DiGraph() for ename in edge_names}
+        if 'data_dir' not in self.cfg:
+            print("Loading data from a data files requires you to specify a data directory \
+                  in the graph descriptor file")
+            return
+        data_dir = self.cfg['data_dir']
+        if not os.path.exists(data_dir):
+            print("Data directory is not valid, please check and try again!")
+            
         labels = []
         for k,v in self.cfg['edge_data'].items():
             edge_file = v
-            file_name = os.path.join(os.path.dirname(__file__), edge_file)
+            file_name = os.path.join(data_dir, edge_file)
             with open(file_name, 'r') as json_file:
                 json_data = json.load(json_file)
             from_list = [doc['_from'] for doc in json_data]
@@ -85,7 +90,7 @@ class DGL_Networkx_Arango_Adapter(Networkx_Arango_Adapter):
         for vertex_name, data_file_name in self.cfg['vertex_data'].items():
             if vertex_name in self.cfg['exclude_attributes']:
                 exclude_attr = exclude_attr + self.cfg['exclude_attributes'][vertex_name]
-            file_name = os.path.join(os.path.dirname(__file__), data_file_name)
+            file_name = os.path.join(data_dir, data_file_name)
             with open(file_name, 'r') as json_file:
                 json_data = json.load(json_file)
             # iterate over the vertex data and set the properties in the associated graph
@@ -228,7 +233,7 @@ class DGL_Networkx_Arango_Adapter(Networkx_Arango_Adapter):
         ms_user_name = self.cfg['arangodb']['username']
         ms_password =  self.cfg['arangodb']['password']
         ms_dbName = self.cfg['arangodb']['dbName']
-        
+        print("Host Connection: %s " %(host_connection))
         client = ArangoClient(hosts= host_connection,\
                               http_client=CustomHTTPClient(username = ms_user_name,\
                                                            password = ms_password))

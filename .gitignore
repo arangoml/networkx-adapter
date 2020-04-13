@@ -7,3 +7,7 @@
 #ipynb checkpoints
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+# Setuptools distribution folder.
+amlnx_adapter/dist/
+# Remove the build directory from repo
+amlnx_adapter/build/
