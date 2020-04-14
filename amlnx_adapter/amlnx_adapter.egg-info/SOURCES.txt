@@ -3,6 +3,7 @@ README.md
 setup.py
 amlnx_adapter/__init__.py
 amlnx_adapter/arangoml_networkx_adapter.py
+amlnx_adapter/custom_http_client.py
 amlnx_adapter.egg-info/PKG-INFO
 amlnx_adapter.egg-info/SOURCES.txt
 amlnx_adapter.egg-info/dependency_links.txt

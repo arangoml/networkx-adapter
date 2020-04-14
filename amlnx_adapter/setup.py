@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
 # This call to setup() does all the work
 setup(
     name="amlnx_adapter",
-    version="0.0.0.3.5",
+    version="0.0.0.3.6",
     description="package for creating networkx adapters for arangodb",
     long_description=long_description,
     long_description_content_type="text/markdown",
