@@ -8,17 +8,17 @@ Created on Thu Mar 26 09:51:47 2020
 
 import yaml
 import os
-from amlnx_adapter.arangoml_networkx_adapter import Networkx_Arango_Adapter
+from adbnx_adapter.arangoml_networkx_adapter import Networkx_Arango_Adapter
 import networkx as nx
 from arango import ArangoClient
 from amlnx_adapter.custom_http_client import CustomHTTPClient
 from amlnx_adapter.graph_params import GraphParams
 
 
-class ArangoDB_Networkx_Adapter(Networkx_Arango_Adapter):
-    
+class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
+
     def __init__(self, graph_config = None, graph_desc_save_fp = "arangoDB_graph_descriptor.yaml"):
-        
+
         self.cfg = None
         if graph_config is None:
             self.gdesc_file = graph_desc_save_fp
@@ -36,43 +36,43 @@ class ArangoDB_Networkx_Adapter(Networkx_Arango_Adapter):
             self.db = None
             self.emlg = None
             self.nxg = None
-        
-        
-        
+
+
+
         return
-    
+
     def read_data(self):
         file_name = os.path.join(os.path.dirname(__file__),
                                  self.gdesc_file)
         with open(file_name, "r") as file_descriptor:
             cfg = yaml.load(file_descriptor, Loader=yaml.FullLoader)
         return cfg
-    
+
     def save_graph_config(self):
         file_name = os.path.join(os.path.dirname(__file__),
                                  self.gdesc_file)
         with open(file_name, "w") as file_descriptor:
             cfg = yaml.dump(self.cfg, file_descriptor)
         return cfg
-    
+
     def create_graph_config(self, graph_params):
         gp = GraphParams()
         self.cfg = {
             'arangodb': {},
             'queries': {}
         }
-        
+
         for key, value in graph_params.items():
             if key == gp.DB_DATA_QUERY:
                 self.cfg[gp.DATA_SECTION][key] = value
             else:
                 self.cfg[gp.DB_SECTION][key] = value
-        return  
-    
+        return
+
     def is_valid_config(self, graph_config):
         gp = GraphParams()
         valid_config = True
-        
+
         if not gp.DB_SERVICE_HOST in graph_config:
             print("managed service host is missing in supplied config")
             valid_config = False
@@ -102,11 +102,11 @@ class ArangoDB_Networkx_Adapter(Networkx_Arango_Adapter):
             valid_config = False
 
         return valid_config
-    
+
     def create_networkx_graph(self, graph_def = 'FraudDetection'):
         self.set_db_connection()
         gd = GraphParams()
-        
+
         #query = self.cfg['queries']['load_data']
                 #get vertex names
         g = nx.DiGraph()
@@ -119,7 +119,7 @@ class ArangoDB_Networkx_Adapter(Networkx_Arango_Adapter):
             cursor = self.db.aql.execute(query)
             for doc in cursor:
                 g.add_node(doc['_id'], attr_dict = doc)
-        
+
         for k,v in  self.cfg[gd.DB_SECTION][gd.DB_EDGE_COL].items():
             query = "FOR doc in %s " % (k)
             cspl = [s +':'+ 'doc.' + s for s in v]
@@ -130,29 +130,29 @@ class ArangoDB_Networkx_Adapter(Networkx_Arango_Adapter):
             #breakpoint()
             for doc in cursor:
                 g.add_edge(doc['_from'], doc['_to'])
-        
 
-                        
 
-         
-            
+
+
+
+
         self.nxg = g
         return self.nxg
-    
+
     def get_conn_config(self):
         #file_name = os.path.join(os.path.dirname(__file__), self.gdesc_file)
         with open(self.gdesc_file, "r") as file_descriptor:
             cfg = yaml.load(file_descriptor, Loader=yaml.FullLoader)
         return cfg
 
-    
+
     def set_db_connection(self):
         db_conn_protocol = self.cfg['arangodb']['conn_protocol']
         db_srv_host = self.cfg['arangodb']['DB_service_host']
         db_srv_port = self.cfg['arangodb']['DB_service_port']
 
-        
-        
+
+
         host_connection = db_conn_protocol + "://" + db_srv_host + ":" + str(
             db_srv_port)
         ms_user_name = self.cfg['arangodb']['username']
@@ -162,17 +162,11 @@ class ArangoDB_Networkx_Adapter(Networkx_Arango_Adapter):
         client = ArangoClient(hosts= host_connection,\
                               http_client=CustomHTTPClient(username = ms_user_name,\
                                                            password = ms_password))
-        
+
 
         db = client.db(ms_dbName, ms_user_name, ms_password)
 
         self.db = db
         self.emlg = self.db.graph('IMDBGraph')
-        
+
         return
-    
-
-
-         
-    
-
