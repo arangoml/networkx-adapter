@@ -15,9 +15,9 @@ from amlnx_adapter.custom_http_client import CustomHTTPClient
 from amlnx_adapter.graph_params import GraphParams
 
 
-class IMDB_Networkx_Adapter(Networkx_Arango_Adapter):
+class ArangoDB_Networkx_Adapter(Networkx_Arango_Adapter):
     
-    def __init__(self, graph_config = None, graph_desc_save_fp = "imdb_graph_descriptor.yaml"):
+    def __init__(self, graph_config = None, graph_desc_save_fp = "arangoDB_graph_descriptor.yaml"):
         
         self.cfg = None
         if graph_config is None:
@@ -56,17 +56,17 @@ class IMDB_Networkx_Adapter(Networkx_Arango_Adapter):
         return cfg
     
     def create_graph_config(self, graph_params):
-        
         gp = GraphParams()
         self.cfg = {
             'arangodb': {},
             'queries': {}
         }
+        
         for key, value in graph_params.items():
             if key == gp.DB_DATA_QUERY:
-                self.cfg['queries'][key] = value
+                self.cfg[gp.DATA_SECTION][key] = value
             else:
-                self.cfg['arangodb'][key] = value
+                self.cfg[gp.DB_SECTION][key] = value
         return  
     
     def is_valid_config(self, graph_config):
@@ -94,24 +94,46 @@ class IMDB_Networkx_Adapter(Networkx_Arango_Adapter):
         if not gp.DB_DATA_QUERY in graph_config:
             print("query to load data is not provided")
             valid_config = False
+        if not gp.DB_VERTEX_COL in graph_config:
+            print("vertex names in schema are not provided")
+            valid_config = False
+        if not gp.DB_EDGE_COL in graph_config:
+            print("edge names in schema is not provided")
+            valid_config = False
 
         return valid_config
     
-    def create_networkx_graph(self):
+    def create_networkx_graph(self, graph_def = 'FraudDetection'):
         self.set_db_connection()
-        query = self.cfg['queries']['load_data']
+        gd = GraphParams()
+        
+        #query = self.cfg['queries']['load_data']
                 #get vertex names
-
-
-        cursor = self.db.aql.execute(query)
-        #sgdata = {ename : nx.DiGraph() for ename in edge_names}
         g = nx.DiGraph()
-        for doc in cursor:
+        for k,v in  self.cfg[gd.DB_SECTION][gd.DB_VERTEX_COL].items():
+            query = "FOR doc in %s " % (k)
+            cspl = [s +':'+ 'doc.' + s for s in v]
+            cspl.append('_id: doc._id')
+            csps = ','.join(cspl)
+            query = query + "RETURN { " + csps + "}"
+            cursor = self.db.aql.execute(query)
+            for doc in cursor:
+                g.add_node(doc['_id'], attr_dict = doc)
+        
+        for k,v in  self.cfg[gd.DB_SECTION][gd.DB_EDGE_COL].items():
+            query = "FOR doc in %s " % (k)
+            cspl = [s +':'+ 'doc.' + s for s in v]
+            cspl.append('_id: doc._id')
+            csps = ','.join(cspl)
+            query = query + "RETURN { " + csps + "}"
+            cursor = self.db.aql.execute(query)
+            #breakpoint()
+            for doc in cursor:
+                g.add_edge(doc['_from'], doc['_to'])
+        
 
-            g.add_node(doc['user'], bipartite = 0)
-            g.add_node(doc['movie'], bipartite = 1)
-            g.add_edge(doc['user'], doc['movie'], rating = doc['rating'] )
-            # set up the forward and reverse graphs and set up the node attributes
+                        
+
          
             
         self.nxg = g

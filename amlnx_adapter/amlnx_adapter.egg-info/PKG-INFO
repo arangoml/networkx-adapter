@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: amlnx-adapter
-Version: 0.0.0.3.6
+Version: 0.0.0.4.8
 Summary: package for creating networkx adapters for arangodb
 Home-page: https://github.com/arangoml/arangopipe
 Author: ArangoDB
