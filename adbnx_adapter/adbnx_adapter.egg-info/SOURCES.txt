@@ -1,0 +1,11 @@
+MANIFEST.in
+setup.py
+adbnx_adapter/__init__.py
+adbnx_adapter/arangoDB_networkx_arango_adapter.py
+adbnx_adapter/arangodb_networkx_adapter_base.py
+adbnx_adapter/custom_http_client.py
+adbnx_adapter/test_conn.py
+adbnx_adapter.egg-info/PKG-INFO
+adbnx_adapter.egg-info/SOURCES.txt
+adbnx_adapter.egg-info/dependency_links.txt
+adbnx_adapter.egg-info/top_level.txt

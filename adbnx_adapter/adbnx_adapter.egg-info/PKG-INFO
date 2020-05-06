@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: adbnx-adapter
+Version: 0.0.0.1
+Summary: package for creating networkx adapters for arangodb
+Home-page: https://github.com/arangoml/networkx-adapter
+Author: ArangoDB
+Author-email: rajiv@arangodb.com
+License: Apache
+Description: # Graph Powered Machine Learning
+         
+        ## Slides 
+        Slides can be  found [here](https://docs.google.com/presentation/d/19L7b1h5HbngAWAmvLvsI3L93qsvzk-v7djWbTi8q_gM/).
+        
+        ## Tutorials
+        
+        * [SPARQL](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Sparql.ipynb)
+        * [Graph Queries](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Graphs_Queries.ipynb)
+        * [Graph Analytics]( https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Graph_Analytics.ipynb)
+        * [Fraud Detection]( https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Fraud_Detection.ipynb)
+        * [NetworkX](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/NetworkX.ipynb)
+        * [Node2Vec](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Node2Vec.ipynb)
+        * [Building a GCN from scratch](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Basic_GCN.ipynb)
+        * [Deep Graph Library](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/DGL.ipynb)
+        * [Metadata](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Metadata.ipynb)
+        
+        
+        
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Description-Content-Type: text/markdown

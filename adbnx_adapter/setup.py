@@ -1,16 +1,18 @@
 from setuptools import setup
+import pathlib
+
 
 # The directory containing this file
-#HERE = pathlib.Path(__file__).resolve().parents[1]
+HERE = pathlib.Path(__file__).resolve().parents[1]
 
 
-with open("README.md", "r") as fh:
+with open(HERE/"README.md", "r") as fh:
     long_description = fh.read()
 
 # This call to setup() does all the work
 setup(
     name="adbnx_adapter",
-    version="0.0.0.4.8",
+    version="0.0.0.1",
     description="package for creating networkx adapters for arangodb",
     long_description=long_description,
     long_description_content_type="text/markdown",
