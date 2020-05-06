@@ -1,29 +1,25 @@
 Metadata-Version: 2.1
 Name: adbnx-adapter
-Version: 0.0.0.1
+Version: 0.0.0.2
 Summary: package for creating networkx adapters for arangodb
 Home-page: https://github.com/arangoml/networkx-adapter
 Author: ArangoDB
 Author-email: rajiv@arangodb.com
 License: Apache
-Description: # Graph Powered Machine Learning
-         
-        ## Slides 
-        Slides can be  found [here](https://docs.google.com/presentation/d/19L7b1h5HbngAWAmvLvsI3L93qsvzk-v7djWbTi8q_gM/).
+Description: # ArangoDB-Networkx Adapter
         
-        ## Tutorials
-        
-        * [SPARQL](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Sparql.ipynb)
-        * [Graph Queries](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Graphs_Queries.ipynb)
-        * [Graph Analytics]( https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Graph_Analytics.ipynb)
-        * [Fraud Detection]( https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Fraud_Detection.ipynb)
-        * [NetworkX](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/NetworkX.ipynb)
-        * [Node2Vec](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Node2Vec.ipynb)
-        * [Building a GCN from scratch](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Basic_GCN.ipynb)
-        * [Deep Graph Library](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/DGL.ipynb)
-        * [Metadata](https://colab.research.google.com/github/joerg84/Graph_Powered_ML_Workshop/blob/master/Metadata.ipynb)
+        <center>
+        <img src="assets/logos/ArangoDB_logo.png" width=95% >
+        </center>
         
         
+        Networkx is commonly used for analysis of network-data. If your analytics use cases require the use of all your graph data, for example, to summarize graph structure, or answer global path traversal queries, then using the ArangoDB Pregel API is recommended. If your analysis pertains to a subgraph, then you may be interested in getting the Networkx representation of the subgraph for one of the following reasons:
+        
+            1. An algorithm for your use case is available in Networkx.
+            2. A library that you want to use for your use case works with Networkx Graphs as input.
+        
+        
+        Check the DGL folder for an implementation of a Networkx-Adapter for the Deep Graph Library.
         
 Platform: UNKNOWN
 Classifier: License :: OSI Approved :: Apache Software License

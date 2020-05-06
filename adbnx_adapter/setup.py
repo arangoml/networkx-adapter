@@ -12,7 +12,7 @@ with open(HERE/"README.md", "r") as fh:
 # This call to setup() does all the work
 setup(
     name="adbnx_adapter",
-    version="0.0.0.1",
+    version="0.0.0.2",
     description="package for creating networkx adapters for arangodb",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -24,5 +24,5 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7"],
-    packages=["adbnx_adapter"],
+    packages=["adbnx_adapter", "adbnx_adapter.dgl", "adbnx_adapter.node2vec"],
     include_package_data=True )
