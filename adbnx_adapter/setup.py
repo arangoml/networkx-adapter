@@ -12,7 +12,7 @@ with open(HERE/"README.md", "r") as fh:
 # This call to setup() does all the work
 setup(
     name="adbnx_adapter",
-    version="0.0.0.2",
+    version="0.0.0.1",
     description="package for creating networkx adapters for arangodb",
     long_description=long_description,
     long_description_content_type="text/markdown",

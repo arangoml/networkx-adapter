@@ -6,7 +6,7 @@ Created on Wed May  6 15:43:03 2020
 @author: admin2
 """
 
-from adbnx_adapter.arangoDB_networkx_arango_adapter import ArangoDB_Networkx_Adapter
+from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 def test_conn():
     

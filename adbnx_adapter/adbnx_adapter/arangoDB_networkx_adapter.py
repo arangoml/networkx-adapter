@@ -13,7 +13,6 @@ from arango import ArangoClient
 from adbnx_adapter.custom_http_client import CustomHTTPClient
 
 
-
 class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
 
     def __init__(self, conn):
