@@ -6,15 +6,12 @@ import pathlib
 HERE = pathlib.Path(__file__).resolve().parents[1]
 
 
-with open(HERE/"README.md", "r") as fh:
-    long_description = fh.read()
-
 # This call to setup() does all the work
 setup(
     name="adbnx_adapter",
-    version="0.0.0.1",
+    version="0.0.0.2",
     description="package for creating networkx adapters for arangodb",
-    long_description=long_description,
+    long_description="package for creating networkx adapters for arangodb",
     long_description_content_type="text/markdown",
     url="https://github.com/arangoml/networkx-adapter",
     author="ArangoDB",
