@@ -1,0 +1,4 @@
+include dgl/graph_descriptor.yaml
+include node2vec/imdb_graph_descriptor.yaml
+include amlnx_adapter/dgl/cert/ca-b9b556df.crt
+include amlnx_adapter/cert/ca-b9b556df.crt

@@ -1,13 +1,3 @@
-# Compiled python modules.
-**/*.pyc
-# log files
-**/*.log
-# egg-info
-**/*.egg-info
-#ipynb checkpoints
 .ipynb_checkpoints
-*/.ipynb_checkpoints/*
-# Setuptools distribution folder.
-amlnx_adapter/dist/
-# Remove the build directory from repo
-amlnx_adapter/build/
+.tox
+.DS_Store

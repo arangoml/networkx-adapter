@@ -1,0 +1,8 @@
+
+# Compiled python modules
+**/*.pyc
+#ipynb checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+#OSX DS_Store
+**/*.DS_Store
