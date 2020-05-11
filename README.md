@@ -1,10 +1,10 @@
 # ArangoDB-Networkx Adapter
 
 <center>
-<img src="examples/assets/logos/networkx_logo.svg" width=95% >
+<img src="examples/assets/logos/networkx_logo.svg" width=50% >
 </center>
 <center>
-<img src="examples/assets/logos/ArangoDB_logo.png" width=95% >
+<img src="examples/assets/logos/ArangoDB_logo.png" width=50% >
 </center>
 
 The ArangoDB-Networkx Adapter export Graphs from ArangoDB, a multi-model Graph Database into NetworkX, the swiss army knife for graph analysis with python.
