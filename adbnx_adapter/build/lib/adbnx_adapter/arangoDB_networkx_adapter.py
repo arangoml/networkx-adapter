@@ -20,7 +20,15 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
             user_name = conn["username"]
             password = conn["password"]
             dbName = conn["dbName"]
-            con_str = "https://" + url + ":8529"
+            if 'port' in conn:
+                port = str(conn['port'])
+            else:
+                port = '8529'
+            if 'protocol' in conn:
+                protocol = conn['protocol']
+            else:
+                protocol = "https"
+            con_str = protocol + "://"  + url + ":" + port
             client = ArangoClient(hosts= con_str)
             self.db = client.db(dbName, user_name, password)
         else:

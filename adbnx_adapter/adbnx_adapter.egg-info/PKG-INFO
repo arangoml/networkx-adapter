@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: adbnx-adapter
-Version: 0.0.0.2.1
+Version: 0.0.0.2.5
 Summary: package for creating networkx adapters for arangodb
 Home-page: https://github.com/arangoml/networkx-adapter
 Author: ArangoDB
