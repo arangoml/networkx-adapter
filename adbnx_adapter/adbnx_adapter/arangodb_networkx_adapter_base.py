@@ -8,6 +8,7 @@ Created on Thu Mar 26 11:38:31 2020
 
 from abc import ABC
 
+
 class Networkx_Adapter_Base(ABC):
 
     def create_networkx_graph():

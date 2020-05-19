@@ -1,3 +1,12 @@
 .ipynb_checkpoints
 .tox
 .DS_Store
+**/*.pyc
+# log files
+**/*.log
+# Setuptools distribution folder.
+adbnx_adapter/dist/
+# Remove the build directory from repo
+adbnx_adapter/build/
+adbnx_adapter/*.egg-info
+
