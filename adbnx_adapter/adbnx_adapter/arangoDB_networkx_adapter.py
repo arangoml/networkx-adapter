@@ -28,19 +28,18 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
                 protocol = conn['protocol']
             else:
                 protocol = "https"
-            con_str = protocol + "://"  + url + ":" + port
-            client = ArangoClient(hosts= con_str)
+            con_str = protocol + "://" + url + ":" + port
+            client = ArangoClient(hosts=con_str)
             self.db = client.db(dbName, user_name, password)
         else:
-            print("The connection information you supplied is invalid, please check and try again!")
-            
+            print(
+                "The connection information you supplied is invalid, please check and try again!")
+
         return
-
-
 
     def is_valid_conn(self, conn):
         valid_con_info = True
-        
+
         if not "hostname" in conn:
             print("hostname is missing in connection")
         if not "username" in conn:
@@ -52,9 +51,9 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
         if not "dbName" in conn:
             print("Database is missing in connection")
             valid_con_info = False
-            
+
         return valid_con_info
-    
+
     def is_valid_graph_attributes(self, graph_config):
         valid_config = True
 
@@ -65,39 +64,33 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
             print("Graph attributes do not contain edge collections")
             valid_config = False
 
-
         return valid_config
 
     def create_networkx_graph(self, graph_name, graph_attributes):
 
         if self.is_valid_graph_attributes(graph_attributes):
             g = nx.DiGraph()
-            for k,v in  graph_attributes['vertexCollections'].items():
+            for k, v in graph_attributes['vertexCollections'].items():
                 query = "FOR doc in %s " % (k)
-                cspl = [s +':'+ 'doc.' + s for s in v]
+                cspl = [s + ':' + 'doc.' + s for s in v]
                 cspl.append('_id: doc._id')
                 csps = ','.join(cspl)
                 query = query + "RETURN { " + csps + "}"
 
                 cursor = self.db.aql.execute(query)
                 for doc in cursor:
-                    g.add_node(doc['_id'], attr_dict = doc)
-    
-            for k,v in  graph_attributes['edgeCollections'].items():
+                    g.add_node(doc['_id'], attr_dict=doc)
+
+            for k, v in graph_attributes['edgeCollections'].items():
                 query = "FOR doc in %s " % (k)
-                cspl = [s +':'+ 'doc.' + s for s in v]
+                cspl = [s + ':' + 'doc.' + s for s in v]
                 cspl.append('_id: doc._id')
                 csps = ','.join(cspl)
                 query = query + "RETURN { " + csps + "}"
 
                 cursor = self.db.aql.execute(query)
-                #breakpoint()
+                # breakpoint()
                 for doc in cursor:
                     g.add_edge(doc['_from'], doc['_to'])
 
         return g
-
-
-
-
-
