@@ -1,4 +1,5 @@
-#Graph Convolution Network Implementation with DGL using ArangoDB DGL Adapter
+# Graph Convolution Network Implementation with DGL using ArangoDB DGL Adapter
+
 
 This document provides an overview of the implementation of Graph Convolution Networks with the ArangoDB DGL Adapter. The data represents the event log from an incident management application in an IT company. The data has been used for regression tasks pertaining to estimating the time for resolution of an incident. In this work, this data is used for a classification task. The classification task is to predict if an incident will be reassigned in the course of its resolution. The classification task is accomplished using a Graph Convolution Network. The steps involved are:
 
