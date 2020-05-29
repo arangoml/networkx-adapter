@@ -99,11 +99,10 @@ class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
                 g.nodes[v].data['f'] = v_data
 
         return g, labels
-    
+
     def create_dgl_graph(self, graph_name, graph_attributes):
         print("Creating DGL graph...")
         g, labels = self.create_networkx_graph(graph_name, graph_attributes)
         print("done!")
-        
+
         return g, labels
-        
