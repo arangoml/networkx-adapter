@@ -1,2 +1,2 @@
 python-arango
-PyYAML==5.1.1
+PyYAML==5.4
