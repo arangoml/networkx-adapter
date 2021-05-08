@@ -28,7 +28,8 @@ con = {'dbName': 'YOURDBNAME',
  'username': 'YOURUSERNAME',
  'password': 'YOURPASSOWRD',
  'hostname': 'instance.arangodb.cloud',
- 'port': 8529}
+ 'port': 8529,
+ 'crt': '/path/to/crt'}
 
 # Create Adapter instance
 ma = ArangoDB_Networkx_Adapter(conn = con)

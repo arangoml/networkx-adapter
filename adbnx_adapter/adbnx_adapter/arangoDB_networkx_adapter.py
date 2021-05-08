@@ -6,11 +6,55 @@ Created on Thu Mar 26 09:51:47 2020
 @author: Rajiv Sambasivan
 """
 
+from os import path
 
 from adbnx_adapter.arangodb_networkx_adapter_base import Networkx_Adapter_Base
 import networkx as nx
+from requests.adapters import HTTPAdapter
+from requests import Session
+from arango.response import Response
+from arango.http import HTTPClient
 from arango import ArangoClient
 
+class HTTPClientSSL(HTTPClient):
+
+    def __init__(self, crt=False):
+        self._crt = crt
+
+    def create_session(self, host):
+        session = Session()
+
+        session.headers.update({"x-custom-header": "true"})
+
+        adapter = HTTPAdapter(max_retries=5)
+        session.mount("https://", adapter)
+
+        return session
+
+    def send_request(self
+            , session
+            , method
+            , url
+            , params=None
+            , data=None
+            , headers=None
+            , auth=None):
+        response = session.request(method=method
+                , url=url
+                , params=params
+                , data=data
+                , headers=headers
+                , auth=auth
+                , verify=self._crt)
+
+        return Response(
+            method=response.request.method,
+            url=response.url,
+            headers=response.headers,
+            status_code=response.status_code,
+            status_text=response.reason,
+            raw_body=response.text
+        )
 
 class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
 
@@ -29,7 +73,11 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
             else:
                 protocol = "https"
             con_str = protocol + "://" + url + ":" + port
-            client = ArangoClient(hosts=con_str)
+            if 'crt' in conn:
+                client = ArangoClient(hosts=con_str
+                        , http_client=HTTPClientSSL(conn['crt']))
+            else:
+                client = ArangoClient(hosts=con_str)
             self.db = client.db(dbName, user_name, password)
         else:
             print(
@@ -50,6 +98,10 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
             valid_con_info = False
         if not "dbName" in conn:
             print("Database is missing in connection")
+            valid_con_info = False
+
+        if 'crt' in conn and not path.exists(conn['crt']):
+            print("crt file not found")
             valid_con_info = False
 
         return valid_con_info
