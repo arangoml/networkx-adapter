@@ -16,7 +16,7 @@ import dgl
 
 class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
 
-    def create_networkx_graph(self, graph_name, graph_attributes):
+    def create_networkx_graph(self, graph_name, graph_attributes, **query_options):
 
         if self.is_valid_graph_attributes(graph_attributes):
             edge_names = []
@@ -45,7 +45,7 @@ class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
                 ens = k.split('_', 1)
                 redge = ens[1] + '_' + ens[0]
                 rsgraph = rsgdata[redge]
-                cursor = self.db.aql.execute(query)
+                cursor = self.db.aql.execute(query, **query_options)
                 for doc in cursor:
                     nfrom = doc['_from']
                     nto = doc['_to']
@@ -67,7 +67,7 @@ class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
                 csps = ','.join(cspl)
                 query = query + "RETURN { " + csps + "}"
 
-                cursor = self.db.aql.execute(query)
+                cursor = self.db.aql.execute(query, **query_options)
                 for doc in cursor:
                     exclude_attr = ['_id', '_key', 'node_id']
                     if k == 'incident':

@@ -13,7 +13,7 @@ import networkx as nx
 
 class IMDBArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
 
-    def create_networkx_graph(self, graph_name, graph_attributes):
+    def create_networkx_graph(self, graph_name, graph_attributes, **query_options):
 
         if self.is_valid_graph_attributes(graph_attributes):
             g = nx.DiGraph()
@@ -24,7 +24,7 @@ class IMDBArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
                 csps = ','.join(cspl)
                 query = query + "RETURN { " + csps + "}"
 
-                cursor = self.db.aql.execute(query)
+                cursor = self.db.aql.execute(query, **query_options)
                 for doc in cursor:
                     if k == "Users":
                         bip_key = 0
@@ -39,7 +39,7 @@ class IMDBArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
                 csps = ','.join(cspl)
                 query = query + "RETURN { " + csps + "}"
 
-                cursor = self.db.aql.execute(query)
+                cursor = self.db.aql.execute(query, **query_options)
 
                 for doc in cursor:
                     g.add_edge(doc['_from'], doc['_to'])

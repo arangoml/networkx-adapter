@@ -66,7 +66,7 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
 
         return valid_config
 
-    def create_networkx_graph(self, graph_name, graph_attributes):
+    def create_networkx_graph(self, graph_name, graph_attributes, **query_options):
 
         if self.is_valid_graph_attributes(graph_attributes):
             g = nx.DiGraph()
@@ -77,7 +77,7 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
                 csps = ','.join(cspl)
                 query = query + "RETURN { " + csps + "}"
 
-                cursor = self.db.aql.execute(query)
+                cursor = self.db.aql.execute(query, **query_options)
                 for doc in cursor:
                     g.add_node(doc['_id'], attr_dict=doc)
 
@@ -88,7 +88,7 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
                 csps = ','.join(cspl)
                 query = query + "RETURN { " + csps + "}"
 
-                cursor = self.db.aql.execute(query)
+                cursor = self.db.aql.execute(query, **query_options)
                 # breakpoint()
                 for doc in cursor:
                     g.add_edge(doc['_from'], doc['_to'])
