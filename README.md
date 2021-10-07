@@ -43,6 +43,9 @@ attributes = { 'vertexCollections':
 # Export networkX graph                                  
 g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = attributes)
 
+# You can also provide valid Python-Arango AQL query options to the command above, like such:
+# g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = attributes, ttl=1000, stream=True)
+
 # Use networkX
 nx.draw(g, with_labels=True)
 ```
