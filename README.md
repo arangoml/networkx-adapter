@@ -28,6 +28,7 @@ con = {'dbName': 'YOURDBNAME',
  'username': 'YOURUSERNAME',
  'password': 'YOURPASSOWRD',
  'hostname': 'instance.arangodb.cloud',
+ "protocol": "https", 
  'port': 8529}
 
 # Create Adapter instance
