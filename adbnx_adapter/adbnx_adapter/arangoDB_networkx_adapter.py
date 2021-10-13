@@ -40,12 +40,12 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
     def fetch_docs(self, col: str, attributes: set[str], is_keep: bool, query_options):
-        if is_keep:
-            attributes.add("_id")
-
         aql = f"""
             FOR doc IN {col}
-                RETURN {'KEEP' if is_keep else 'UNSET'}(doc, {list(attributes)})
+                RETURN MERGE(
+                    {'KEEP' if is_keep else 'UNSET'}(doc, {list(attributes)}), 
+                    {{"_id": doc["_id"]}}
+                )
         """
 
         return self.db.aql.execute(aql, **query_options)
