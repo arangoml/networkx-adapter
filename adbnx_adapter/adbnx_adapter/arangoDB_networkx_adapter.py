@@ -10,7 +10,6 @@ Created on Thu Mar 26 09:51:47 2020
 
 import networkx as nx
 from arango import ArangoClient
-from networkx.classes import graph
 from .arangodb_networkx_adapter_base import Networkx_Adapter_Base
 
 
@@ -66,17 +65,31 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
         print(f"Success: {graph_name} created")
         return g
 
-    def create_networkx_graph_from_arango_graph(self, graph_name: str, **query_options):
+    def create_networkx_graph_from_graph(self, graph_name: str, **query_options):
         arango_graph = self.db.graph(graph_name)
+        v_cols = arango_graph.vertex_collections()
+        e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
+
+        return self.create_networkx_graph_from_collections(
+            graph_name, v_cols, e_cols, **query_options
+        )
+
+    def create_networkx_graph_from_collections(
+        self,
+        graph_name: str,
+        vertex_collections: set[str],
+        edge_collections: set[str],
+        **query_options,
+    ):
         attributes = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
 
         g = nx.DiGraph()
-        for collection in arango_graph.vertex_collections():
+        for collection in vertex_collections:
             for vertex in self.fetch_docs(collection, attributes, False, query_options):
                 g.add_node(vertex["_id"], attr_dict=vertex)
 
-        for collection in arango_graph.edge_definitions():
-            for edge in self.fetch_docs(collection["edge_collection"], attributes, False, query_options):
+        for collection in edge_collections:
+            for edge in self.fetch_docs(collection, attributes, False, query_options):
                 g.add_edge(edge["_from"], edge["_to"], attr_dict=edge)
 
         print(f"Success: {graph_name} created")
