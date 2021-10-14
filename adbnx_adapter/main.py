@@ -15,6 +15,8 @@ con = {
 
 # Create Adapter instance
 ma = ArangoDB_Networkx_Adapter(conn=con)
+# ma = IMDBArangoDB_Networkx_Adapter(conn=con)
+
 fraud_detection_attributes = {
     "vertexCollections": {
         "account": {"Balance", "account_type", "customer_id", "rank"},
@@ -30,11 +32,10 @@ fraud_detection_attributes = {
     },
 }
 
-# ma = IMDBArangoDB_Networkx_Adapter(conn=con)
-# imdb_attributes = {
-#     "vertexCollections": {"Users": {}, "Movies": {}},
-#     "edgeCollections": {"Ratings": {"_from", "_to", "ratings"}},
-# }
+imdb_attributes = {
+    "vertexCollections": {"Users": {}, "Movies": {}},
+    "edgeCollections": {"Ratings": {"_from", "_to", "ratings"}},
+}
 
 g = ma.create_networkx_graph(
     graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
@@ -52,8 +53,7 @@ g = ma.create_networkx_graph(
 
 # g = ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
-
-#nx.draw(g, with_labels=True)
+# nx.draw(g, with_labels=True)
 
 first_node, *middle_nodes, last_node = g.nodes(data=True)
 print("\n-------- Sample Nodes --------")
