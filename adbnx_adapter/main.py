@@ -1,7 +1,7 @@
 import json
 import networkx as nx
-from networkx.generators.classic import null_graph
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
+from adbnx_adapter.imdb_arangoDB_networkx_adapter import IMDBArangoDB_Networkx_Adapter
 
 # Specify the connection to the ArangoDB Database
 con = {
@@ -15,8 +15,6 @@ con = {
 
 # Create Adapter instance
 ma = ArangoDB_Networkx_Adapter(conn=con)
-
-# Specify attributes to be imported
 fraud_detection_attributes = {
     "vertexCollections": {
         "account": {"Balance", "account_type", "customer_id", "rank"},
@@ -31,8 +29,12 @@ fraud_detection_attributes = {
         "transaction": {"_from", "_to"},
     },
 }
-# include system collections in arangorestore
-# Export networkX graph
+
+#ma = IMDBArangoDB_Networkx_Adapter(conn=con)
+# imdb_attributes = {
+#     "vertexCollections": {"Users": {}, "Movies": {}},
+#     "edgeCollections": {"Ratings": {"_from", "_to", "ratings"}},
+# }
 
 g = ma.create_networkx_graph(
     graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
@@ -48,13 +50,12 @@ g = ma.create_networkx_graph(
 #     edge_collections={"accountHolder", "Relationship", "transaction"},
 # )
 
-# You can also provide valid Python-Arango AQL query options to the command above, like such:
-# g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = attributes, ttl=1000, stream=True)
+# g = ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
-# Use networkX
 #nx.draw(g, with_labels=True)
-
-print(g)
 first, *middle, last = g.nodes(data=True)
+print('\n-------- Samples --------')
 print(json.dumps(first, indent=2))
 print(json.dumps(last, indent=2))
+print('-------------------\n')
+print(g)

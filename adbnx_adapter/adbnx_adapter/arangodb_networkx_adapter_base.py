@@ -30,3 +30,9 @@ class Networkx_Adapter_Base(ABC):
 
     def create_networkx_graph():
         pass
+
+    def insert_vertex():
+        pass
+
+    def insert_edge():
+        pass

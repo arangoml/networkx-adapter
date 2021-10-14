@@ -17,10 +17,10 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
     def __init__(self, conn) -> None:
         self.validate_attributes("connection", conn.keys(), self.CONNECTION_ATRIBS)
 
-        url = conn.get("hostname")
-        username = conn.get("username")
-        password = conn.get("password")
-        db_name = conn.get("dbName")
+        url = conn["hostname"]
+        username = conn["username"]
+        password = conn["password"]
+        db_name = conn["dbName"]
 
         port = str(conn.get("port", 8529))
         protocol = conn.get("protocol", "https")
@@ -28,6 +28,13 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
         con_str = protocol + "://" + url + ":" + port
         client = ArangoClient(hosts=con_str)
         self.db = client.db(db_name, username, password)
+        self.nx_graph = nx.DiGraph()
+
+    def insert_vertex(self, vertex: dict, collection: str, attributes: set):
+        self.nx_graph.add_node(vertex["_id"], attr_dict=vertex)
+
+    def insert_edge(self, edge: dict, collection: str, attributes: set):
+        self.nx_graph.add_edge(edge["_from"], edge["_to"], attr_dict=edge)
 
     def validate_attributes(self, type, attributes: set, valid_attributes: set):
         if not valid_attributes <= attributes:
@@ -45,28 +52,17 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
 
         return self.db.aql.execute(aql, **query_options)
 
-    def create_networkx_graph(self, graph_name: str, graph_attributes, **query_options):
-        self.validate_attributes("graph", graph_attributes.keys(), self.GRAPH_ATRIBS)
-
-        g = nx.DiGraph()
-        for collection, attributes in graph_attributes.get("vertexCollections").items():
-            for vertex in self.fetch_docs(collection, attributes, True, query_options):
-                g.add_node(vertex["_id"], attr_dict=vertex)
-
-        for collection, attributes in graph_attributes.get("edgeCollections").items():
-            for edge in self.fetch_docs(collection, attributes, True, query_options):
-                g.add_edge(edge["_from"], edge["_to"], attr_dict=edge)
-
-        print(f"Success: {graph_name} created")
-        return g
-
     def create_networkx_graph_from_graph(self, graph_name: str, **query_options):
         arango_graph = self.db.graph(graph_name)
-        v_cols = arango_graph.vertex_collections()
-        e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
 
-        return self.create_networkx_graph_from_collections(
-            graph_name, v_cols, e_cols, **query_options
+        atribs = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
+        v_cols = {c: atribs for c in arango_graph.vertex_collections()}
+        e_cols = {c["edge_collection"]: atribs for c in arango_graph.edge_definitions()}
+
+        graph_attributes = {"vertexCollections": v_cols, "edgeCollections": e_cols}
+
+        return self.create_networkx_graph(
+            graph_name, graph_attributes, is_keep=False, **query_options
         )
 
     def create_networkx_graph_from_collections(
@@ -77,15 +73,28 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
         **query_options,
     ):
         attributes = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
+        v_cols = {col: attributes for col in vertex_collections}
+        e_cols = {col: attributes for col in edge_collections}
 
-        g = nx.DiGraph()
-        for collection in vertex_collections:
-            for vertex in self.fetch_docs(collection, attributes, False, query_options):
-                g.add_node(vertex["_id"], attr_dict=vertex)
+        graph_attributes = {"vertexCollections": v_cols, "edgeCollections": e_cols}
 
-        for collection in edge_collections:
-            for edge in self.fetch_docs(collection, attributes, False, query_options):
-                g.add_edge(edge["_from"], edge["_to"], attr_dict=edge)
+        return self.create_networkx_graph(
+            graph_name, graph_attributes, is_keep=False, **query_options
+        )
+
+    def create_networkx_graph(
+        self, graph_name: str, graph_attributes, is_keep=True, **query_options
+    ):
+        self.validate_attributes("graph", graph_attributes.keys(), self.GRAPH_ATRIBS)
+
+        self.nx_graph.clear()
+        for collection, attributes in graph_attributes["vertexCollections"].items():
+            for v in self.fetch_docs(collection, attributes, is_keep, query_options):
+                self.insert_vertex(v, collection, attributes)
+
+        for collection, attributes in graph_attributes["edgeCollections"].items():
+            for e in self.fetch_docs(collection, attributes, is_keep, query_options):
+                self.insert_edge(e, collection, attributes)
 
         print(f"Success: {graph_name} created")
-        return g
+        return self.nx_graph

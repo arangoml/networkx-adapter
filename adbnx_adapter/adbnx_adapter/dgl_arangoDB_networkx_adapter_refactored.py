@@ -31,7 +31,7 @@ class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
 
         edge_names = []
         redge_names = []
-        collection : str
+        collection: str
         for collection, _ in graph_attributes["edgeCollections"].items():
             edge_names.append(collection)
             ens = collection.split("_", 1)
@@ -46,7 +46,7 @@ class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
         nxg = nx.DiGraph()
 
         print("Loading edge data...")
-        for collection, attributes in graph_attributes.get("edgeCollections").items():
+        for collection, attributes in graph_attributes["edgeCollections"].items():
             sgraph = sgdata[collection]
             ens = collection.split("_", 1)
             redge = ens[1] + "_" + ens[0]
@@ -65,7 +65,7 @@ class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
         print("Loading vertex data...")
 
         vnames = []
-        for collection, attributes in graph_attributes.get("vertexCollections").items():
+        for collection, attributes in graph_attributes["vertexCollections"].items():
             vnames.append(collection)
             node_data[collection] = list()
 
