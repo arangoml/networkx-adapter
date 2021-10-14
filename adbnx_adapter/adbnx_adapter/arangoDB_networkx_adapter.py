@@ -4,8 +4,8 @@
 Created on Thu Mar 26 09:51:47 2020
 
 @author: Rajiv Sambasivan
-@author Joerg Schad
-@author Anthony Mahanna
+@author: Joerg Schad
+@author: Anthony Mahanna
 """
 
 import networkx as nx
@@ -14,12 +14,7 @@ from .arangodb_networkx_adapter_base import Networkx_Adapter_Base
 
 
 class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
-    CONNECTION_ATRIBS = {"hostname", "username", "password", "dbName"}
-    GRAPH_ATRIBS = {"vertexCollections", "edgeCollections"}
-    UNNECESSARY_DOCUMENT_ATTRIBUTES = {"_key", "_rev"}
-
     def __init__(self, conn) -> None:
-        super().__init__()
         self.validate_attributes("connection", conn.keys(), self.CONNECTION_ATRIBS)
 
         url = conn.get("hostname")

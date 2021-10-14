@@ -1,4 +1,6 @@
+import json
 import networkx as nx
+from networkx.generators.classic import null_graph
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 # Specify the connection to the ArangoDB Database
@@ -50,6 +52,9 @@ g = ma.create_networkx_graph(
 # g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = attributes, ttl=1000, stream=True)
 
 # Use networkX
-nx.draw(g, with_labels=True)
-print(g)
+#nx.draw(g, with_labels=True)
 
+print(g)
+first, *middle, last = g.nodes(data=True)
+print(json.dumps(first, indent=2))
+print(json.dumps(last, indent=2))

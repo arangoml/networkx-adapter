@@ -22,4 +22,13 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7"],
     packages=["adbnx_adapter"],
-    include_package_data=True)
+    include_package_data=True,
+    install_requires=[
+        "python-arango",
+        "networkx",
+        #"matplotlib"
+        #"torch",
+        #"numpy",
+        #"dgl",
+    ],
+)

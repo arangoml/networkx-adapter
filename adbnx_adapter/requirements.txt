@@ -1,2 +1,6 @@
-python-arango
-PyYAML==5.1.1
+networkx==2.6.3
+python-arango==7.2.0
+#matplotlib
+#torch
+#numpy
+#dgl
