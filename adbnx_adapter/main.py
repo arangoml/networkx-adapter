@@ -30,7 +30,7 @@ fraud_detection_attributes = {
     },
 }
 
-#ma = IMDBArangoDB_Networkx_Adapter(conn=con)
+# ma = IMDBArangoDB_Networkx_Adapter(conn=con)
 # imdb_attributes = {
 #     "vertexCollections": {"Users": {}, "Movies": {}},
 #     "edgeCollections": {"Ratings": {"_from", "_to", "ratings"}},
@@ -52,10 +52,17 @@ g = ma.create_networkx_graph(
 
 # g = ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
+
 #nx.draw(g, with_labels=True)
-first, *middle, last = g.nodes(data=True)
-print('\n-------- Samples --------')
-print(json.dumps(first, indent=2))
-print(json.dumps(last, indent=2))
-print('-------------------\n')
+
+first_node, *middle_nodes, last_node = g.nodes(data=True)
+print("\n-------- Sample Nodes --------")
+print(json.dumps(first_node, indent=2))
+print(json.dumps(last_node, indent=2))
+
+first_edge, *middle_edges, last_edge = g.edges(data=True)
+print("\n-------- Sample Edges --------")
+print(json.dumps(first_edge, indent=2))
+print(json.dumps(last_edge, indent=2))
+
 print(g)
