@@ -1,10 +1,8 @@
-from setuptools import setup
 import pathlib
-
+from setuptools import setup
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).resolve().parents[1]
-
 
 # This call to setup() does all the work
 setup(
@@ -26,9 +24,8 @@ setup(
     install_requires=[
         "python-arango",
         "networkx",
-        #"matplotlib"
-        #"torch",
-        #"numpy",
-        #"dgl",
+        "torch",
+        "numpy",
+        "dgl",
     ],
 )

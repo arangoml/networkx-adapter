@@ -10,23 +10,23 @@ Created on Thu Mar 26 09:51:47 2020
 
 import networkx as nx
 from arango import ArangoClient
-from .arangodb_networkx_adapter_base import Networkx_Adapter_Base
+from .abc import Networkx_Adapter
 
 
-class ArangoDB_Networkx_Adapter(Networkx_Adapter_Base):
-    def __init__(self, conn) -> None:
+class ArangoDB_Networkx_Adapter(Networkx_Adapter):
+    def __init__(self, conn: dict) -> None:
         self.validate_attributes("connection", conn.keys(), self.CONNECTION_ATRIBS)
 
         url = conn["hostname"]
         username = conn["username"]
         password = conn["password"]
         db_name = conn["dbName"]
-
         port = str(conn.get("port", 8529))
         protocol = conn.get("protocol", "https")
 
         con_str = protocol + "://" + url + ":" + port
         client = ArangoClient(hosts=con_str)
+
         self.db = client.db(db_name, username, password)
         self.nx_graph = nx.DiGraph()
 

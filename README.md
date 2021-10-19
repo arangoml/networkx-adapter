@@ -16,7 +16,7 @@ To get started quickly you just use this setup free jupyter notebook: <a href="h
 
 To get started in custom code:
 ```bash
-pip install adbnx_adapter
+pip install adbnx_adapter matplotlib
 ```
 
 ``` python
@@ -24,7 +24,7 @@ import networkx as nx
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 # Specify the connection to the ArangoDB Database
-con = {
+conn = {
     "dbName": "YOURDBNAME",
     "username": "YOURUSERNAME",
     "password": "YOURPASSOWRD",
@@ -34,7 +34,7 @@ con = {
 }
 
 # Create Adapter instance
-ma = ArangoDB_Networkx_Adapter(conn = con)
+ma = ArangoDB_Networkx_Adapter(conn)
 
 # Specify attributes to be imported
 attributes = {

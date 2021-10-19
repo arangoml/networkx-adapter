@@ -1,7 +1,6 @@
 import json
 import networkx as nx
-from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
-from adbnx_adapter.imdb_arangoDB_networkx_adapter import IMDBArangoDB_Networkx_Adapter
+from adbnx_adapter.arangodb_networkx_adapter import ArangoDB_Networkx_Adapter
 from adbnx_adapter.dgl_arangoDB_networkx_adapter import DGLArangoDB_Networkx_Adapter
 import matplotlib.pyplot as plt
 
@@ -17,8 +16,14 @@ con = {
 
 # Create Adapter instance
 ma = ArangoDB_Networkx_Adapter(conn=con)
-# ma = IMDBArangoDB_Networkx_Adapter(conn=con)
 itsmg = DGLArangoDB_Networkx_Adapter(con)
+
+# class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
+#     # We re-define how vertex insertion should be treated, specifically for the IMDB dataset.
+#     def insert_vertex(self, vertex: dict, collection: str, attributes: set):
+#         bip_key = 0 if collection == "Users" else 1
+#         self.nx_graph.add_node(vertex["_id"], attr_dict=vertex, bipartite=bip_key)
+# ma = IMDBArangoDB_Networkx_Adapter(conn=con)
 
 fraud_detection_attributes = {
     "vertexCollections": {
@@ -96,8 +101,8 @@ itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 # g = ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
 # ----------------------------------- DGL -----------------------------------
-g, labels = itsmg.create_dgl_graph(
-    graph_name="ITSMGraph", graph_attributes=itsm_attributes
+g, labels = itsmg.create_networkx_graph(
+    graph_name='ITSMGraph',  graph_attributes=itsm_attributes
 )
 
 # nx.draw(g, with_labels=True)

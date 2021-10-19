@@ -12,19 +12,12 @@ import dgl
 import torch as th
 import numpy as np
 import networkx as nx
-from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
+from .arangodb_networkx_adapter import ArangoDB_Networkx_Adapter
 
 
 class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
     def __init__(self, conn) -> None:
         super().__init__(conn)
-
-    def create_dgl_graph(self, graph_name, graph_attributes):
-        print("Creating DGL graph...")
-        g, labels = self.create_networkx_graph(graph_name, graph_attributes)
-        print("done!")
-
-        return g, labels
 
     def create_networkx_graph(self, graph_name, graph_attributes, **query_options):
         self.validate_attributes("graph", graph_attributes.keys(), self.GRAPH_ATRIBS)
