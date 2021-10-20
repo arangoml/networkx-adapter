@@ -72,9 +72,9 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter):
         edge_collections: set,
         **query_options,
     ):
-        attributes = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
-        v_cols = {col: attributes for col in vertex_collections}
-        e_cols = {col: attributes for col in edge_collections}
+        atribs = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
+        v_cols = {col: atribs for col in vertex_collections}
+        e_cols = {col: atribs for col in edge_collections}
 
         graph_attributes = {"vertexCollections": v_cols, "edgeCollections": e_cols}
 

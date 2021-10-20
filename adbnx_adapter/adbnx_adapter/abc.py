@@ -12,10 +12,6 @@ from abc import ABC
 
 
 class Networkx_Adapter(ABC):
-    _CONNECTION_ATRIBS = {"hostname", "username", "password", "dbName"}
-    _GRAPH_ATRIBS = {"vertexCollections", "edgeCollections"}
-    _UNNECESSARY_DOCUMENT_ATTRIBUTES = {"_key", "_rev"}
-
     def __init__(self):
         raise NotImplementedError()
 
@@ -33,12 +29,12 @@ class Networkx_Adapter(ABC):
 
     @property
     def CONNECTION_ATRIBS(self):
-        return self._CONNECTION_ATRIBS
+        return {"hostname", "username", "password", "dbName"}
 
     @property
     def GRAPH_ATRIBS(self):
-        return self._GRAPH_ATRIBS
+        return {"vertexCollections", "edgeCollections"}
 
     @property
     def UNNECESSARY_DOCUMENT_ATTRIBUTES(self):
-        return self._UNNECESSARY_DOCUMENT_ATTRIBUTES
+        return {"_key", "_rev"}

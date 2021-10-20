@@ -102,24 +102,20 @@ itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 # g = imdb_ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
 # ----------------------------------- DGL -----------------------------------
-g, labels  = dgl_ma.create_dgl_graph(
+g = dgl_ma.create_dgl_graph(
     graph_name='dgl_maraph',  graph_attributes=itsm_attributes
 )
 
 # nx.draw(g, with_labels=True)
 
-if not labels: # just a hack
-    first_node, *middle_nodes, last_node = g.nodes(data=True)
-    print("\n-------- Sample Nodes --------")
-    print(json.dumps(first_node, indent=2))
-    print(json.dumps(last_node, indent=2))
+first_node, *middle_nodes, last_node = g.nodes()
+print("\n-------- Sample Nodes --------")
+print(first_node)
+print(last_node)
 
-    first_edge, *middle_edges, last_edge = g.edges(data=True)
-    print("\n-------- Sample Edges --------")
-    print(json.dumps(first_edge, indent=2))
-    print(json.dumps(last_edge, indent=2))
-else:
-    print(labels[0:5])
+first_edge, *middle_edges, last_edge = g.edges()
+print("\n-------- Sample Edges --------")
+print(first_edge)
+print(last_edge)
 
-print(g)
-print(g.metagraph)
+print(f"\n{g}")
