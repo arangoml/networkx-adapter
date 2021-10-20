@@ -16,14 +16,15 @@ con = {
 
 # Create Adapter instance
 ma = ArangoDB_Networkx_Adapter(conn=con)
-itsmg = DGLArangoDB_Networkx_Adapter(con)
+dgl_ma = DGLArangoDB_Networkx_Adapter(con)
 
-# class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-#     # We re-define how vertex insertion should be treated, specifically for the IMDB dataset.
-#     def insert_vertex(self, vertex: dict, collection: str, attributes: set):
-#         bip_key = 0 if collection == "Users" else 1
-#         self.nx_graph.add_node(vertex["_id"], attr_dict=vertex, bipartite=bip_key)
-# ma = IMDBArangoDB_Networkx_Adapter(conn=con)
+class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
+    # We re-define how vertex insertion should be treated, specifically for the IMDB dataset.
+    def insert_vertex(self, vertex: dict, collection: str, attributes: set):
+        bip_key = 0 if collection == "Users" else 1
+        self.nx_graph.add_node(vertex["_id"], attr_dict=vertex, bipartite=bip_key)
+
+imdb_ma = IMDB_ArangoDB_Networkx_Adapter(conn=con)
 
 fraud_detection_attributes = {
     "vertexCollections": {
@@ -98,23 +99,27 @@ itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 # )
 
 # ----------------------------------- IMDB -----------------------------------
-# g = ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
+# g = imdb_ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
 # ----------------------------------- DGL -----------------------------------
-g, labels = itsmg.create_networkx_graph(
-    graph_name='ITSMGraph',  graph_attributes=itsm_attributes
+g, labels  = dgl_ma.create_dgl_graph(
+    graph_name='dgl_maraph',  graph_attributes=itsm_attributes
 )
 
 # nx.draw(g, with_labels=True)
 
-first_node, *middle_nodes, last_node = g.nodes(data=True)
-print("\n-------- Sample Nodes --------")
-print(json.dumps(first_node, indent=2))
-print(json.dumps(last_node, indent=2))
+if not labels: # just a hack
+    first_node, *middle_nodes, last_node = g.nodes(data=True)
+    print("\n-------- Sample Nodes --------")
+    print(json.dumps(first_node, indent=2))
+    print(json.dumps(last_node, indent=2))
 
-first_edge, *middle_edges, last_edge = g.edges(data=True)
-print("\n-------- Sample Edges --------")
-print(json.dumps(first_edge, indent=2))
-print(json.dumps(last_edge, indent=2))
+    first_edge, *middle_edges, last_edge = g.edges(data=True)
+    print("\n-------- Sample Edges --------")
+    print(json.dumps(first_edge, indent=2))
+    print(json.dumps(last_edge, indent=2))
+else:
+    print(labels[0:5])
 
 print(g)
+print(g.metagraph)

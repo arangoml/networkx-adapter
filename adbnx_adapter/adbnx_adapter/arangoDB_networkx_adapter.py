@@ -41,7 +41,7 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter):
             missing_attributes = valid_attributes - attributes
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
-    def fetch_docs(self, col: str, attributes: set[str], is_keep: bool, query_options):
+    def fetch_docs(self, col: str, attributes: set, is_keep: bool, query_options):
         aql = f"""
             FOR doc IN {col}
                 RETURN MERGE(
@@ -68,8 +68,8 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter):
     def create_networkx_graph_from_collections(
         self,
         graph_name: str,
-        vertex_collections: set[str],
-        edge_collections: set[str],
+        vertex_collections: set,
+        edge_collections: set,
         **query_options,
     ):
         attributes = self.UNNECESSARY_DOCUMENT_ATTRIBUTES

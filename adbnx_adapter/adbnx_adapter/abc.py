@@ -23,7 +23,7 @@ class Networkx_Adapter(ABC):
         raise NotImplementedError()
 
     def validate_attributes(self):
-        raise NotImplementedError() 
+        raise NotImplementedError()
 
     def insert_vertex(self):
         raise NotImplementedError()
