@@ -84,9 +84,9 @@ ecols = {
 itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 
 # ----------------------------------- Fraud Detection -----------------------------------
-# g = ma.create_networkx_graph(
-#     graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
-# )
+g = ma.create_networkx_graph(
+    graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
+)
 
 # g = ma.create_networkx_graph_from_graph(
 #     graph_name="fraud-detection", ttl=11
@@ -102,20 +102,25 @@ itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 # g = imdb_ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
 # ----------------------------------- DGL -----------------------------------
-g = dgl_ma.create_dgl_graph(
-    graph_name='dgl_maraph',  graph_attributes=itsm_attributes
-)
+# g = dgl_ma.create_dgl_graph(
+#     graph_name='dgl_maraph',  graph_attributes=itsm_attributes
+# )
+
+# --------------------------------- DGL OLD -----------------------------------
+# g, labels = dgl_ma.create_dgl_graph(
+#     graph_name='dgl_maraph',  graph_attributes=itsm_attributes
+# )
+
 
 # nx.draw(g, with_labels=True)
+print(f"\n{g}")
 
-first_node, *middle_nodes, last_node = g.nodes()
+first_node, *middle_nodes, last_node = g.nodes(data=True)
 print("\n-------- Sample Nodes --------")
 print(first_node)
 print(last_node)
 
-first_edge, *middle_edges, last_edge = g.edges()
+first_edge, *middle_edges, last_edge = g.edges(data=True)
 print("\n-------- Sample Edges --------")
 print(first_edge)
 print(last_edge)
-
-print(f"\n{g}")
