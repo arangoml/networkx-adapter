@@ -11,7 +11,7 @@ import dgl
 import numpy as np
 import torch as th
 import networkx as nx
-from .arangodb_networkx_adapter import ArangoDB_Networkx_Adapter
+from .arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 
 class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):

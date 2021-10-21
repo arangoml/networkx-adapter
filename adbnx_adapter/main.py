@@ -1,6 +1,6 @@
 import json
 import networkx as nx
-from adbnx_adapter.arangodb_networkx_adapter import ArangoDB_Networkx_Adapter
+from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 from adbnx_adapter.dgl_arangoDB_networkx_adapter import DGLArangoDB_Networkx_Adapter
 import matplotlib.pyplot as plt
 

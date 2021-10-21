@@ -2,4 +2,4 @@ networkx==2.6.3
 python-arango==7.2.0
 torch==1.9.1
 numpy==1.21.2
-dgl==0.6.1
+dgl==0.4.3.post2

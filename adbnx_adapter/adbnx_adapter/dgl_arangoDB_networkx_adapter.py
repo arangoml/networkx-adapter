@@ -9,7 +9,7 @@ Created on Thu Mar 26 09:51:47 2020
 """
 
 import dgl
-from .arangodb_networkx_adapter import ArangoDB_Networkx_Adapter
+from .arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 
 class DGLArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
