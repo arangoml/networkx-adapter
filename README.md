@@ -16,7 +16,7 @@ To get started quickly you just use this setup free jupyter notebook: <a href="h
 
 To get started in custom code:
 ```bash
-pip install adbnx_adapter
+pip install adbnx_adapter networkx matplotlib python-arango
 ```
 
 ``` python
