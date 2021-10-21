@@ -84,11 +84,11 @@ ecols = {
 itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 
 # ----------------------------------- Fraud Detection -----------------------------------
-g = ma.create_networkx_graph(
-    graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
-)
+# g = ma.create_networkx_graph(
+#     graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
+# )
 
-# g = ma.create_networkx_graph_from_graph(
+# g = ma.create_networkx_graph_from_arango_graph(
 #     graph_name="fraud-detection", ttl=11
 # )
 

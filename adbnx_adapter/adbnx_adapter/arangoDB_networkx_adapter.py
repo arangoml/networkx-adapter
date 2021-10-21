@@ -9,6 +9,7 @@ Created on Thu Mar 26 09:51:47 2020
 """
 
 import networkx as nx
+from typing import Union
 from arango import ArangoClient
 from .abc import Networkx_Adapter
 
@@ -52,30 +53,29 @@ class ArangoDB_Networkx_Adapter(Networkx_Adapter):
 
         return self.db.aql.execute(aql, **query_options)
 
-    def create_networkx_graph_from_graph(self, graph_name: str, **query_options):
+    def create_networkx_graph_from_arango_graph(self, graph_name: str, **query_options):
         arango_graph = self.db.graph(graph_name)
+        v_cols = arango_graph.vertex_collections()
+        e_cols = arango_graph.edge_definitions()
 
-        atribs = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
-        v_cols = {c: atribs for c in arango_graph.vertex_collections()}
-        e_cols = {c["edge_collection"]: atribs for c in arango_graph.edge_definitions()}
-
-        graph_attributes = {"vertexCollections": v_cols, "edgeCollections": e_cols}
-
-        return self.create_networkx_graph(
-            graph_name, graph_attributes, is_keep=False, **query_options
+        return self.create_networkx_graph_from_collections(
+            graph_name, v_cols, e_cols, is_from_arango_graph=True, **query_options
         )
 
     def create_networkx_graph_from_collections(
         self,
         graph_name: str,
         vertex_collections: set,
-        edge_collections: set,
+        edge_collections: Union[set, list],
+        is_from_arango_graph=False,
         **query_options,
     ):
         atribs = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
         v_cols = {col: atribs for col in vertex_collections}
-        e_cols = {col: atribs for col in edge_collections}
-
+        e_cols = {
+            (col["edge_collection"] if is_from_arango_graph else col): atribs
+            for col in edge_collections
+        }
         graph_attributes = {"vertexCollections": v_cols, "edgeCollections": e_cols}
 
         return self.create_networkx_graph(
