@@ -21,10 +21,10 @@ class Networkx_Adapter(ABC):
     def validate_attributes(self):
         raise NotImplementedError()
 
-    def insert_vertex(self):
+    def insert_nx_vertex(self):
         raise NotImplementedError()
 
-    def insert_edge(self):
+    def insert_nx_edge(self):
         raise NotImplementedError()
 
     @property
@@ -38,3 +38,11 @@ class Networkx_Adapter(ABC):
     @property
     def UNNECESSARY_DOCUMENT_ATTRIBUTES(self):
         return {"_key", "_rev"}
+
+    @property
+    def ARANGO_VERTEX_ATRIBS(self):
+        return {"_id"}
+
+    @property
+    def ARANGO_EDGE_ATRIBS(self):
+        return self.ARANGO_VERTEX_ATRIBS.union({"_from", "_to"})
