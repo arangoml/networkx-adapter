@@ -1,5 +1,3 @@
-import json
-import networkx as nx
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 from adbnx_adapter.dgl_arangoDB_networkx_adapter import DGLArangoDB_Networkx_Adapter
 import matplotlib.pyplot as plt
@@ -18,11 +16,13 @@ con = {
 ma = ArangoDB_Networkx_Adapter(conn=con)
 dgl_ma = DGLArangoDB_Networkx_Adapter(con)
 
+
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
     # We re-define how vertex insertion should be treated, specifically for the IMDB dataset.
-    def insert_vertex(self, vertex: dict, collection: str, attributes: set):
+    def insert_nx_vertex(self, vertex: dict, collection: str, attributes: set):
         bip_key = 0 if collection == "Users" else 1
         self.nx_graph.add_node(vertex["_id"], attr_dict=vertex, bipartite=bip_key)
+
 
 imdb_ma = IMDB_ArangoDB_Networkx_Adapter(conn=con)
 
@@ -84,43 +84,47 @@ ecols = {
 itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 
 # ----------------------------------- Fraud Detection -----------------------------------
-# g = ma.create_networkx_graph(
+# nx_g = ma.create_networkx_graph(
 #     graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
 # )
 
-# g = ma.create_networkx_graph_from_arango_graph(
+
+# nx_g = ma.create_networkx_graph_from_arango_graph(
 #     graph_name="fraud-detection", ttl=11
 # )
 
-# g = ma.create_networkx_graph_from_collections(
-#     graph_name="fraud-detection",
-#     vertex_collections={"account", "bank", "branch", "Class", "customer"},
-#     edge_collections={"accountHolder", "Relationship", "transaction"},
-# )
+nx_g = ma.create_networkx_graph_from_collections(
+    graph_name="fraud-detection",
+    vertex_collections={"account", "bank", "branch", "Class", "customer"},
+    edge_collections={"accountHolder", "Relationship", "transaction"},
+)
+
+# arango_g = ma.create_arango_graph_from_networkx_graph(nx_g)
 
 # ----------------------------------- IMDB -----------------------------------
-# g = imdb_ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
+# nx_g = imdb_ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
 # ----------------------------------- DGL -----------------------------------
-# g = dgl_ma.create_dgl_graph(
+# nx_g = dgl_ma.create_dgl_graph(
 #     graph_name='dgl_maraph',  graph_attributes=itsm_attributes
 # )
 
 # --------------------------------- DGL OLD -----------------------------------
-# g, labels = dgl_ma.create_dgl_graph(
+# nx_g, labels = dgl_ma.create_dgl_graph(
 #     graph_name='dgl_maraph',  graph_attributes=itsm_attributes
 # )
 
 
-# nx.draw(g, with_labels=True)
-print(f"\n{g}")
+# nx.draw(nx_g, with_labels=True)
+print(f"\n{nx_g}")
 
-first_node, *middle_nodes, last_node = g.nodes(data=True)
+
+first_node, *middle_nodes, last_node = nx_g.nodes(data=True)
 print("\n-------- Sample Nodes --------")
 print(first_node)
 print(last_node)
 
-first_edge, *middle_edges, last_edge = g.edges(data=True)
+first_edge, *middle_edges, last_edge = nx_g.edges(data=True)
 print("\n-------- Sample Edges --------")
 print(first_edge)
 print(last_edge)
