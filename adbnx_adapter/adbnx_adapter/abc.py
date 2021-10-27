@@ -11,20 +11,35 @@ Created on Thu Mar 26 11:38:31 2020
 from abc import ABC
 
 
-class Networkx_Adapter(ABC):
+class ADBNX_Adapter(ABC):
     def __init__(self):
         raise NotImplementedError()
 
     def create_networkx_graph(self):
         raise NotImplementedError()
 
-    def validate_attributes(self):
+    def create_networkx_graph_from_arangodb_collections(self):
         raise NotImplementedError()
 
-    def insert_nx_vertex(self):
+    def create_networkx_graph_from_arangodb_graph(self):
         raise NotImplementedError()
 
-    def insert_nx_edge(self):
+    def create_arangodb_graph(self):
+        raise NotImplementedError()
+
+    def __validate_attributes(self):
+        raise NotImplementedError()
+
+    def __insert_networkx_vertex(self):
+        raise NotImplementedError()
+
+    def __insert_networkx_edge(self):
+        raise NotImplementedError()
+
+    def __insert_arangodb_doc():
+        raise NotImplementedError()
+
+    def __fetch_arangodb_docs():
         raise NotImplementedError()
 
     @property
