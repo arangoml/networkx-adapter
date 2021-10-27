@@ -16,7 +16,7 @@ To get started quickly you just use this setup free jupyter notebook: <a href="h
 
 To get started in custom code:
 ```bash
-pip install adbnx_adapter matplotlib
+pip install adbnx_adapter networkx matplotlib python-arango
 ```
 
 ``` python
@@ -24,28 +24,21 @@ import networkx as nx
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 # Specify the connection to the ArangoDB Database
-conn = {
-    "dbName": "YOURDBNAME",
-    "username": "YOURUSERNAME",
-    "password": "YOURPASSOWRD",
-    "hostname": "instance.arangodb.cloud",
-    "protocol": "https",
-    "port": 8529,
-}
+con = {'dbName': 'YOURDBNAME',
+ 'username': 'YOURUSERNAME',
+ 'password': 'YOURPASSOWRD',
+ 'hostname': 'instance.arangodb.cloud',
+ 'port': 8529}
 
 # Create Adapter instance
-ma = ArangoDB_Networkx_Adapter(conn)
+ma = ArangoDB_Networkx_Adapter(conn = con)
 
 # Specify attributes to be imported
-attributes = {
-    "vertexCollections": {
-        "account": {"Balance", "account_type", "customer_id", "rank"}
-    },
-    "edgeCollections": {
-        "accountHolder": {"_from", "_to"},
-        "transaction": {"_from", "_to"},
-    },
-}
+attributes = { 'vertexCollections':
+                                  {'account': {'Balance', 'account_type', 'customer_id', 'rank'}},\
+                               'edgeCollections' :
+                                  {'accountHolder': {'_from', '_to'},\
+                                   'transaction': {'_from', '_to'}}}
 
 # Export networkX graph                                  
 g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = attributes)
@@ -55,18 +48,6 @@ g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = 
 
 # Use networkX
 nx.draw(g, with_labels=True)
-
-first_node, *middle_nodes, last_node = g.nodes(data=True)
-print("\n-------- Sample Nodes --------")
-print(json.dumps(first_node, indent=2))
-print(json.dumps(last_node, indent=2))
-
-first_edge, *middle_edges, last_edge = g.edges(data=True)
-print("\n-------- Sample Edges --------")
-print(json.dumps(first_edge, indent=2))
-print(json.dumps(last_edge, indent=2))
-
-print(g)
 ```
 
 # Introduction
