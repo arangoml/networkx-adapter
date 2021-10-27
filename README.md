@@ -24,30 +24,62 @@ import networkx as nx
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 # Specify the connection to the ArangoDB Database
-con = {'dbName': 'YOURDBNAME',
- 'username': 'YOURUSERNAME',
- 'password': 'YOURPASSOWRD',
- 'hostname': 'instance.arangodb.cloud',
- 'port': 8529}
+conn = {
+    "dbName": "YOURDBNAME",
+    "username": "YOURUSERNAME",
+    "password": "YOURPASSOWRD",
+    "hostname": "instance.arangodb.cloud",
+    "port": 8529,
+}
 
 # Create Adapter instance
-ma = ArangoDB_Networkx_Adapter(conn = con)
+ma = ArangoDB_Networkx_Adapter(conn)
 
 # Specify attributes to be imported
-attributes = { 'vertexCollections':
-                                  {'account': {'Balance', 'account_type', 'customer_id', 'rank'}},\
-                               'edgeCollections' :
-                                  {'accountHolder': {'_from', '_to'},\
-                                   'transaction': {'_from', '_to'}}}
+attributes = {
+    "vertexCollections": {
+        "account": {"Balance", "account_type", "customer_id", "rank"},
+        "customer": {"Name", "Sex", "Ssn", "rank"},
+    },
+    "edgeCollections": {
+        "accountHolder": {"_from", "_to"},
+        "transaction": {"_from", "_to"},
+    },
+}
 
-# Export networkX graph                                  
-g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = attributes)
+# Export networkX graph using graph attributes
+g = ma.create_networkx_graph(graph_name="FraudDetection", graph_attributes=attributes)
+
+# Export networkX graph using arangodb collections
+g_from_arangodb_collections = ma.create_networkx_graph_from_arangodb_collections(
+    graph_name="fraud-detection",
+    vertex_collections={"account", "bank", "branch", "Class", "customer"},
+    edge_collections={"accountHolder", "Relationship", "transaction"},
+)
+
+# Export networkX graph using arangodb graph
+g_from_arangodb_graph = ma.create_networkx_graph_from_arangodb_graph(
+    graph_name="fraud-detection"
+)
 
 # You can also provide valid Python-Arango AQL query options to the command above, like such:
-# g = ma.create_networkx_graph(graph_name = 'FraudDetection',  graph_attributes = attributes, ttl=1000, stream=True)
+g_with_aql_query_options = ma.create_networkx_graph(
+    graph_name="FraudDetection", graph_attributes=attributes, ttl=1000, stream=True
+)
 
 # Use networkX
 nx.draw(g, with_labels=True)
+print(g)
+
+first_node, *middle_nodes, last_node = g.nodes(data=True)
+print("\n-------- Sample Nodes --------")
+print(first_node)
+print(last_node)
+
+first_edge, *middle_edges, last_edge = g.edges(data=True)
+print("\n-------- Sample Edges --------")
+print(first_edge)
+print(last_edge)
 ```
 
 # Introduction
