@@ -22,11 +22,5 @@ setup(
     ],
     packages=["adbnx_adapter"],
     include_package_data=True,
-    install_requires=[
-        "python-arango",
-        "networkx",
-        "torch",
-        "numpy",
-        "dgl",
-    ],
+    install_requires=["python-arango", "networkx"],
 )

@@ -1,6 +1,8 @@
+from dgl._deprecate.graph import DGLGraph
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
-from adbnx_adapter.dgl_arangoDB_networkx_adapter import DGLArangoDB_Networkx_Adapter
+# from adbnx_adapter.dgl_arangoDB_networkx_adapter import DGLArangoDB_Networkx_Adapter # (removed for now)
 import matplotlib.pyplot as plt
+import dgl
 
 # Specify the connection to the ArangoDB Database
 con = {
@@ -14,7 +16,7 @@ con = {
 
 # Create Adapter instance
 ma = ArangoDB_Networkx_Adapter(conn=con)
-dgl_ma = DGLArangoDB_Networkx_Adapter(con)
+# dgl_ma = DGLArangoDB_Networkx_Adapter(con) # (removed for now)
 
 
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
@@ -89,15 +91,15 @@ itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 # )
 
 
-# nx_g = ma.create_networkx_graph_from_arango_graph(
+# nx_g = ma.create_networkx_graph_from_arangodb_graph(
 #     graph_name="fraud-detection", ttl=11
 # )
 
-nx_g = ma.create_networkx_graph_from_collections(
-    graph_name="fraud-detection",
-    vertex_collections={"account", "bank", "branch", "Class", "customer"},
-    edge_collections={"accountHolder", "Relationship", "transaction"},
-)
+# nx_g = ma.create_networkx_graph_from_arangodb_collections(
+#     graph_name="fraud-detection",
+#     vertex_collections={"account", "bank", "branch", "Class", "customer"},
+#     edge_collections={"accountHolder", "Relationship", "transaction"},
+# )
 
 # arango_g = ma.create_arango_graph_from_networkx_graph(nx_g)
 
@@ -105,12 +107,13 @@ nx_g = ma.create_networkx_graph_from_collections(
 # nx_g = imdb_ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)
 
 # ----------------------------------- DGL -----------------------------------
-# nx_g = dgl_ma.create_dgl_graph(
-#     graph_name='dgl_maraph',  graph_attributes=itsm_attributes
+# nx_g = ma.create_networkx_graph(
+#     graph_name="fraud-detection", graph_attributes=fraud_detection_attributes
 # )
+# dgl_g : DGLGraph = dgl.from_networkx(nx_g)
 
 # --------------------------------- DGL OLD -----------------------------------
-# nx_g, labels = dgl_ma.create_dgl_graph(
+# nx_g, labels = dgl_ma.create_dgl_graph( # (removed for now)
 #     graph_name='dgl_maraph',  graph_attributes=itsm_attributes
 # )
 
