@@ -13,7 +13,6 @@ from arango import ArangoClient
 from .abc import ADBNX_Adapter
 
 from typing import Union
-from arango.graph import Graph as ArangoGraph
 from networkx.classes.multigraph import MultiGraph
 from networkx.classes.multidigraph import MultiDiGraph
 
@@ -42,11 +41,11 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.nx_graph = nx.MultiDiGraph(name=graph_name)
         for col, attribs in graph_attributes["vertexCollections"].items():
             for v in self.__fetch_arangodb_docs(col, attribs, is_keep, query_options):
-                self.__insert_networkx_vertex(v, col, attribs)
+                self._insert_networkx_vertex(v, col, attribs)
 
         for col, attribs in graph_attributes["edgeCollections"].items():
             for e in self.__fetch_arangodb_docs(col, attribs, is_keep, query_options):
-                self.__insert_networkx_edge(e, col, attribs)
+                self._insert_networkx_edge(e, col, attribs)
 
         print(f"Success: {graph_name} created")
         return self.nx_graph
@@ -59,13 +58,13 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         is_from_arango_graph=False,
         **query_options,
     ):
-        attribs = self.UNNECESSARY_DOCUMENT_ATTRIBUTES
-        v_cols = {col: attribs for col in vertex_collections}
-        e_cols = {
-            (col["edge_collection"] if is_from_arango_graph else col): attribs
-            for col in edge_collections
+        graph_attributes = {
+            "vertexCollections": {col: {} for col in vertex_collections},
+            "edgeCollections": {
+                (col["edge_collection"] if is_from_arango_graph else col): {}
+                for col in edge_collections
+            },
         }
-        graph_attributes = {"vertexCollections": v_cols, "edgeCollections": e_cols}
 
         return self.create_networkx_graph(
             graph_name, graph_attributes, is_keep=False, **query_options
@@ -83,75 +82,70 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         )
 
     def create_arangodb_graph(
-        self, nx_graph: Union[MultiGraph, MultiDiGraph]
-    ) -> ArangoGraph:
-        print(f"Creating arango graph: {nx_graph.name + '_new'}")
+        self,
+        graph_name: str,
+        nx_graph: Union[MultiGraph, MultiDiGraph],
+        edge_definitions: list[dict],
+    ):
+        """
+        Here is an example entry for parameter **edge_definitions**:
 
+        .. code-block:: python
+        [
+            {
+                'edge_collection': 'teaches',
+                'from_vertex_collections': ['person'],
+                'to_vertex_collections': ['lecture']
+            },
+            {
+                'edge_collection': 'attends',
+                'from_vertex_collections': ['person'],
+                'to_vertex_collections': ['lecture']
+            }
+        ]
+        """
         if nx_graph.is_directed() is False:
             nx_graph = nx_graph.to_directed()
 
-        edge_definitions = []
-        nx_nodes = nx_graph.nodes(data=True)
-        nx_edges = nx_graph.edges(data=True)
+        for definition in edge_definitions:
+            if self.db.has_collection(definition["edge_collection"]) is False:
+                self.db.create_collection(definition["edge_collection"], edge=True)
 
-        id: str
-        node: dict
-        for id, node in nx_nodes:
-            node = {"_id": id} if not node else node
-            self.__validate_attributes("vertex", node.keys(), self.ARANGO_VERTEX_ATRIBS)
-            collection, key = id.split("/")
-            # Tempoaray measure to avoid conflict with existing arango graph data
-            collection += "_new"
+            for col in (
+                definition["from_vertex_collections"]
+                + definition["to_vertex_collections"]
+            ):
+                if self.db.has_collection(col) is False:
+                    self.db.create_collection(col)
+
+        node_map = dict()
+        for id, node in nx_graph.nodes(data=True):
+            collection = self._identify_nx_node(id, node)
+            key = self._keyify_nx_node(id, node, collection)
             node["_id"] = collection + "/" + key
-            ##############################################
-            self.__insert_arangodb_doc(node, collection)
+            node_map[id] = {"_id": node["_id"], "collection": collection, "key": key}
+            self._insert_arangodb_doc(node, collection)
 
-        from_e: str
-        to_e: str
-        edge: dict
-        for from_e, to_e, edge in nx_edges:
-            self.__validate_attributes("edge", edge.keys(), self.ARANGO_EDGE_ATRIBS)
-            from_collection, from_key = from_e.split("/")
-            to_collection, to_key = to_e.split("/")
-            collection, key = edge["_id"].split("/")
-            # Tempoaray measure to avoid conflict with existing arango graph data
-            from_collection += "_new"
-            edge["_from"] = from_collection + "/" + from_key
+        for from_node, to_node, edge in nx_graph.edges(data=True):
+            edge["_from"] = node_map.get(from_node)["_id"]
+            edge["_to"] = node_map.get(to_node)["_id"]
+            collection = self._identify_nx_edge(node_map, from_node, to_node, edge)
+            self._insert_arangodb_doc(edge, collection)
 
-            to_collection += "_new"
-            edge["_to"] = to_collection + "/" + to_key
-
-            collection += "_new"
-            edge["_id"] = collection + "/" + key
-            ##############################################
-            edge_definitions.append(
-                {
-                    "edge_collection": collection,
-                    "from_vertex_collections": [from_collection],
-                    "to_vertex_collections": [to_collection],
-                }
-            )
-            self.__insert_arangodb_doc(edge, collection, is_edge=True)
-
-        e_d = list({e["edge_collection"]: e for e in edge_definitions}.values())
-        return self.db.create_graph(nx_graph.name + "_new", edge_definitions=e_d)
+        self.db.create_graph(graph_name, edge_definitions=edge_definitions)
 
     def __validate_attributes(self, type, attributes: set, valid_attributes: set):
         if valid_attributes > attributes:
             missing_attributes = valid_attributes - attributes
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
-    def __insert_networkx_vertex(self, vertex: dict, collection: str, attributes: set):
+    def _insert_networkx_vertex(self, vertex: dict, collection: str, attributes: set):
         self.nx_graph.add_node(vertex["_id"], **vertex)
 
-    def __insert_networkx_edge(self, edge: dict, collection: str, attributes: set):
+    def _insert_networkx_edge(self, edge: dict, collection: str, attributes: set):
         self.nx_graph.add_edge(edge["_from"], edge["_to"], **edge)
 
-    def __insert_arangodb_doc(self, doc: dict, col: str, is_edge=False):
-        if self.db.has_collection(col) is False:
-            self.db.create_collection(col, edge=is_edge)
-
-        print(f"Inserting {doc['_id']}")
+    def _insert_arangodb_doc(self, doc: dict, col: str):
         self.db.collection(col).insert(doc, silent=True)
 
     def __fetch_arangodb_docs(
@@ -159,14 +153,20 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
     ):
         aql = f"""
             FOR doc IN {col}
-                RETURN MERGE(
-                    {'KEEP' if is_keep else 'UNSET'}(doc, {list(attributes)}), 
-                    {{"_id": doc["_id"]}}
-                )
+                RETURN {is_keep} ? 
+                    MERGE(KEEP(doc, {list(attributes)}), {{"_id": doc._id}}) : doc
         """
 
         return self.db.aql.execute(aql, count=True, **query_options)
 
-    def clear(self, to_clear: set):
-        for col in to_clear:
-            self.db.delete_collection(col) if self.db.has_collection(col) else None
+    def _string_to_arangodb_key_helper(self, string: str) -> str:
+        res = ""
+        for s in string:
+            if s.isalnum() or s in self.VALID_CHARS:
+                res += s
+
+        return res
+
+    def _tuple_to_arangodb_key_helper(self, tup: tuple) -> str:
+        string = "".join(map(str, tup))
+        return self._string_to_arangodb_key_helper(string)

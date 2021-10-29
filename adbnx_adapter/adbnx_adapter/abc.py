@@ -30,16 +30,37 @@ class ADBNX_Adapter(ABC):
     def __validate_attributes(self):
         raise NotImplementedError()
 
-    def __insert_networkx_vertex(self):
-        raise NotImplementedError()
-
-    def __insert_networkx_edge(self):
-        raise NotImplementedError()
-
-    def __insert_arangodb_doc():
+    def _insert_arangodb_doc():
         raise NotImplementedError()
 
     def __fetch_arangodb_docs():
+        raise NotImplementedError()
+
+    def _insert_networkx_vertex(self):
+        raise NotImplementedError()
+
+    def _insert_networkx_edge(self):
+        raise NotImplementedError()
+
+    # identify (based on id or node data) what collection this node belongs to
+    def _identify_nx_node(self, id, node) -> str:
+        """
+        Must be implemented by user if translating nx to arangodb
+        """
+        raise NotImplementedError()
+
+    # create a key based off of the node id that ArangoDB will not complain about
+    def _keyify_nx_node(self, id, node, collection) -> str:
+        """
+        Must be implemented by user if translating nx to arangodb
+        """
+        raise NotImplementedError()
+
+    # identify (based on from, to, or edge data) what collection this edge belongs to
+    def _identify_nx_edge(self, id_map, from_node, to_node, edge) -> str:
+        """
+        Must be implemented by user if translating nx to arangodb
+        """
         raise NotImplementedError()
 
     @property
@@ -51,13 +72,22 @@ class ADBNX_Adapter(ABC):
         return {"vertexCollections", "edgeCollections"}
 
     @property
-    def UNNECESSARY_DOCUMENT_ATTRIBUTES(self):
-        return {"_key", "_rev"}
-
-    @property
-    def ARANGO_VERTEX_ATRIBS(self):
-        return {"_id"}
-
-    @property
-    def ARANGO_EDGE_ATRIBS(self):
-        return self.ARANGO_VERTEX_ATRIBS.union({"_from", "_to"})
+    def VALID_CHARS(self):
+        return {
+            "_",
+            "-",
+            ":",
+            ".",
+            "@",
+            "(",
+            ")",
+            "+",
+            ",",
+            "=",
+            ";",
+            "$",
+            "!",
+            "*",
+            "'",
+            "%",
+        }

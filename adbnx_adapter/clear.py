@@ -12,15 +12,20 @@ con = {
 
 ma = ArangoDB_Networkx_Adapter(conn=con)
 
-to_clear = {
-    "account_new",
-    "bank_new",
-    "branch_new",
-    "Class_new",
-    "customer_new",
-    "accountHolder_new",
-    "Relationship_new",
-    "transaction_new",
+col_to_clear = {
+    "to",
+    "Node",
+    "Team",
+    "Played"
 }
 
-ma.clear(to_clear)
+for col in col_to_clear:
+    ma.db.delete_collection(col) if ma.db.has_collection(col) else None
+
+
+graph_to_clear = {
+    "Grid",
+    "Football"
+}
+for g in graph_to_clear:
+    ma.db.delete_graph(g) if ma.db.has_graph(g) else None
