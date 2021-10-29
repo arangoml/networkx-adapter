@@ -97,11 +97,24 @@ itsm_attributes = {"vertexCollections": vcols, "edgeCollections": ecols}
 #     edge_collections={"accountHolder", "Relationship", "transaction"},
 # )
 
-# nx_g = ma.create_networkx_graph_from_arangodb_graph(
-#     graph_name="fraud-detection"
-# )
+# nx_g = ma.create_networkx_graph_from_arangodb_graph(graph_name="fraud-detection")
 
-# arango_g = ma.create_arangodb_graph(nx_g)
+# edge_definitions = [
+#     {
+#         "edge_collection": "accountHolder_nx",
+#         "from_vertex_collections": ["customer_nx"],
+#         "to_vertex_collections": ["account_nx"],
+#     },
+#     {
+#         "edge_collection": "transaction_nx",
+#         "from_vertex_collections": ["account_nx"],
+#         "to_vertex_collections": ["account_nx"],
+#     },
+# ]
+
+# arango_g = ma.create_arangodb_graph(
+#     "Fraud-Detection-Nx", nx_g, edge_definitions, keyify_edges=True
+# )
 
 # ----------------------------------- IMDB -----------------------------------
 # nx_g = imdb_ma.create_networkx_graph(graph_name="IMDBGraph", graph_attributes=imdb_attributes)

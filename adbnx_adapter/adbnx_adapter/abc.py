@@ -43,25 +43,45 @@ class ADBNX_Adapter(ABC):
         raise NotImplementedError()
 
     # identify (based on id or node data) what collection this node belongs to
-    def _identify_nx_node(self, id, node) -> str:
+    def _identify_nx_node(self, id: str, node: dict) -> str:
         """
-        Must be implemented by user if translating nx to arangodb
+        If you plan on using create_arangodb_graph(),
+        you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
         """
-        raise NotImplementedError()
+        return id.split("/")[0] + "_nx"
 
     # create a key based off of the node id that ArangoDB will not complain about
-    def _keyify_nx_node(self, id, node, collection) -> str:
+    def _keyify_nx_node(self, id: str, node: dict, collection: str) -> str:
         """
-        Must be implemented by user if translating nx to arangodb
+        If you plan on using create_arangodb_graph(),
+        you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
         """
-        raise NotImplementedError()
+        return id.split("/")[1]
 
     # identify (based on from, to, or edge data) what collection this edge belongs to
-    def _identify_nx_edge(self, id_map, from_node, to_node, edge) -> str:
+    def _identify_nx_edge(self, node_map: dict, from_node, to_node, edge: dict) -> str:
         """
-        Must be implemented by user if translating nx to arangodb
+        If you plan on using create_arangodb_graph(),
+        you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
         """
-        raise NotImplementedError()
+        edge_id: str = edge["_id"]
+        return edge_id.split("/")[0] + "_nx"
+
+    # create a key based off of the edge id that ArangoDB will not complain about
+    def _keyify_nx_edge(
+        self, node_map: dict, from_node, to_node, edge: dict, collection: str
+    ) -> str:
+        """
+        If you plan on using create_arangodb_graph(),
+        and you want to assign custom IDs to edges,
+        you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
+        """
+        edge_id: str = edge["_id"]
+        return edge_id.split("/")[1]
 
     @property
     def CONNECTION_ATRIBS(self):
