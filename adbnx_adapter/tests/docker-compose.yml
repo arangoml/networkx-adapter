@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  arangodb:
+    image: arangodb:latest
+    container_name: adbnx_adapter_arangodb
+    environment:
+      ARANGO_ROOT_PASSWORD: rootpassword
+    ports:
+      - 8529:8529
+    volumes:
+      - arangodb_data_container:/var/lib/arangodb3
+      - arangodb_apps_data_container:/var/lib/arangodb3-apps
+
+volumes:
+  arangodb_data_container:
+  arangodb_apps_data_container:
