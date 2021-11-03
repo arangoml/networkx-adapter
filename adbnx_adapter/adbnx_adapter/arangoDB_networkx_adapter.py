@@ -18,7 +18,7 @@ from networkx.classes.graph import Graph as NetworkXGraph
 
 class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
     def __init__(self, conn: dict) -> None:
-        self.__validate_attributes("connection", conn.keys(), self.CONNECTION_ATRIBS)
+        self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
 
         url = conn["hostname"]
         username = conn["username"]
@@ -39,7 +39,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
     def create_networkx_graph(
         self, name: str, graph_attributes, is_keep=True, **query_options
     ):
-        self.__validate_attributes("graph", graph_attributes.keys(), self.GRAPH_ATRIBS)
+        self.__validate_attributes("graph", set(graph_attributes), self.GRAPH_ATRIBS)
 
         self.nx_graph = nx.MultiDiGraph(name=name)
 
@@ -137,7 +137,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         return self.adb_graph
 
     def __validate_attributes(self, type, attributes: set, valid_attributes: set):
-        if valid_attributes > attributes:
+        if valid_attributes.issubset(attributes) is False:
             missing_attributes = valid_attributes - attributes
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 

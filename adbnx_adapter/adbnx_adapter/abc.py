@@ -13,37 +13,37 @@ from abc import ABC
 
 class ADBNX_Adapter(ABC):
     def __init__(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def create_networkx_graph(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def create_networkx_graph_from_arangodb_collections(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def create_networkx_graph_from_arangodb_graph(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def create_arangodb_graph(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def __validate_attributes(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def _insert_arangodb_vertex():
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def _insert_arangodb_edge():
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def __fetch_arangodb_docs():
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def _insert_networkx_vertex(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def _insert_networkx_edge(self):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     # identify (based on id or node data) what collection this node belongs to
     def _identify_nx_node(self, id: str, node: dict) -> str:

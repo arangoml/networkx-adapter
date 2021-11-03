@@ -22,7 +22,7 @@ setup(
     python_requires=">=3.6",
     license="Apache Software License",
     install_requires=["python-arango", "networkx"],
-    tests_require=["pytest"],
+    tests_require=["pytest", "pytest-cov"],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",

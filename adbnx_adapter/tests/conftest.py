@@ -1,4 +1,3 @@
-import pytest
 import subprocess
 from pathlib import Path
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
@@ -30,13 +29,7 @@ def shut_down():
     proc.wait()
 
 
-def pytest_sessionstart():
-    docker_compose()
-    arango_restore("fraud_dump")
-    arango_restore("imdb_dump")
-
-
-def pytest_sessionfinish(session, exitstatus):
+def clear():
     for col in adbnx_adapter.db.collections():
         if col["system"] is False:
             adbnx_adapter.db.delete_collection(col["name"])
@@ -44,6 +37,16 @@ def pytest_sessionfinish(session, exitstatus):
     for g in adbnx_adapter.db.graphs():
         adbnx_adapter.db.delete_graph(g["name"])
 
+
+def pytest_sessionstart():
+    docker_compose()
+    clear()
+    arango_restore("fraud_dump")
+    arango_restore("imdb_dump")
+
+
+def pytest_sessionfinish(session, exitstatus):
+    clear()
     shut_down()
 
 

@@ -1,3 +1,4 @@
+import pytest
 from conftest import (
     ArangoDB_Networkx_Adapter,
     adbnx_adapter,
@@ -18,6 +19,18 @@ import urllib.request as urllib
 
 def test_connection():
     assert adbnx_adapter.db.version()
+
+
+def test_validate_attributes():
+    with pytest.raises(ValueError):
+        no_credentials_connection = {
+            "dbName": "_system",
+            "hostname": "localhost",
+            "protocol": "http",
+            "port": 8529,
+        }
+
+        ArangoDB_Networkx_Adapter(no_credentials_connection)
 
 
 def test_create_networkx_graph():
