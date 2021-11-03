@@ -30,7 +30,10 @@ class ADBNX_Adapter(ABC):
     def __validate_attributes(self):
         raise NotImplementedError()
 
-    def _insert_arangodb_doc():
+    def _insert_arangodb_vertex():
+        raise NotImplementedError()
+
+    def _insert_arangodb_edge():
         raise NotImplementedError()
 
     def __fetch_arangodb_docs():
@@ -61,7 +64,7 @@ class ADBNX_Adapter(ABC):
         return id.split("/")[1]
 
     # identify (based on from, to, or edge data) what collection this edge belongs to
-    def _identify_nx_edge(self, node_map: dict, from_node, to_node, edge: dict) -> str:
+    def _identify_nx_edge(self, from_node, to_node, edge: dict) -> str:
         """
         If you plan on using create_arangodb_graph(),
         you must overwrite this function
@@ -71,9 +74,7 @@ class ADBNX_Adapter(ABC):
         return edge_id.split("/")[0] + "_nx"
 
     # create a key based off of the edge id that ArangoDB will not complain about
-    def _keyify_nx_edge(
-        self, node_map: dict, from_node, to_node, edge: dict, collection: str
-    ) -> str:
+    def _keyify_nx_edge(self, from_node, to_node, edge: dict, collection: str) -> str:
         """
         If you plan on using create_arangodb_graph(),
         and you want to assign custom IDs to edges,

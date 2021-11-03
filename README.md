@@ -1,3 +1,4 @@
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 # ArangoDB-Networkx Adapter
 
 <center>
@@ -7,28 +8,53 @@
 <img src="examples/assets/logos/ArangoDB_logo.png" width=50% >
 </center>
 
-The ArangoDB-Networkx Adapter export Graphs from ArangoDB, a multi-model Graph Database into NetworkX, the swiss army knife for graph analysis with python.
+The ArangoDB-Networkx Adapter exports Graphs from ArangoDB, a multi-model Graph Database, into NetworkX, the swiss army knife for graph analysis with python, and vice-versa.
+
+## About NetworkX
+
+Networkx is a commonly used tool for analysis of network-data. If your analytics use cases require the use of all your graph data, for example, to summarize graph structure, or answer global path traversal queries, then using the ArangoDB Pregel API is recommended. If your analysis pertains to a subgraph, then you may be interested in getting the Networkx representation of the subgraph for one of the following reasons:
+
+    1. An algorithm for your use case is available in Networkx.
+    2. A library that you want to use for your use case works with Networkx Graphs as input.
+
+
+(OUTDATED) Check the DGL folder for an implementation of a Networkx-Adapter for the Deep Graph Library.
 
 
 ##  Quickstart
 
-To get started quickly you just use this setup free jupyter notebook: <a href="https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkxAdapter.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+(OUTDATED) To get started quickly you just use this setup free jupyter notebook: <a href="https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkxAdapter.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-To get started in custom code:
-```bash
-pip install adbnx_adapter networkx matplotlib python-arango
+First, run an arangodb instance via docker:
+```
+docker run -p 8529:8529 -e ARANGO_ROOT_PASSWORD=rootpassword arangodb/arangodb:3.8.2
 ```
 
+Then, in another directory, restore some sample data:
+```
+cd networkx-adapter
+
+arangorestore -c none --server.username root --server.database _system --server.password rootpassword --default-replication-factor 3  --input-directory "data/fraud_dump" --include-system-collections true 
+```
+
+In a python virtual environment, install the dependencies:
+```bash
+pip install adbnx_adapter matplotlib
+```
+
+In a python file, write the following:
 ``` python
 import networkx as nx
+import matplotlib.pyplot as plt
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
 # Specify the connection to the ArangoDB Database
 conn = {
-    "dbName": "YOURDBNAME",
-    "username": "YOURUSERNAME",
-    "password": "YOURPASSOWRD",
-    "hostname": "instance.arangodb.cloud",
+    "dbName": "_system",
+    "username": "root",
+    "password": "rootpassword",
+    "hostname": "localhost",
+    "protocol": "http",
     "port": 8529,
 }
 
@@ -69,6 +95,7 @@ g_with_aql_query_options = ma.create_networkx_graph(
 
 # Use networkX
 nx.draw(g, with_labels=True)
+plt.show()
 print(g)
 
 first_node, *middle_nodes, last_node = g.nodes(data=True)
@@ -82,12 +109,13 @@ print(first_edge)
 print(last_edge)
 ```
 
-# Introduction
+##  Development & Testing
 
-Networkx is a commonly used tool for analysis of network-data. If your analytics use cases require the use of all your graph data, for example, to summarize graph structure, or answer global path traversal queries, then using the ArangoDB Pregel API is recommended. If your analysis pertains to a subgraph, then you may be interested in getting the Networkx representation of the subgraph for one of the following reasons:
-
-    1. An algorithm for your use case is available in Networkx.
-    2. A library that you want to use for your use case works with Networkx Graphs as input.
-
-
-Check the DGL folder for an implementation of a Networkx-Adapter for the Deep Graph Library.
+Create your virtual environment:
+1. `cd networkx-adapter`
+2. `python -m venv .venv`
+3. `source .venv/bin/activate` (MacOS) or `.venv/scripts/activate` (Windows)
+4. `cd adbnx_adapter`
+5. `pip install -e . pytest`
+6. `pytest -s`
+    * If you see `ModuleNotFoundError`, try closing & relaunching your virtual environment with `deactivate` & repeating Step 3.
