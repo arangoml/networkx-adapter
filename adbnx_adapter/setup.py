@@ -12,7 +12,7 @@ setup(
     name="adbnx_adapter",
     author="ArangoDB",
     author_email="rajiv@arangodb.com",
-    version="0.0.0.2.5.3",
+    version="1.0.0",
     description="package for creating networkx adapters for arangodb",
     long_description=long_description,
     long_description_content_type="text/markdown",
