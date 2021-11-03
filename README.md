@@ -1,8 +1,5 @@
-.. image:: https://coveralls.io/repos/arangoml/networkx-adapter/badge.png?branch=adapter-cleanup
-    :target: https://coveralls.io/r/arangoml/networkx-adapter
-
-<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 # ArangoDB-Networkx Adapter
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 <center>
 <img src="examples/assets/logos/networkx_logo.svg" width=50% >
