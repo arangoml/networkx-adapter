@@ -74,23 +74,23 @@ attributes = {
 }
 
 # Export networkX graph using graph attributes
-g = ma.create_networkx_graph(graph_name="FraudDetection", graph_attributes=attributes)
+g = ma.create_networkx_graph(name="FraudDetection", graph_attributes=attributes)
 
 # Export networkX graph using arangodb collections
 g_from_arangodb_collections = ma.create_networkx_graph_from_arangodb_collections(
-    graph_name="fraud-detection",
+    name="fraud-detection",
     vertex_collections={"account", "bank", "branch", "Class", "customer"},
     edge_collections={"accountHolder", "Relationship", "transaction"},
 )
 
 # Export networkX graph using arangodb graph
 g_from_arangodb_graph = ma.create_networkx_graph_from_arangodb_graph(
-    graph_name="fraud-detection"
+    name="fraud-detection"
 )
 
 # You can also provide valid Python-Arango AQL query options to the command above, like such:
 g_with_aql_query_options = ma.create_networkx_graph(
-    graph_name="FraudDetection", graph_attributes=attributes, ttl=1000, stream=True
+    name="FraudDetection", graph_attributes=attributes, ttl=1000, stream=True
 )
 
 # Use networkX
