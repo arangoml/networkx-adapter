@@ -83,7 +83,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self,
         name: str,
         original_nx_graph: NetworkXGraph,
-        edge_definitions: list[dict],
+        edge_definitions: list,
         keyify_edges=False,
     ):
         """
