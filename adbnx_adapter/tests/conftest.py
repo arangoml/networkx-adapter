@@ -51,21 +51,21 @@ def pytest_sessionfinish(session, exitstatus):
 
 
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-    # We re-define how vertex insertion should be treated, specifically for the IMDB dataset.
-    def _insert_networkx_vertex(self, vertex: dict, collection: str, attributes: set):
-        self.nx_node_map[vertex["_id"]] = {
-            "_id": vertex["_id"],
-            "collection": collection,
-        }
-        bip_key = 0 if collection == "Users" else 1
-        self.nx_graph.add_node(vertex["_id"], **vertex, bipartite=bip_key)
+    # We re-define how vertex pre-insertion should be treated, specifically for the IMDB dataset.
+    def _prepare_nx_node(self, node: dict, col: str, atribs: set):
+        node["bipartite"] = 0 if col == "Users" else 1  # The new change
+        return node["_id"]  # This is standard
+
+    # We're not interested in re-defining pre-insertion handling for edges, so we leave it be
+    # def _prepare_nx_edge(self, edge: dict, col: str, atribs: set):
+    #     return super()._prepare_nx_edge(edge, col, atribs)
 
 
 class Basic_Grid_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
     def _identify_nx_node(self, id, node: dict) -> str:
         return "Node"  # Only one node collection in this dataset
 
-    def _keyify_nx_node(self, id, node, collection) -> str:
+    def _keyify_nx_node(self, id, node, col) -> str:
         return self._tuple_to_arangodb_key_helper(id)
 
     def _identify_nx_edge(self, from_node, to_node, edge: dict) -> str:
@@ -76,15 +76,14 @@ class Basic_Grid_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
 
         return "Unknown_Edge"
 
-    def _insert_networkx_vertex(self, vertex: dict, collection: str, attributes: set):
+    def _prepare_nx_node(self, node: dict, col: str, atribs: set):
         nx_id = tuple(
             int(n)
             for n in tuple(
-                vertex["_key"],
+                node["_key"],
             )
         )
-        self.nx_node_map[vertex["_id"]] = {"_id": nx_id, "collection": collection}
-        self.nx_graph.add_node(nx_id, **vertex)
+        return nx_id
 
 
 class Football_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):

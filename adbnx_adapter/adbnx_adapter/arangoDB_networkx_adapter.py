@@ -12,6 +12,7 @@ import networkx as nx
 from arango import ArangoClient
 from .abc import ADBNX_Adapter
 
+from typing import final
 from arango.graph import Graph as ArangoDBGraph
 from networkx.classes.graph import Graph as NetworkXGraph
 
@@ -36,6 +37,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         con_str = protocol + "://" + url + ":" + port
         self.db = ArangoClient(hosts=con_str).db(db_name, username, password)
 
+    @final
     def create_networkx_graph(
         self, name: str, graph_attributes, is_keep=True, **query_options
     ):
@@ -43,17 +45,20 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         self.nx_graph = nx.MultiDiGraph(name=name)
 
-        for col, attribs in graph_attributes["vertexCollections"].items():
-            for v in self.__fetch_arangodb_docs(col, attribs, is_keep, query_options):
-                self._insert_networkx_vertex(v, col, attribs)
+        for col, atribs in graph_attributes["vertexCollections"].items():
+            for v in self.__fetch_arangodb_docs(col, atribs, is_keep, query_options):
+                self.__insert_networkx_node(v["_id"], v, col, atribs)
 
-        for col, attribs in graph_attributes["edgeCollections"].items():
-            for e in self.__fetch_arangodb_docs(col, attribs, is_keep, query_options):
-                self._insert_networkx_edge(e, col, attribs)
+        for col, atribs in graph_attributes["edgeCollections"].items():
+            for e in self.__fetch_arangodb_docs(col, atribs, is_keep, query_options):
+                from_id = self.nx_node_map.get(e["_from"])["_id"]
+                to_id = self.nx_node_map.get(e["_to"])["_id"]
+                self.__insert_networkx_edge(from_id, to_id, e, col, atribs)
 
         print(f"NetworkX: {name} created")
         return self.nx_graph
 
+    @final
     def create_networkx_graph_from_arangodb_collections(
         self,
         name: str,
@@ -70,6 +75,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             name, graph_attributes, is_keep=False, **query_options
         )
 
+    @final
     def create_networkx_graph_from_arangodb_graph(self, name: str, **query_options):
         arango_graph = self.db.graph(name)
         v_cols = arango_graph.vertex_collections()
@@ -79,6 +85,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             name, v_cols, e_cols, **query_options
         )
 
+    @final
     def create_arangodb_graph(
         self,
         name: str,
@@ -123,7 +130,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             col = self._identify_nx_node(id, node)
             key = self._keyify_nx_node(id, node, col)
             node["_id"] = col + "/" + key
-            self._insert_arangodb_vertex(id, node, col, key)
+            self.__insert_arangodb_vertex(id, node, col, key)
 
         for from_node, to_node, edge in nx_graph.edges(data=True):
             col = self._identify_nx_edge(from_node, to_node, edge)
@@ -131,41 +138,18 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
                 key = self._keyify_nx_edge(from_node, to_node, edge, col)
                 edge["_id"] = col + "/" + key
 
-            self._insert_arangodb_edge(from_node, to_node, edge, col)
+            self.__insert_arangodb_edge(from_node, to_node, edge, col)
 
         print(f"ArangoDB: {name} created")
         return self.adb_graph
 
+    @final
     def __validate_attributes(self, type, attributes: set, valid_attributes: set):
         if valid_attributes.issubset(attributes) is False:
             missing_attributes = valid_attributes - attributes
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
-    def _insert_networkx_vertex(self, vertex: dict, collection: str, attributes: set):
-        self.nx_node_map[vertex["_id"]] = {
-            "_id": vertex["_id"],
-            "collection": collection,
-        }
-        self.nx_graph.add_node(vertex["_id"], **vertex)
-
-    def _insert_networkx_edge(self, edge: dict, collection: str, attributes: set):
-        from_id = self.nx_node_map.get(edge["_from"])["_id"]
-        to_id = self.nx_node_map.get(edge["_to"])["_id"]
-        self.nx_graph.add_edge(from_id, to_id, **edge)
-
-    def _insert_arangodb_vertex(self, node_id, vertex: dict, col: str, key: str):
-        self.adb_node_map[node_id] = {
-            "_id": vertex["_id"],
-            "collection": col,
-            "key": key,
-        }
-        self.db.collection(col).insert(vertex, silent=True)
-
-    def _insert_arangodb_edge(self, from_node, to_node, edge: dict, col: str):
-        edge["_from"] = self.adb_node_map.get(from_node)["_id"]
-        edge["_to"] = self.adb_node_map.get(to_node)["_id"]
-        self.db.collection(col).insert(edge, silent=True)
-
+    @final
     def __fetch_arangodb_docs(
         self, col: str, attributes: set, is_keep: bool, query_options
     ):
@@ -177,6 +161,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         return self.db.aql.execute(aql, count=True, **query_options)
 
+    @final
     def _string_to_arangodb_key_helper(self, string: str) -> str:
         res = ""
         for s in string:
@@ -185,6 +170,85 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         return res
 
+    @final
     def _tuple_to_arangodb_key_helper(self, tup: tuple) -> str:
         string = "".join(map(str, tup))
         return self._string_to_arangodb_key_helper(string)
+
+    @final
+    def __insert_arangodb_vertex(self, id, vertex: dict, col: str, key: str):
+        self.adb_node_map[id] = {"_id": vertex["_id"], "collection": col, "key": key}
+        self.db.collection(col).insert(vertex, silent=True)
+
+    @final
+    def __insert_arangodb_edge(self, from_node, to_node, edge: dict, col: str):
+        edge["_from"] = self.adb_node_map.get(from_node)["_id"]
+        edge["_to"] = self.adb_node_map.get(to_node)["_id"]
+        self.db.collection(col).insert(edge, silent=True)
+
+    @final
+    def __insert_networkx_node(self, adb_id: str, node: dict, col: str, atribs: set):
+        nx_node_id = self._prepare_nx_node(node, col, atribs)
+
+        self.nx_node_map[adb_id] = {"_id": nx_node_id, "collection": col}
+        self.nx_graph.add_node(nx_node_id, **node)
+
+    @final
+    def __insert_networkx_edge(self, from_id, to_id, edge: dict, col: str, atribs: set):
+        self._prepare_nx_edge(edge, col, atribs)
+        self.nx_graph.add_edge(from_id, to_id, **edge)
+
+    def _prepare_nx_node(self, node: dict, col: str, atribs: set):
+        """
+        Given access to an ArangoDB vertex, you can modify it before it gets inserted,
+        and/or derive a custom node id for networkx to use.
+
+        In most cases, no action is needed here.
+        """
+        return node["_id"]
+
+    def _prepare_nx_edge(self, edge: dict, col: str, atribs: set):
+        """
+        Given access to an ArangoDB edge, you can modify it before it gets inserted here.
+
+        In most cases, no action is needed.
+        """
+        pass
+
+    def _identify_nx_node(self, id: str, node: dict) -> str:
+        """
+        Identify (based on id or node data) what collection this node belongs to.
+
+        If you plan on using create_arangodb_graph(), you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
+        """
+        return id.split("/")[0] + "_nx"
+
+    def _keyify_nx_node(self, id: str, node: dict, col: str) -> str:
+        """
+        Create a key based off of the node id that ArangoDB will not complain about.
+
+        If you plan on using create_arangodb_graph(), you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
+        """
+        return id.split("/")[1]
+
+    def _identify_nx_edge(self, from_node, to_node, edge: dict) -> str:
+        """
+        Identify (based on from, to, or edge data) what collection this edge belongs to.
+
+        If you plan on using create_arangodb_graph(), you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
+        """
+        edge_id: str = edge["_id"]
+        return edge_id.split("/")[0] + "_nx"
+
+    def _keyify_nx_edge(self, from_node, to_node, edge: dict, col: str) -> str:
+        """
+        Create a key based off of the edge id that ArangoDB will not complain about.
+
+        If you plan on using create_arangodb_graph(), and you want to assign custom IDs to edges, you must overwrite this function
+        (if your nx graph doesn't already comply to ArangoDB standards).
+        """
+        edge_id: str = edge["_id"]
+        return edge_id.split("/")[1]

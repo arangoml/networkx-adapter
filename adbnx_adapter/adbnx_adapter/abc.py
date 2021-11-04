@@ -30,59 +30,38 @@ class ADBNX_Adapter(ABC):
     def __validate_attributes(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _insert_arangodb_vertex():
+    def __fetch_arangodb_docs(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _insert_arangodb_edge():
+    def __insert_networkx_node(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __fetch_arangodb_docs():
+    def __insert_networkx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _insert_networkx_vertex(self):
+    def __insert_arangodb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _insert_networkx_edge(self):
+    def __insert_arangodb_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    # identify (based on id or node data) what collection this node belongs to
-    def _identify_nx_node(self, id: str, node: dict) -> str:
-        """
-        If you plan on using create_arangodb_graph(),
-        you must overwrite this function
-        (if your nx graph doesn't already comply to ArangoDB standards).
-        """
-        return id.split("/")[0] + "_nx"
+    def _prepare_nx_node(self):
+        raise NotImplementedError()  # pragma: no cover
 
-    # create a key based off of the node id that ArangoDB will not complain about
-    def _keyify_nx_node(self, id: str, node: dict, collection: str) -> str:
-        """
-        If you plan on using create_arangodb_graph(),
-        you must overwrite this function
-        (if your nx graph doesn't already comply to ArangoDB standards).
-        """
-        return id.split("/")[1]
+    def _prepare_nx_edge(self):
+        raise NotImplementedError()  # pragma: no cover
 
-    # identify (based on from, to, or edge data) what collection this edge belongs to
-    def _identify_nx_edge(self, from_node, to_node, edge: dict) -> str:
-        """
-        If you plan on using create_arangodb_graph(),
-        you must overwrite this function
-        (if your nx graph doesn't already comply to ArangoDB standards).
-        """
-        edge_id: str = edge["_id"]
-        return edge_id.split("/")[0] + "_nx"
+    def _identify_nx_node(self):
+        raise NotImplementedError()  # pragma: no cover
 
-    # create a key based off of the edge id that ArangoDB will not complain about
-    def _keyify_nx_edge(self, from_node, to_node, edge: dict, collection: str) -> str:
-        """
-        If you plan on using create_arangodb_graph(),
-        and you want to assign custom IDs to edges,
-        you must overwrite this function
-        (if your nx graph doesn't already comply to ArangoDB standards).
-        """
-        edge_id: str = edge["_id"]
-        return edge_id.split("/")[1]
+    def _identify_nx_edge(self):
+        raise NotImplementedError()  # pragma: no cover
+
+    def _keyify_nx_node(self):
+        raise NotImplementedError()  # pragma: no cover
+
+    def _keyify_nx_edge(self):
+        raise NotImplementedError()  # pragma: no cover
 
     @property
     def CONNECTION_ATRIBS(self):
