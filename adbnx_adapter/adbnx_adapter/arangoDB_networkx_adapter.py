@@ -12,9 +12,13 @@ import networkx as nx
 from arango import ArangoClient
 from .abc import ADBNX_Adapter
 
-from typing import final
 from arango.graph import Graph as ArangoDBGraph
 from networkx.classes.graph import Graph as NetworkXGraph
+
+try:  # Python +3.8
+    from typing import final
+except ImportError:  # Python 3.6, 3.7
+    from overrides import final
 
 
 class ArangoDB_Networkx_Adapter(ADBNX_Adapter):

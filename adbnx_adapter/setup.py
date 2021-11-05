@@ -21,7 +21,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.6",
     license="Apache Software License",
-    install_requires=["python-arango", "networkx"],
+    install_requires=["python-arango", "networkx", "overrides"],
     tests_require=["pytest", "pytest-cov"],
     classifiers=[
         "Intended Audience :: Developers",
