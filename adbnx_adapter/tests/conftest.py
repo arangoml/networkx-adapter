@@ -62,13 +62,13 @@ class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
 
 
 class Basic_Grid_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-    def _identify_nx_node(self, id, node: dict) -> str:
+    def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
         return "Node"  # Only one node collection in this dataset
 
-    def _keyify_nx_node(self, id, node, col) -> str:
+    def _keyify_nx_node(self, id, node, col, overwrite: bool) -> str:
         return self._tuple_to_arangodb_key_helper(id)
 
-    def _identify_nx_edge(self, from_node, to_node, edge: dict) -> str:
+    def _identify_nx_edge(self, from_node, to_node, e: dict, overwrite: bool) -> str:
         from_collection = self.adb_node_map.get(from_node)["collection"]
         to_collection = self.adb_node_map.get(to_node)["collection"]
         if from_collection == to_collection == "Node":
@@ -87,13 +87,13 @@ class Basic_Grid_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
 
 
 class Football_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-    def _identify_nx_node(self, id: str, node: dict) -> str:
+    def _identify_nx_node(self, id: str, node: dict, overwrite: bool) -> str:
         return "Team"  # Only one node collection in this dataset
 
-    def _keyify_nx_node(self, id, node, collection) -> str:
+    def _keyify_nx_node(self, id, node, collection, overwrite: bool) -> str:
         return self._string_to_arangodb_key_helper(id)
 
-    def _identify_nx_edge(self, from_node, to_node, edge: dict) -> str:
+    def _identify_nx_edge(self, from_node, to_node, e: dict, overwrite: bool) -> str:
         from_collection = self.adb_node_map.get(from_node)["collection"]
         to_collection = self.adb_node_map.get(to_node)["collection"]
         if from_collection == to_collection == "Team":
