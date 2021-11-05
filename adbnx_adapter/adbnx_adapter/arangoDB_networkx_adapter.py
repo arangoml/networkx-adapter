@@ -227,35 +227,35 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         """
         Identify (based on id or node data) what collection this node belongs to.
 
-        If you plan on using create_arangodb_graph(), you must override this function
+        If you plan on doing NetworkX -> ArangoDB, you must override this function
         (unless your nx graph already complies to ArangoDB standards).
         """
         return id.split("/")[0] + ("" if owerwrite else "_nx")
-
-    def _keyify_nx_node(self, id: str, node: dict, col: str, ow: bool) -> str:
-        """
-        Create a key based off of the node id that ArangoDB will not complain about.
-
-        If you plan on using create_arangodb_graph(), you must override this function
-        (unless your nx graph already complies to ArangoDB standards).
-        """
-        return id.split("/")[1]
 
     def _identify_nx_edge(self, from_node, to_node, e: dict, owerwrite: bool) -> str:
         """
         Identify (based on from, to, or edge data) what collection this edge belongs to.
 
-        If you plan on using create_arangodb_graph(), you must override this function
+        If you plan on doing NetworkX -> ArangoDB, you must override this function
         (unless your nx graph already complies to ArangoDB standards).
         """
         edge_id: str = e["_id"]
         return edge_id.split("/")[0] + ("" if owerwrite else "_nx")
 
+    def _keyify_nx_node(self, id: str, node: dict, col: str, ow: bool) -> str:
+        """
+        Create a key based off of the node id that ArangoDB will not complain about.
+
+        If you plan on doing NetworkX -> ArangoDB, you must override this function
+        (unless your nx graph already complies to ArangoDB standards).
+        """
+        return id.split("/")[1]
+
     def _keyify_nx_edge(self, from_node, to_node, e: dict, col: str, owerwrite: bool):
         """
         Create a key based off of the edge id that ArangoDB will not complain about.
 
-        If you plan on using create_arangodb_graph(), and you want to assign custom IDs to edges, you must override this function
+        If you plan on doing NetworkX -> ArangoDB, and you want to assign custom IDs to edges, you must override this function
         (unless your nx graph already complies to ArangoDB standards).
         """
         edge_id: str = e["_id"]

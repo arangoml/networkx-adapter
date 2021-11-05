@@ -33,16 +33,16 @@ class ADBNX_Adapter(ABC):
     def __fetch_arangodb_docs(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __insert_networkx_node(self):
-        raise NotImplementedError()  # pragma: no cover
-
-    def __insert_networkx_edge(self):
-        raise NotImplementedError()  # pragma: no cover
-
     def __insert_arangodb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 
     def __insert_arangodb_edge(self):
+        raise NotImplementedError()  # pragma: no cover
+
+    def __insert_networkx_node(self):
+        raise NotImplementedError()  # pragma: no cover
+
+    def __insert_networkx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
     def _prepare_nx_node(self):

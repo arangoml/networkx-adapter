@@ -51,14 +51,9 @@ def pytest_sessionfinish(session, exitstatus):
 
 
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-    # We re-define how vertex pre-insertion should be treated, specifically for the IMDB dataset.
     def _prepare_nx_node(self, node: dict, col: str, atribs: set):
-        node["bipartite"] = 0 if col == "Users" else 1  # The new change
-        return node["_id"]  # This is standard
-
-    # We're not interested in re-defining pre-insertion handling for edges, so we leave it be
-    # def _prepare_nx_edge(self, edge: dict, col: str, atribs: set):
-    #     return super()._prepare_nx_edge(edge, col, atribs)
+        node["bipartite"] = 0 if col == "Users" else 1
+        return node["_id"]
 
 
 class Basic_Grid_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
