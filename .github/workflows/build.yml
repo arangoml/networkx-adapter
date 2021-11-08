@@ -19,7 +19,7 @@ jobs:
       - name: ls
         run: ls -la
       - name: Download arangorestore
-        run: Invoke-Webrequest https://github.com/arangodb/interactive_tutorials/blob/oasis_connector/tools/arangorestore?raw=true
+        run: wget https://github.com/arangodb/interactive_tutorials/blob/oasis_connector/tools/arangorestore?raw=true
       - name: ls
         run: ls -la
       - name: version check
