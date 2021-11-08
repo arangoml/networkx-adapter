@@ -10,3 +10,6 @@ adbnx_adapter/dist/
 adbnx_adapter/build/
 adbnx_adapter/*.egg-info
 
+.venv2
+.venv3
+.venvFinal

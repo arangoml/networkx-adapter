@@ -125,7 +125,7 @@ def test_create_networkx_graph_from_arangodb_collections(
     [(adbnx_adapter, "fraud-detection", None)],
 )
 def test_create_networkx_graph_from_arangodb_graph(
-    adapter: ArangoDB_Networkx_Adapter, name: str, edge_definitions=None
+    adapter: ArangoDB_Networkx_Adapter, name: str, edge_definitions
 ):
     assert_adapter_type(adapter)
 

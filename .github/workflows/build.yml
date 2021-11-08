@@ -1,5 +1,5 @@
 name: build
-on: [push, pull_request]
+on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,18 +12,11 @@ jobs:
     name: Running tests on python ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v2
-      - name: Build the docker-compose stack
-        run: cd tests && docker-compose up -d && cd ..
-      - name: Temp Sleep
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '60s'
       - name: Setup python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov
-
       - name: Test with pytest
         run: pytest
