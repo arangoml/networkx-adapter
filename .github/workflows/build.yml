@@ -16,6 +16,14 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
+      - name: ls
+        run: ls -la
+      - name: Download arangorestore
+        run: Invoke-Webrequest https://github.com/arangodb/interactive_tutorials/blob/oasis_connector/tools/arangorestore?raw=true
+      - name: ls
+        run: ls -la
+      - name: version check
+        run: arangorestore --version
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov
       - name: Update permissions
