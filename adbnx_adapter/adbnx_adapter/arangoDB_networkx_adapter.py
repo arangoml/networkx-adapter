@@ -167,7 +167,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
                     MERGE(KEEP(doc, {list(attributes)}), {{"_id": doc._id}}) : doc
         """
 
-        return self.db.aql.execute(aql, count=True, **query_options)
+        return self.db.aql.execute(aql, **query_options)
 
     @final
     def _string_to_arangodb_key_helper(self, string: str) -> str:

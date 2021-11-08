@@ -190,21 +190,22 @@ def test_full_cycle_from_arangodb():
         },
     ]
 
-    adbnx_adapter.create_arangodb_graph(
-        name + "-nx", fraud_nx_g, edge_definitions, keyify_edges=True
+    new_name = name + "-nx"
+    new_fraud_adb_g = adbnx_adapter.create_arangodb_graph(
+        new_name, fraud_nx_g, edge_definitions, keyify_edges=True
     )
 
     col: str
     for col in original_fraud_adb_g.vertex_collections():
         new_col = col + "_nx"
-        for vertex in adbnx_adapter.db.collection(col):
-            assert adbnx_adapter.db.collection(new_col).has(vertex["_key"])
+        for vertex in original_fraud_adb_g.vertex_collection(col):
+            assert new_fraud_adb_g.vertex_collection(new_col).has(vertex["_key"])
 
     e_cols = {col["edge_collection"] for col in original_fraud_adb_g.edge_definitions()}
     for col in e_cols:
         new_col = col + "_nx"
-        for edge in adbnx_adapter.db.collection(col):
-            assert adbnx_adapter.db.collection(new_col).has(edge["_key"])
+        for edge in original_fraud_adb_g.edge_collection(col):
+            assert new_fraud_adb_g.edge_collection(new_col).has(edge["_key"])
 
 
 def test_full_cycle_from_arangodb_with_overwrite():
@@ -215,11 +216,11 @@ def test_full_cycle_from_arangodb_with_overwrite():
     col: str
     original_doc_count = dict()
     for col in original_fraud_adb_g.vertex_collections():
-        original_doc_count[col] = adbnx_adapter.db.collection(col).count()
+        original_doc_count[col] = original_fraud_adb_g.vertex_collection(col).count()
 
     e_cols = {col["edge_collection"] for col in original_fraud_adb_g.edge_definitions()}
     for col in e_cols:
-        original_doc_count[col] = adbnx_adapter.db.collection(col).count()
+        original_doc_count[col] = original_fraud_adb_g.edge_collection(col).count()
 
     fraud_nx_g = adbnx_adapter.create_networkx_graph_from_arangodb_graph(name)
 
@@ -234,16 +235,16 @@ def test_full_cycle_from_arangodb_with_overwrite():
     )
 
     for col in updated_fraud_adb_g.vertex_collections():
-        new_doc_count = adbnx_adapter.db.collection(col).count()
+        new_doc_count = updated_fraud_adb_g.vertex_collection(col).count()
         assert original_doc_count[col] == new_doc_count
-        for vertex in adbnx_adapter.db.collection(col):
+        for vertex in updated_fraud_adb_g.vertex_collection(col):
             assert "new_vertex_data" in vertex
 
     e_cols = {col["edge_collection"] for col in updated_fraud_adb_g.edge_definitions()}
     for col in e_cols:
-        new_doc_count = adbnx_adapter.db.collection(col).count()
+        new_doc_count = updated_fraud_adb_g.edge_collection(col).count()
         assert original_doc_count[col] == new_doc_count
-        for edge in adbnx_adapter.db.collection(col):
+        for edge in updated_fraud_adb_g.edge_collection(col):
             assert "new_edge_data" in edge
 
 
