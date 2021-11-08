@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 
-ROOT_DIR = Path(__file__).parent.parent.parent
+PROJECT_DIR = Path(__file__).parent.parent.parent
 
 
 def pytest_sessionstart():
@@ -20,8 +20,8 @@ def pytest_sessionstart():
     grid_adbnx_adapter = Basic_Grid_ArangoDB_Networkx_Adapter(con)
     football_adbnx_adapter = Football_ArangoDB_Networkx_Adapter(con)
 
-    arango_restore("fraud_dump")
-    arango_restore("imdb_dump")
+    arango_restore("examples/data/fraud_dump")
+    arango_restore("examples/data/imdb_dump")
 
     edge_definitions = [
         {
@@ -53,17 +53,18 @@ def get_oasis_crendetials() -> dict:
 
 def arango_restore(path_to_data):
     subprocess.check_call(
-        f'arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{path_to_data}"',
-        cwd=f"{ROOT_DIR}/examples/data/",
+        f'arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
         shell=True
     )
 
 
 def print_connection_details(con):
+    print('----------------------------------------')
     print("https://{}:{}".format(con["hostname"], con["port"]))
     print("Username: " + con["username"])
     print("Password: " + con["password"])
     print("Database: " + con["dbName"])
+    print('----------------------------------------')
 
 
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
