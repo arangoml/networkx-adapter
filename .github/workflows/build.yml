@@ -12,6 +12,12 @@ jobs:
     name: Running tests on python ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v2
+      - name: Build the docker-compose stack
+        run: cd tests && docker-compose up -d && cd ..
+      - name: Temp Sleep
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '60s'
       - name: Setup python
         uses: actions/setup-python@v2
         with:
