@@ -20,5 +20,5 @@ jobs:
         run: pip install -e . pytest pytest-cov
       - name: Update permissions
         run: chmod -R 755 ./tests 
-      - name: Test with pytest
-        run: pytest
+      - name: Run pytest
+        run: cd tests && pytest
