@@ -54,7 +54,7 @@ def get_oasis_crendetials() -> dict:
 def arango_restore(path_to_data):
     subprocess.check_call(
         f'arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
-        cwd='./',
+        cwd=f"{PROJECT_DIR}/adbnx_adapter/tests",
         shell=True,
     )
 
