@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./adbnx_adapter
+        working-directory: ./adbnx_adapter/tests
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9']
@@ -16,17 +16,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-      - name: ls
-        run: ls -la
-      - name: Download arangorestore
-        run: wget https://github.com/arangodb/interactive_tutorials/blob/oasis_connector/tools/arangorestore?raw=true
-      - name: ls
-        run: ls -la
-      - name: version check
-        run: arangorestore --version
       - name: Install dependencies
-        run: pip install -e . pytest pytest-cov
+        run: cd .. && pip install -e . pytest pytest-cov
       - name: Update permissions
-        run: chmod -R 755 ./tests 
+        run: chmod -R 755 .
       - name: Run pytest
-        run: cd tests && pytest
+        run: pytest

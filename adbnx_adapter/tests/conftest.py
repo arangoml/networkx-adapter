@@ -54,17 +54,18 @@ def get_oasis_crendetials() -> dict:
 def arango_restore(path_to_data):
     subprocess.check_call(
         f'arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
-        shell=True
+        cwd='./',
+        shell=True,
     )
 
 
 def print_connection_details(con):
-    print('----------------------------------------')
+    print("----------------------------------------")
     print("https://{}:{}".format(con["hostname"], con["port"]))
     print("Username: " + con["username"])
     print("Password: " + con["password"])
     print("Database: " + con["dbName"])
-    print('----------------------------------------')
+    print("----------------------------------------")
 
 
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
