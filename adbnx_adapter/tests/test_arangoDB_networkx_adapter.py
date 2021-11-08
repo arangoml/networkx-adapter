@@ -17,92 +17,15 @@ import zipfile
 import urllib.request as urllib
 
 
-def test_connection():
-    assert adbnx_adapter.db.version()
-
-
-def test_validate_attributes():
-    with pytest.raises(ValueError):
-        no_credentials_connection = {
-            "dbName": "_system",
-            "hostname": "localhost",
-            "protocol": "http",
-            "port": 8529,
-        }
-
-        ArangoDB_Networkx_Adapter(no_credentials_connection)
-
-
-def test_create_networkx_graph():
-    fraud_detection_attributes = {
-        "vertexCollections": {
-            "account": {"Balance", "account_type", "customer_id", "rank"},
-            "bank": {"Country", "Id", "bank_id", "bank_name"},
-            "branch": {"City", "Country", "Id", "bank_id", "branch_id", "branch_name"},
-            "Class": {"concrete", "label", "name"},
-            "customer": {"Name", "Sex", "Ssn", "rank"},
-        },
-        "edgeCollections": {
-            "accountHolder": {"_from", "_to"},
-            "Relationship": {"_from", "_to", "label", "name", "relationshipType"},
-            "transaction": {"_from", "_to"},
-        },
-    }
-
-    fraud_nx_g = adbnx_adapter.create_networkx_graph(
-        "fraud-detection", graph_attributes=fraud_detection_attributes
-    )
-
-    assert_networkx_data(
-        fraud_nx_g,
-        fraud_detection_attributes["vertexCollections"],
-        fraud_detection_attributes["edgeCollections"],
+def assert_adapter_type(adapter):
+    assert (
+        type(adapter) is ArangoDB_Networkx_Adapter
+        or issubclass(type(adapter), ArangoDB_Networkx_Adapter) is True
     )
 
 
-def test_create_networkx_graph_from_derived_adapter_class():
-    imdb_attributes = {
-        "vertexCollections": {"Users": {}, "Movies": {}},
-        "edgeCollections": {"Ratings": {"_from", "_to", "ratings"}},
-    }
-
-    imdb_nx_g = imdb_adbnx_adapter.create_networkx_graph(
-        "IMDBGraph", graph_attributes=imdb_attributes
-    )
-
-    assert_networkx_data(
-        imdb_nx_g,
-        imdb_attributes["vertexCollections"],
-        imdb_attributes["edgeCollections"],
-    )
-
-
-def test_create_networkx_graph_from_arangodb_collections():
-    vertex_collections = {"account", "bank", "branch", "Class", "customer"}
-    edge_collections = {"accountHolder", "Relationship", "transaction"}
-
-    fraud_nx_g = adbnx_adapter.create_networkx_graph_from_arangodb_collections(
-        "fraud-detection",
-        vertex_collections,
-        edge_collections,
-    )
-
-    assert_networkx_data(fraud_nx_g, vertex_collections, edge_collections)
-
-
-def test_create_networkx_graph_from_arangodb_graph():
-    graph_name = "fraud-detection"
-
-    arango_graph = adbnx_adapter.db.graph(graph_name)
-    v_cols = arango_graph.vertex_collections()
-    e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
-
-    fraud_nx_g = adbnx_adapter.create_networkx_graph_from_arangodb_graph(graph_name)
-    assert_networkx_data(fraud_nx_g, v_cols, e_cols)
-
-
-def assert_networkx_data(nx_g: NxMultiDiGraph, v_cols, e_cols):
-    assert type(nx_g) is NxMultiDiGraph
+def assert_networkx_data(nx_g: NxGraph, v_cols, e_cols):
+    assert type(nx_g) in [NxGraph, NxMultiDiGraph]
     for col in v_cols:
         for vertex in adbnx_adapter.db.collection(col):
             assert nx_g.has_node(vertex["_id"])
@@ -112,6 +35,152 @@ def assert_networkx_data(nx_g: NxMultiDiGraph, v_cols, e_cols):
             assert nx_g.has_edge(edge["_from"], edge["_to"])
 
 
+def assert_arangodb_data(
+    adapter: ArangoDB_Networkx_Adapter, nx_g: NxGraph, adb_g: ArangoGraph
+):
+
+    overwrite = False
+    for id, node in nx_g.nodes(data=True):
+        col = adapter._identify_nx_node(id, node, overwrite)
+        key = adapter._keyify_nx_node(id, node, col, overwrite)
+        assert adb_g.vertex_collection(col).has(key)
+
+    for from_node, to_node, edge in nx_g.edges(data=True):
+        col = adapter._identify_nx_edge(from_node, to_node, edge, overwrite)
+        assert adb_g.edge_collection(col).find(
+            {
+                "_from": adapter.adb_node_map.get(from_node)["_id"],
+                "_to": adapter.adb_node_map.get(to_node)["_id"],
+            }
+        )
+
+
+@pytest.mark.unit
+def test_connection():
+    assert adbnx_adapter.db.version()
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "bad_connection",
+    [
+        {
+            "dbName": "_system",
+            "hostname": "localhost",
+            "protocol": "http",
+            "port": 8529,
+        }
+    ],
+)
+def test_validate_attributes(bad_connection):
+    with pytest.raises(ValueError):
+        ArangoDB_Networkx_Adapter(bad_connection)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "adapter, name, attributes",
+    [
+        (
+            adbnx_adapter,
+            "fraud-detection",
+            {
+                "vertexCollections": {
+                    "account": {"Balance", "account_type", "customer_id", "rank"},
+                    "bank": {"Country", "Id", "bank_id", "bank_name"},
+                    "branch": {
+                        "City",
+                        "Country",
+                        "Id",
+                        "bank_id",
+                        "branch_id",
+                        "branch_name",
+                    },
+                    "Class": {"concrete", "label", "name"},
+                    "customer": {"Name", "Sex", "Ssn", "rank"},
+                },
+                "edgeCollections": {
+                    "accountHolder": {"_from", "_to"},
+                    "Relationship": {
+                        "_from",
+                        "_to",
+                        "label",
+                        "name",
+                        "relationshipType",
+                    },
+                    "transaction": {"_from", "_to"},
+                },
+            },
+        ),
+        (
+            imdb_adbnx_adapter,
+            "IMDBGraph",
+            {
+                "vertexCollections": {"Users": {}, "Movies": {}},
+                "edgeCollections": {"Ratings": {"_from", "_to", "ratings"}},
+            },
+        ),
+    ],
+)
+def test_create_networkx_graph(
+    adapter: ArangoDB_Networkx_Adapter, name: str, attributes: dict
+):
+    assert_adapter_type(adapter)
+
+    nx_g = adapter.create_networkx_graph(name, attributes)
+
+    assert_networkx_data(
+        nx_g,
+        attributes["vertexCollections"],
+        attributes["edgeCollections"],
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "adapter, name, vcols, ecols",
+    [
+        (
+            adbnx_adapter,
+            "fraud-detection",
+            {"account", "bank", "branch", "Class", "customer"},
+            {"accountHolder", "Relationship", "transaction"},
+        )
+    ],
+)
+def test_create_networkx_graph_from_arangodb_collections(
+    adapter: ArangoDB_Networkx_Adapter, name: str, vcols: set, ecols: set
+):
+    assert_adapter_type(adapter)
+
+    nx_g = adapter.create_networkx_graph_from_arangodb_collections(
+        name,
+        vcols,
+        ecols,
+    )
+
+    assert_networkx_data(nx_g, vcols, ecols)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "adapter, name",
+    [(adbnx_adapter, "fraud-detection")],
+)
+def test_create_networkx_graph_from_arangodb_graph(
+    adapter: ArangoDB_Networkx_Adapter, name: str
+):
+    assert_adapter_type(adapter)
+
+    arango_graph = adapter.db.graph(name)
+    v_cols = arango_graph.vertex_collections()
+    e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
+
+    nx_g = adbnx_adapter.create_networkx_graph_from_arangodb_graph(name)
+    assert_networkx_data(nx_g, v_cols, e_cols)
+
+
+@pytest.mark.unit
 def test_create_arangodb_graph_from_grid_graph():
     grid_nx_g = nx.grid_2d_graph(5, 5)
     grid_edge_definitions = [
@@ -127,7 +196,7 @@ def test_create_arangodb_graph_from_grid_graph():
     )
     assert_arangodb_data(grid_adbnx_adapter, grid_nx_g, grid_adb_g)
 
-
+@pytest.mark.unit
 def test_create_arangodb_graph_from_football_graph():
     url = "http://www-personal.umich.edu/~mejn/netdata/football.zip"
     sock = urllib.urlopen(url)
@@ -151,27 +220,7 @@ def test_create_arangodb_graph_from_football_graph():
     )
     assert_arangodb_data(football_adbnx_adapter, football_nx_g, football_adb_g)
 
-
-def assert_arangodb_data(
-    adapter: ArangoDB_Networkx_Adapter, nx_g: NxGraph, adb_g: ArangoGraph
-):
-
-    overwrite = False
-    for id, node in nx_g.nodes(data=True):
-        col = adapter._identify_nx_node(id, node, overwrite)
-        key = adapter._keyify_nx_node(id, node, col, overwrite)
-        assert adb_g.vertex_collection(col).has(key)
-
-    for from_node, to_node, edge in nx_g.edges(data=True):
-        col = adapter._identify_nx_edge(from_node, to_node, edge, overwrite)
-        assert adb_g.edge_collection(col).find(
-            {
-                "_from": adapter.adb_node_map.get(from_node)["_id"],
-                "_to": adapter.adb_node_map.get(to_node)["_id"],
-            }
-        )
-
-
+@pytest.mark.unit
 def test_full_cycle_from_arangodb():
     name = "fraud-detection"
     original_fraud_adb_g = adbnx_adapter.db.graph(name)
@@ -207,7 +256,7 @@ def test_full_cycle_from_arangodb():
         for edge in original_fraud_adb_g.edge_collection(col):
             assert new_fraud_adb_g.edge_collection(new_col).has(edge["_key"])
 
-
+@pytest.mark.unit
 def test_full_cycle_from_arangodb_with_overwrite():
     name = "fraud-detection"
     original_fraud_adb_g = adbnx_adapter.db.graph(name)
@@ -247,7 +296,7 @@ def test_full_cycle_from_arangodb_with_overwrite():
         for edge in updated_fraud_adb_g.edge_collection(col):
             assert "new_edge_data" in edge
 
-
+@pytest.mark.unit
 def test_full_cycle_from_networkx():
     name = "Grid"
     if grid_adbnx_adapter.db.has_graph(name):
