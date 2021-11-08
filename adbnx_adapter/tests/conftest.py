@@ -1,3 +1,6 @@
+import time
+import json
+import requests
 import subprocess
 from pathlib import Path
 from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
@@ -5,28 +8,48 @@ from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
 ROOT_DIR = Path(__file__).parent.parent.parent
 
 
-def docker_compose():
-    proc = subprocess.Popen(
-        "docker-compose up -d",
-        stdout=subprocess.PIPE,
-        cwd=f"{ROOT_DIR}/adbnx_adapter/tests",
-        shell=True,
-    )
-    proc.wait()
+def pytest_sessionstart():
+    global con
+    con = get_oasis_crendetials()
+    print_connection_details(con)
+    time.sleep(5)  # Enough for the oasis instance to be ready.
+
+    global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
+    adbnx_adapter = ArangoDB_Networkx_Adapter(con)
+    imdb_adbnx_adapter = IMDB_ArangoDB_Networkx_Adapter(con)
+    grid_adbnx_adapter = Basic_Grid_ArangoDB_Networkx_Adapter(con)
+    football_adbnx_adapter = Football_ArangoDB_Networkx_Adapter(con)
+
+    clear()
+    arango_restore("fraud_dump")
+    arango_restore("imdb_dump")
+
+    edge_definitions = [
+        {
+            "edge_collection": "accountHolder",
+            "from_vertex_collections": ["customer"],
+            "to_vertex_collections": ["account"],
+        },
+        {
+            "edge_collection": "transaction",
+            "from_vertex_collections": ["account"],
+            "to_vertex_collections": ["account"],
+        },
+    ]
+    adbnx_adapter.db.create_graph("fraud-detection", edge_definitions=edge_definitions)
 
 
-def arango_restore(path_to_data):
-    proc = subprocess.Popen(
-        f'arangorestore -c none --server.username root --server.database _system --server.password rootpassword --default-replication-factor 3  --input-directory "{path_to_data}" --include-system-collections true',
-        cwd=f"{ROOT_DIR}/examples/data/",
-        shell=True,
-    )
-    proc.wait()
+def pytest_sessionfinish(session, exitstatus):
+    print_connection_details(con)
 
 
-def shut_down():
-    proc = subprocess.Popen("docker rm --force adbnx_adapter_arangodb", shell=True)
-    proc.wait()
+def get_oasis_crendetials() -> dict:
+    url = "https://tutorials.arangodb.cloud:8529/_db/_system/tutorialDB/tutorialDB"
+    request = requests.post(url, data=json.dumps("{}"))
+    if request.status_code != 200:
+        raise Exception("Error retrieving login data.")
+
+    return json.loads(request.text)
 
 
 def clear():
@@ -38,16 +61,20 @@ def clear():
         adbnx_adapter.db.delete_graph(g["name"])
 
 
-def pytest_sessionstart():
-    docker_compose()
-    clear()
-    arango_restore("fraud_dump")
-    arango_restore("imdb_dump")
+def arango_restore(path_to_data):
+    proc = subprocess.Popen(
+        f'arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{path_to_data}"',
+        cwd=f"{ROOT_DIR}/examples/data/",
+        shell=True,
+    )
+    proc.wait()
 
 
-def pytest_sessionfinish(session, exitstatus):
-    clear()
-    shut_down()
+def print_connection_details(con):
+    print("https://{}:{}".format(con["hostname"], con["port"]))
+    print("Username: " + con["username"])
+    print("Password: " + con["password"])
+    print("Database: " + con["dbName"])
 
 
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
@@ -95,18 +122,3 @@ class Football_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
             return "Played"
 
         return "Unknown_Edge"
-
-
-conn = {
-    "dbName": "_system",
-    "username": "root",
-    "password": "rootpassword",
-    "hostname": "localhost",
-    "protocol": "http",
-    "port": 8529,
-}
-
-adbnx_adapter = ArangoDB_Networkx_Adapter(conn)
-imdb_adbnx_adapter = IMDB_ArangoDB_Networkx_Adapter(conn)
-grid_adbnx_adapter = Basic_Grid_ArangoDB_Networkx_Adapter(conn)
-football_adbnx_adapter = Football_ArangoDB_Networkx_Adapter(conn)

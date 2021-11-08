@@ -17,49 +17,6 @@ import zipfile
 import urllib.request as urllib
 
 
-def assert_adapter_type(adapter):
-    assert (
-        type(adapter) is ArangoDB_Networkx_Adapter
-        or issubclass(type(adapter), ArangoDB_Networkx_Adapter) is True
-    )
-
-
-def assert_networkx_data(nx_g: NxGraph, v_cols, e_cols):
-    assert type(nx_g) in [NxGraph, NxMultiDiGraph]
-    for col in v_cols:
-        for vertex in adbnx_adapter.db.collection(col):
-            assert nx_g.has_node(vertex["_id"])
-
-    for col in e_cols:
-        for edge in adbnx_adapter.db.collection(col):
-            assert nx_g.has_edge(edge["_from"], edge["_to"])
-
-
-def assert_arangodb_data(
-    adapter: ArangoDB_Networkx_Adapter, nx_g: NxGraph, adb_g: ArangoGraph
-):
-
-    overwrite = False
-    for id, node in nx_g.nodes(data=True):
-        col = adapter._identify_nx_node(id, node, overwrite)
-        key = adapter._keyify_nx_node(id, node, col, overwrite)
-        assert adb_g.vertex_collection(col).has(key)
-
-    for from_node, to_node, edge in nx_g.edges(data=True):
-        col = adapter._identify_nx_edge(from_node, to_node, edge, overwrite)
-        assert adb_g.edge_collection(col).find(
-            {
-                "_from": adapter.adb_node_map.get(from_node)["_id"],
-                "_to": adapter.adb_node_map.get(to_node)["_id"],
-            }
-        )
-
-
-@pytest.mark.unit
-def test_connection():
-    assert adbnx_adapter.db.version()
-
-
 @pytest.mark.unit
 @pytest.mark.parametrize(
     "bad_connection",
@@ -164,15 +121,20 @@ def test_create_networkx_graph_from_arangodb_collections(
 
 @pytest.mark.unit
 @pytest.mark.parametrize(
-    "adapter, name",
-    [(adbnx_adapter, "fraud-detection")],
+    "adapter, name, edge_definitions",
+    [(adbnx_adapter, "fraud-detection", None)],
 )
 def test_create_networkx_graph_from_arangodb_graph(
-    adapter: ArangoDB_Networkx_Adapter, name: str
+    adapter: ArangoDB_Networkx_Adapter, name: str, edge_definitions=None
 ):
     assert_adapter_type(adapter)
 
+    if edge_definitions:
+        adapter.db.delete_graph(name, ignore_missing=True)
+        adapter.db.create_graph(name, edge_definitions=edge_definitions)
+
     arango_graph = adapter.db.graph(name)
+
     v_cols = arango_graph.vertex_collections()
     e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
 
@@ -195,6 +157,7 @@ def test_create_arangodb_graph_from_grid_graph():
         "Grid", grid_nx_g, grid_edge_definitions
     )
     assert_arangodb_data(grid_adbnx_adapter, grid_nx_g, grid_adb_g)
+
 
 @pytest.mark.unit
 def test_create_arangodb_graph_from_football_graph():
@@ -219,6 +182,7 @@ def test_create_arangodb_graph_from_football_graph():
         "Football", football_nx_g, football_edge_definitions
     )
     assert_arangodb_data(football_adbnx_adapter, football_nx_g, football_adb_g)
+
 
 @pytest.mark.unit
 def test_full_cycle_from_arangodb():
@@ -255,6 +219,7 @@ def test_full_cycle_from_arangodb():
         new_col = col + "_nx"
         for edge in original_fraud_adb_g.edge_collection(col):
             assert new_fraud_adb_g.edge_collection(new_col).has(edge["_key"])
+
 
 @pytest.mark.unit
 def test_full_cycle_from_arangodb_with_overwrite():
@@ -296,6 +261,7 @@ def test_full_cycle_from_arangodb_with_overwrite():
         for edge in updated_fraud_adb_g.edge_collection(col):
             assert "new_edge_data" in edge
 
+
 @pytest.mark.unit
 def test_full_cycle_from_networkx():
     name = "Grid"
@@ -322,3 +288,41 @@ def test_full_cycle_from_networkx():
 
     for from_node, to_node, _ in original_grid_nx_g.edges(data=True):
         assert new_grid_nx_g.has_edge(from_node, to_node)
+
+
+def assert_adapter_type(adapter):
+    assert (
+        type(adapter) is ArangoDB_Networkx_Adapter
+        or issubclass(type(adapter), ArangoDB_Networkx_Adapter) is True
+    )
+
+
+def assert_networkx_data(nx_g: NxGraph, v_cols, e_cols):
+    assert type(nx_g) in [NxGraph, NxMultiDiGraph]
+    for col in v_cols:
+        for vertex in adbnx_adapter.db.collection(col):
+            assert nx_g.has_node(vertex["_id"])
+
+    for col in e_cols:
+        for edge in adbnx_adapter.db.collection(col):
+            assert nx_g.has_edge(edge["_from"], edge["_to"])
+
+
+def assert_arangodb_data(
+    adapter: ArangoDB_Networkx_Adapter, nx_g: NxGraph, adb_g: ArangoGraph
+):
+
+    overwrite = False
+    for id, node in nx_g.nodes(data=True):
+        col = adapter._identify_nx_node(id, node, overwrite)
+        key = adapter._keyify_nx_node(id, node, col, overwrite)
+        assert adb_g.vertex_collection(col).has(key)
+
+    for from_node, to_node, edge in nx_g.edges(data=True):
+        col = adapter._identify_nx_edge(from_node, to_node, edge, overwrite)
+        assert adb_g.edge_collection(col).find(
+            {
+                "_from": adapter.adb_node_map.get(from_node)["_id"],
+                "_to": adapter.adb_node_map.get(to_node)["_id"],
+            }
+        )

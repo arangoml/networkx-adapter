@@ -25,7 +25,6 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
     def __init__(self, conn: dict) -> None:
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
 
-        url = conn["hostname"]
         username = conn["username"]
         password = conn["password"]
         db_name = conn["dbName"]
@@ -38,8 +37,9 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.adb_graph: ArangoDBGraph = None
         self.adb_node_map = dict()
 
-        con_str = protocol + "://" + url + ":" + port
-        self.db = ArangoClient(hosts=con_str).db(db_name, username, password)
+        url = protocol + "://" + conn["hostname"] + ":" + port
+        print(f"Connecting to {url}")
+        self.db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
 
     @final
     def create_networkx_graph(
