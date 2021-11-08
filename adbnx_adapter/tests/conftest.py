@@ -20,7 +20,6 @@ def pytest_sessionstart():
     grid_adbnx_adapter = Basic_Grid_ArangoDB_Networkx_Adapter(con)
     football_adbnx_adapter = Football_ArangoDB_Networkx_Adapter(con)
 
-    clear()
     arango_restore("fraud_dump")
     arango_restore("imdb_dump")
 
@@ -52,22 +51,13 @@ def get_oasis_crendetials() -> dict:
     return json.loads(request.text)
 
 
-def clear():
-    for col in adbnx_adapter.db.collections():
-        if col["system"] is False:
-            adbnx_adapter.db.delete_collection(col["name"])
-
-    for g in adbnx_adapter.db.graphs():
-        adbnx_adapter.db.delete_graph(g["name"])
-
-
 def arango_restore(path_to_data):
-    proc = subprocess.Popen(
+    subprocess.run(
         f'arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{path_to_data}"',
         cwd=f"{ROOT_DIR}/examples/data/",
         shell=True,
+        check=True
     )
-    proc.wait()
 
 
 def print_connection_details(con):
