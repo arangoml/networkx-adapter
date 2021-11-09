@@ -223,16 +223,16 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         """
         pass
 
-    def _identify_nx_node(self, id: str, node: dict, owerwrite: bool) -> str:
+    def _identify_nx_node(self, id: str, node: dict, overwrite: bool) -> str:
         """
         Identify (based on id or node data) what collection this node belongs to.
 
         If you plan on doing NetworkX -> ArangoDB, you must override this function
         (unless your nx graph already complies to ArangoDB standards).
         """
-        return id.split("/")[0] + ("" if owerwrite else "_nx")
+        return id.split("/")[0] + ("" if overwrite else "_nx")
 
-    def _identify_nx_edge(self, from_node, to_node, e: dict, owerwrite: bool) -> str:
+    def _identify_nx_edge(self, from_node, to_node, e: dict, overwrite: bool) -> str:
         """
         Identify (based on from, to, or edge data) what collection this edge belongs to.
 
@@ -240,7 +240,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         (unless your nx graph already complies to ArangoDB standards).
         """
         edge_id: str = e["_id"]
-        return edge_id.split("/")[0] + ("" if owerwrite else "_nx")
+        return edge_id.split("/")[0] + ("" if overwrite else "_nx")
 
     def _keyify_nx_node(self, id: str, node: dict, col: str, ow: bool) -> str:
         """
@@ -251,7 +251,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         """
         return id.split("/")[1]
 
-    def _keyify_nx_edge(self, from_node, to_node, e: dict, col: str, owerwrite: bool):
+    def _keyify_nx_edge(self, from_node, to_node, e: dict, col: str, overwrite: bool):
         """
         Create a key based off of the edge id that ArangoDB will not complain about.
 
