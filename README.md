@@ -24,7 +24,7 @@ Get Started on Colab: <a href="https://colab.research.google.com/github/arangoml
 ##  Development & Testing
 
 1. `git clone https://github.com/arangoml/networkx-adapter.git`
-2. `cd networkx-adapter`
+2. `cd networkx-adapter/adbnx_adapter`
 3. `python -m venv .venv`
 4. `source .venv/bin/activate` (MacOS) or `.venv/scripts/activate` (Windows)
 5. `cd adbnx_adapter`

@@ -1,3 +1,4 @@
+import os
 import time
 import json
 import requests
@@ -52,8 +53,10 @@ def get_oasis_crendetials() -> dict:
 
 
 def arango_restore(path_to_data):
+    restore_prefix = "./" if os.getenv("GITHUB_ACTIONS") else ""  # temporary hack
+
     subprocess.check_call(
-        f'chmod -R 755 . && ./arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
+        f'chmod -R 755 ./arangorestore && {restore_prefix}arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
         cwd=f"{PROJECT_DIR}/adbnx_adapter/tests",
         shell=True,
     )
