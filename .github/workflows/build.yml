@@ -18,7 +18,5 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov
-      - name: Update permissions
-        run: chmod -R 755 .
       - name: Run pytest
-        run: pytest
+        run: pytest -s
