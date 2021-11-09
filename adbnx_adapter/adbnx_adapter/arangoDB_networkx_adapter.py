@@ -196,17 +196,17 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
     @final
     def __insert_networkx_node(self, adb_id: str, node: dict, col: str, atribs: set):
-        nx_node_id = self._prepare_nx_node(node, col, atribs)
+        nx_node_id = self._prepare_adb_vertex(node, col, atribs)
 
         self.nx_node_map[adb_id] = {"_id": nx_node_id, "collection": col}
         self.nx_graph.add_node(nx_node_id, **node)
 
     @final
     def __insert_networkx_edge(self, from_id, to_id, edge: dict, col: str, atribs: set):
-        self._prepare_nx_edge(edge, col, atribs)
+        self._prepare_adb_edge(edge, col, atribs)
         self.nx_graph.add_edge(from_id, to_id, **edge)
 
-    def _prepare_nx_node(self, node: dict, col: str, atribs: set):
+    def _prepare_adb_vertex(self, node: dict, col: str, atribs: set):
         """
         Given access to an ArangoDB vertex, you can modify it before it gets inserted,
         and/or derive a custom node id for networkx to use.
@@ -215,7 +215,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         """
         return node["_id"]
 
-    def _prepare_nx_edge(self, edge: dict, col: str, atribs: set):
+    def _prepare_adb_edge(self, edge: dict, col: str, atribs: set):
         """
         Given access to an ArangoDB edge, you can modify it before it gets inserted here.
 

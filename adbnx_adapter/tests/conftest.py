@@ -72,7 +72,7 @@ def print_connection_details(con):
 
 
 class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-    def _prepare_nx_node(self, node: dict, col: str, atribs: set):
+    def _prepare_adb_vertex(self, node: dict, col: str, atribs: set):
         node["bipartite"] = 0 if col == "Users" else 1
         return node["_id"]
 
@@ -92,7 +92,7 @@ class Basic_Grid_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
 
         return "Unknown_Edge"
 
-    def _prepare_nx_node(self, node: dict, col: str, atribs: set):
+    def _prepare_adb_vertex(self, node: dict, col: str, atribs: set):
         nx_id = tuple(
             int(n)
             for n in tuple(

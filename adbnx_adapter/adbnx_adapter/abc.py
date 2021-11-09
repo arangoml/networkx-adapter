@@ -45,10 +45,10 @@ class ADBNX_Adapter(ABC):
     def __insert_networkx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _prepare_nx_node(self):
+    def _prepare_adb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _prepare_nx_edge(self):
+    def _prepare_adb_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
     def _identify_nx_node(self):
