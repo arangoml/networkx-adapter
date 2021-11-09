@@ -55,7 +55,7 @@ def arango_restore(path_to_data):
     proc = subprocess.Popen(
         "ls -la",
         shell=True,
-        stdout=subprocess.subprocess.PIPE
+        stdout=subprocess.PIPE
     )
     proc.wait()
 
