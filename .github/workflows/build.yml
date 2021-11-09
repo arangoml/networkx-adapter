@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./adbnx_adapter/tests
+        working-directory: ./adbnx_adapter
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9']
@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
-        run: cd .. && pip install -e . pytest pytest-cov
+        run: pip install -e . pytest pytest-cov
       - name: Update permissions
         run: chmod -R 755 .
       - name: Run pytest

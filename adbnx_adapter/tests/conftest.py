@@ -52,15 +52,8 @@ def get_oasis_crendetials() -> dict:
 
 
 def arango_restore(path_to_data):
-    proc = subprocess.Popen(
-        "ls -la",
-        shell=True,
-        stdout=subprocess.PIPE
-    )
-    proc.wait()
-
     subprocess.check_call(
-        f'arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
+        f'./arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
         cwd=f"{PROJECT_DIR}/adbnx_adapter/tests",
         shell=True,
     )
