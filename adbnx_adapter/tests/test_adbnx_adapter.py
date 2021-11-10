@@ -314,15 +314,15 @@ def assert_arangodb_data(
 
     overwrite = False
     for id, node in nx_g.nodes(data=True):
-        col = adapter._identify_nx_node(id, node, overwrite)
-        key = adapter._keyify_nx_node(id, node, col, overwrite)
+        col = adapter.cntrl._identify_nx_node(id, node, overwrite)
+        key = adapter.cntrl._keyify_nx_node(id, node, col, overwrite)
         assert adb_g.vertex_collection(col).has(key)
 
     for from_node, to_node, edge in nx_g.edges(data=True):
-        col = adapter._identify_nx_edge(from_node, to_node, edge, overwrite)
+        col = adapter.cntrl._identify_nx_edge(from_node, to_node, edge, overwrite)
         assert adb_g.edge_collection(col).find(
             {
-                "_from": adapter.adb_node_map.get(from_node)["_id"],
-                "_to": adapter.adb_node_map.get(to_node)["_id"],
+                "_from": adapter.cntrl.adb_map.get(from_node)["_id"],
+                "_to": adapter.cntrl.adb_map.get(to_node)["_id"],
             }
         )

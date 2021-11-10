@@ -4,7 +4,8 @@ import json
 import requests
 import subprocess
 from pathlib import Path
-from adbnx_adapter.arangoDB_networkx_adapter import ArangoDB_Networkx_Adapter
+from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
+from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
 
 PROJECT_DIR = Path(__file__).parent.parent.parent
 
@@ -17,9 +18,9 @@ def pytest_sessionstart():
 
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
     adbnx_adapter = ArangoDB_Networkx_Adapter(con)
-    imdb_adbnx_adapter = IMDB_ArangoDB_Networkx_Adapter(con)
-    grid_adbnx_adapter = Basic_Grid_ArangoDB_Networkx_Adapter(con)
-    football_adbnx_adapter = Football_ArangoDB_Networkx_Adapter(con)
+    imdb_adbnx_adapter = ArangoDB_Networkx_Adapter(con, IMDB_ADBNX_Controller())
+    grid_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Grid_ADBNX_Controller())
+    football_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Football_ADBNX_Controller())
 
     arango_restore("examples/data/fraud_dump")
     arango_restore("examples/data/imdb_dump")
@@ -71,47 +72,49 @@ def print_connection_details(con):
     print("----------------------------------------")
 
 
-class IMDB_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-    def _prepare_adb_vertex(self, node: dict, col: str, atribs: set):
-        node["bipartite"] = 0 if col == "Users" else 1
-        return node["_id"]
+class IMDB_ADBNX_Controller(Base_ADBNX_Controller):
+    def _prepare_adb_vertex(self, vertex: dict, collection: str):
+        vertex["bipartite"] = 0 if collection == "Users" else 1
+        return vertex["_id"]
 
 
-class Basic_Grid_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
+class Grid_ADBNX_Controller(Base_ADBNX_Controller):
+    def _prepare_adb_vertex(self, vertex: dict, collection: str):
+        nx_id = tuple(
+            int(n)
+            for n in tuple(
+                vertex["_key"],
+            )
+        )
+        return nx_id
+
     def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
         return "Node"  # Only one node collection in this dataset
 
-    def _keyify_nx_node(self, id, node, col, overwrite: bool) -> str:
+    def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
         return self._tuple_to_arangodb_key_helper(id)
 
-    def _identify_nx_edge(self, from_node, to_node, e: dict, overwrite: bool) -> str:
-        from_collection = self.adb_node_map.get(from_node)["collection"]
-        to_collection = self.adb_node_map.get(to_node)["collection"]
+    def _identify_nx_edge(self, from_node, to_node, edge: dict, overwrite: bool) -> str:
+        from_collection = self.adb_map.get(from_node)["collection"]
+        to_collection = self.adb_map.get(to_node)["collection"]
+
         if from_collection == to_collection == "Node":
             return "to"
 
         return "Unknown_Edge"
 
-    def _prepare_adb_vertex(self, node: dict, col: str, atribs: set):
-        nx_id = tuple(
-            int(n)
-            for n in tuple(
-                node["_key"],
-            )
-        )
-        return nx_id
 
+class Football_ADBNX_Controller(Base_ADBNX_Controller):
+    def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
+        return "Team"  # Only one node collection in this dataset=
 
-class Football_ArangoDB_Networkx_Adapter(ArangoDB_Networkx_Adapter):
-    def _identify_nx_node(self, id: str, node: dict, overwrite: bool) -> str:
-        return "Team"  # Only one node collection in this dataset
-
-    def _keyify_nx_node(self, id, node, collection, overwrite: bool) -> str:
+    def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
         return self._string_to_arangodb_key_helper(id)
 
-    def _identify_nx_edge(self, from_node, to_node, e: dict, overwrite: bool) -> str:
-        from_collection = self.adb_node_map.get(from_node)["collection"]
-        to_collection = self.adb_node_map.get(to_node)["collection"]
+    def _identify_nx_edge(self, from_node, to_node, edge: dict, overwrite: bool) -> str:
+        from_collection = self.adb_map.get(from_node)["collection"]
+        to_collection = self.adb_map.get(to_node)["collection"]
+
         if from_collection == to_collection == "Team":
             return "Played"
 
