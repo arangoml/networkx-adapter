@@ -22,6 +22,7 @@ jobs:
         uses: psf/black@stable
         with:
           options: "--check --verbose --diff --color"
+          src: "adbnx_adapter"
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
