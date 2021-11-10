@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
-        run: pytest --cov=adbnx_adapter/adbnx_adapter --cov-report term-missing -v adbnx_adapter/tests/
+        run: pytest --cov=adbnx_adapter/adbnx_adapter --cov-report term-missing -v tests/
       - name: Run coveralls
         if: ${{ matrix.python == '3.7' }}
         run: coveralls
