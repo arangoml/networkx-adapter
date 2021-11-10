@@ -10,13 +10,23 @@ jobs:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9']
     name: Python ${{ matrix.python }}
+    env:
+      COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
+      - name: Lint with Black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./adbnx_adapter/**/*.py"
       - name: Install dependencies
-        run: pip install -e . pytest pytest-cov
+        run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
-        run: pytest -s
+        run: pytest 
+      - name: Run coveralls
+        if: ${{ matrix.python == '3.7' }}
+        run: coveralls
