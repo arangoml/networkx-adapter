@@ -21,8 +21,7 @@ jobs:
       - name: Lint with Black
         uses: psf/black@stable
         with:
-          options: "--check --verbose"
-          src: "./adbnx_adapter/**/*.py"
+          options: "--check --verbose --diff --color"
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
