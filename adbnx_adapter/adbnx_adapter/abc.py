@@ -67,14 +67,21 @@ class ADBNX_Controller(ABC):
     def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
         raise NotImplementedError()  # pragma: no cover
 
-    def _identify_nx_edge(self, from_node, to_node, edge: dict, overwrite: bool) -> str:
+    def _identify_nx_edge(
+        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+    ) -> str:
         raise NotImplementedError()  # pragma: no cover
 
     def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
         raise NotImplementedError()  # pragma: no cover
 
     def _keyify_nx_edge(
-        self, from_node, to_node, edge: dict, collection: str, overwrite: bool
+        self,
+        edge: dict,
+        from_node: dict,
+        to_node: dict,
+        collection: str,
+        overwrite: bool,
     ):
         raise NotImplementedError()  # pragma: no cover
 

@@ -88,15 +88,19 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
         )
         return nx_id
 
-    def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
+    def _identify_nx_node(self, id: tuple, node: dict, overwrite: bool) -> str:
         return "Node"  # Only one node collection in this dataset
 
-    def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
+    def _keyify_nx_node(
+        self, id: tuple, node: dict, collection: str, overwrite: bool
+    ) -> str:
         return self._tuple_to_arangodb_key_helper(id)
 
-    def _identify_nx_edge(self, from_node, to_node, edge: dict, overwrite: bool) -> str:
-        from_collection = self.adb_map.get(from_node)["collection"]
-        to_collection = self.adb_map.get(to_node)["collection"]
+    def _identify_nx_edge(
+        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+    ) -> str:
+        from_collection = self.adb_map.get(from_node["id"])["collection"]
+        to_collection = self.adb_map.get(to_node["id"])["collection"]
 
         if from_collection == to_collection == "Node":
             return "to"
@@ -111,9 +115,11 @@ class Football_ADBNX_Controller(Base_ADBNX_Controller):
     def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
         return self._string_to_arangodb_key_helper(id)
 
-    def _identify_nx_edge(self, from_node, to_node, edge: dict, overwrite: bool) -> str:
-        from_collection = self.adb_map.get(from_node)["collection"]
-        to_collection = self.adb_map.get(to_node)["collection"]
+    def _identify_nx_edge(
+        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+    ) -> str:
+        from_collection = self.adb_map.get(from_node["id"])["collection"]
+        to_collection = self.adb_map.get(to_node["id"])["collection"]
 
         if from_collection == to_collection == "Team":
             return "Played"

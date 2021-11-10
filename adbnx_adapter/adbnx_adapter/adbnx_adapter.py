@@ -138,21 +138,24 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             name, edge_definitions=edge_definitions
         )
 
-        for id, node in nx_graph.nodes(data=True):
-            col = self.cntrl._identify_nx_node(id, node, overwrite)
-            key = self.cntrl._keyify_nx_node(id, node, col, overwrite)
+        for node_id, node in nx_graph.nodes(data=True):
+            col = self.cntrl._identify_nx_node(node_id, node, overwrite)
+            key = self.cntrl._keyify_nx_node(node_id, node, col, overwrite)
             node["_id"] = col + "/" + key
-            self.__insert_arangodb_vertex(id, node, col, key, overwrite)
+            self.__insert_arangodb_vertex(node_id, node, col, key, overwrite)
 
-        for from_node, to_node, edge in nx_graph.edges(data=True):
-            col = self.cntrl._identify_nx_edge(from_node, to_node, edge, overwrite)
+        for from_node_id, to_node_id, edge in nx_graph.edges(data=True):
+            from_node = {"id": from_node_id, **nx_graph.nodes[from_node_id]}
+            to_node = {"id": to_node_id, **nx_graph.nodes[to_node_id]}
+
+            col = self.cntrl._identify_nx_edge(edge, from_node, to_node, overwrite)
             if keyify_edges:
                 key = self.cntrl._keyify_nx_edge(
-                    from_node, to_node, edge, col, overwrite
+                    edge, from_node, to_node, col, overwrite
                 )
                 edge["_id"] = col + "/" + key
 
-            self.__insert_arangodb_edge(from_node, to_node, edge, col, overwrite)
+            self.__insert_arangodb_edge(edge, from_node, to_node, col, overwrite)
 
         print(f"ArangoDB: {name} created")
         return self.cntrl.adb_graph
@@ -196,7 +199,9 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.db.collection(col).insert(v, overwrite=ow, silent=True)
 
     @final
-    def __insert_arangodb_edge(self, from_node, to_node, e: dict, col: str, ow: bool):
-        e["_from"] = self.cntrl.adb_map.get(from_node)["_id"]
-        e["_to"] = self.cntrl.adb_map.get(to_node)["_id"]
-        self.db.collection(col).insert(e, overwrite=ow, silent=True)
+    def __insert_arangodb_edge(
+        self, edge: dict, from_node: dict, to_node: dict, col: str, ow: bool
+    ):
+        edge["_from"] = self.cntrl.adb_map.get(from_node["id"])["_id"]
+        edge["_to"] = self.cntrl.adb_map.get(to_node["id"])["_id"]
+        self.db.collection(col).insert(edge, overwrite=ow, silent=True)
