@@ -31,7 +31,7 @@ jobs:
       - name: Run ls -la
         run: ls -la
       - name: Run pytest
-        run: coverage run --source=adbnx_adapter/adbnx_adapter -m pytest tests/
+        run: coverage run --source=adbnx_adapter -m pytest tests/
       - name: Run ls -la
         run: ls -la
       - name: Run coveralls
