@@ -27,7 +27,7 @@ import urllib.request as urllib
             "protocol": "http",
             "port": 8529,
             "username": "root",
-            "password": "password"
+            "password": "password",
         }
     ],
 )
