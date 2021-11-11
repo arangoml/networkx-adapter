@@ -41,7 +41,8 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
 
         if issubclass(type(cntrl), Base_ADBNX_Controller) is False:
-            raise TypeError("cntrl must inherit from Base_ADBNX_Controller")
+            msg = "cntrl must inherit from Base_ADBNX_Controller"  # pragma: no cover
+            raise TypeError(msg)  # pragma: no cover
 
         self.cntrl: Base_ADBNX_Controller = cntrl
 
