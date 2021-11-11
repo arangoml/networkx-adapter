@@ -8,7 +8,8 @@ jobs:
         working-directory: ./adbnx_adapter
     strategy:
       matrix:
-        python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        # python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        python: ['3.7']
     name: Python ${{ matrix.python }}
     env:
       COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
@@ -29,7 +30,7 @@ jobs:
       - name: Run pytest
         # run: coverage run --source=adbnx_adapter -m pytest tests/
         # run: pytest  --color=yes --no-cov-on-fail --code-highlight=yes
-        run: pytest --cov-report=xml --cov=adbnx_adapter --color=yes --no-cov-on-fail --code-highlight=yes
+        run: pytest --cov=adbnx_adapter --color=yes --no-cov-on-fail --code-highlight=yes
       - name: Run coveralls
         if: ${{ matrix.python == '3.7' }}
         run: coveralls --service=github
