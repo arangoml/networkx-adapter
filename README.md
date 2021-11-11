@@ -1,10 +1,12 @@
 # ArangoDB-Networkx Adapter
 [![build](https://github.com/arangoml/networkx-adapter/actions/workflows/build.yml/badge.svg)](https://github.com/arangoml/networkx-adapter/actions/workflows/build.yml)
-[![Coverage Status](https://coveralls.io/repos/github/arangoml/networkx-adapter/badge.svg)](https://coveralls.io/github/arangoml/networkx-adapter?branch=adapter-cleanup)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Coverage Status](https://coveralls.io/repos/github/arangoml/networkx-adapter/badge.svg)](https://coveralls.io/github/arangoml/networkx-adapter)
+
 [![PyPI version badge](https://img.shields.io/pypi/v/adbnx-adapter)](https://pypi.org/project/adbnx-adapter/)
 [![Python versions badge](https://img.shields.io/pypi/pyversions/adbnx-adapter)](https://github.com/arangoml/networkx-adapter)
+
 [![License](https://img.shields.io/github/license/arangoml/networkx-adapter)](https://github.com/arangoml/networkx-adapter/blob/master/LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Downloads per month](https://img.shields.io/pypi/dm/adbnx-adapter)](https://pypi.org/project/adbnx-adapter/)
 
 <center>
