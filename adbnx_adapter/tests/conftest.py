@@ -40,10 +40,6 @@ def pytest_sessionstart():
     adbnx_adapter.db.create_graph("fraud-detection", edge_definitions=edge_definitions)
 
 
-def pytest_sessionfinish(session, exitstatus):
-    print_connection_details(con)
-
-
 def get_oasis_crendetials() -> dict:
     url = "https://tutorials.arangodb.cloud:8529/_db/_system/tutorialDB/tutorialDB"
     request = requests.post(url, data=json.dumps("{}"))
