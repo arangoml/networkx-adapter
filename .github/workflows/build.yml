@@ -29,7 +29,7 @@ jobs:
       - name: Run pytest
         # run: coverage run --source=adbnx_adapter -m pytest tests/
         # run: pytest  --color=yes --no-cov-on-fail --code-highlight=yes
-        run: pytest --cov=adbnx_adapter --color=yes --no-cov-on-fail --code-highlight=yes
+        run: pytest --cov-report=xml --cov=adbnx_adapter --color=yes --no-cov-on-fail --code-highlight=yes
       - name: Run coveralls
         if: ${{ matrix.python == '3.7' }}
         run: coveralls --service=github
