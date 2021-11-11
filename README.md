@@ -10,11 +10,13 @@
 [![Downloads per month](https://img.shields.io/pypi/dm/adbnx-adapter)](https://pypi.org/project/adbnx-adapter/)
 
 <center>
-<img src="examples/assets/logos/networkx_logo.svg" width=50% >
+    <span>
+        <img src="examples/assets/logos/ArangoDB_logo.png" width=45% >
+        <img src="examples/assets/logos/networkx_logo.svg" width=45% >
+    </span>
 </center>
-<center>
-<img src="examples/assets/logos/ArangoDB_logo.png" width=50% >
-</center>
+<br></br>
+
 
 The ArangoDB-Networkx Adapter exports Graphs from ArangoDB, a multi-model Graph Database, into NetworkX, the swiss army knife for graph analysis with python, and vice-versa.
 
