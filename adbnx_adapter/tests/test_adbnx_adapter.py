@@ -281,8 +281,8 @@ def test_full_cycle_from_networkx():
     grid_edge_definitions = [
         {
             "edge_collection": "to",
-            "from_vertex_collections": ["Node"],
-            "to_vertex_collections": ["Node"],
+            "from_vertex_collections": ["Grid_Node"],
+            "to_vertex_collections": ["Grid_Node"],
         }
     ]
 
