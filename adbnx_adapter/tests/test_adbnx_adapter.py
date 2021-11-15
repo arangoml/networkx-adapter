@@ -127,7 +127,8 @@ def test_create_networkx_graph_from_arangodb_graph(
 ):
     assert_adapter_type(adapter)
 
-    if edge_definitions: # Re-create the graph if defintions are provided
+    # Re-create the graph if defintions are provided
+    if edge_definitions:
         adapter.db.delete_graph(name, ignore_missing=True)
         adapter.db.create_graph(name, edge_definitions=edge_definitions)
 
