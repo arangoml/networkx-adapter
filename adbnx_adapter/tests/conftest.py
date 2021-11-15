@@ -16,11 +16,12 @@ def pytest_sessionstart():
     print_connection_details(con)
     time.sleep(5)  # Enough for the oasis instance to be ready.
 
-    global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
+    global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter, karate_adbnx_adapter
     adbnx_adapter = ArangoDB_Networkx_Adapter(con)
-    imdb_adbnx_adapter = ArangoDB_Networkx_Adapter(con, IMDB_ADBNX_Controller())
-    grid_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Grid_ADBNX_Controller())
-    football_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Football_ADBNX_Controller())
+    imdb_adbnx_adapter = ArangoDB_Networkx_Adapter(con, IMDB_ADBNX_Controller)
+    grid_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Grid_ADBNX_Controller)
+    football_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Football_ADBNX_Controller)
+    karate_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Karate_ADBNX_Controller)
 
     arango_restore("examples/data/fraud_dump")
     arango_restore("examples/data/imdb_dump")
@@ -121,3 +122,22 @@ class Football_ADBNX_Controller(Base_ADBNX_Controller):
             return "Played"
 
         return "Unknown_Edge"
+
+
+class Karate_ADBNX_Controller(Base_ADBNX_Controller):
+    def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
+        return "Karate_Student"
+
+    def _identify_nx_edge(
+        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+    ) -> str:
+        from_collection = self.adb_map.get(from_node["id"])["collection"]
+        to_collection = self.adb_map.get(to_node["id"])["collection"]
+
+        if from_collection == to_collection == "Karate_Student":
+            return "knows"
+
+        return "Unknown_Edge"
+
+    def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
+        return str(id)  # In this case the id is an integer

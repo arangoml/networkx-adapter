@@ -1,3 +1,4 @@
+from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
 import pytest
 from conftest import (
     ArangoDB_Networkx_Adapter,
@@ -5,6 +6,7 @@ from conftest import (
     imdb_adbnx_adapter,
     grid_adbnx_adapter,
     football_adbnx_adapter,
+    karate_adbnx_adapter,
 )
 
 import networkx as nx
@@ -187,6 +189,26 @@ def test_create_arangodb_graph_from_football_graph():
 
 
 @pytest.mark.unit
+def test_create_arangodb_graph_from_karate_graph():
+    karate_nx_g = nx.karate_club_graph()
+    for id, node in karate_nx_g.nodes(data=True):
+        node["degree"] = karate_nx_g.degree(id)
+
+    karate_edge_definitions = [
+        {
+            "edge_collection": "knows",
+            "from_vertex_collections": ["Karate_Student"],
+            "to_vertex_collections": ["Karate_Student"],
+        }
+    ]
+
+    karate_adb_g = karate_adbnx_adapter.create_arangodb_graph(
+        "Karate", karate_nx_g, karate_edge_definitions
+    )
+    assert_arangodb_data(karate_adbnx_adapter, karate_nx_g, karate_adb_g)
+
+
+@pytest.mark.unit
 def test_full_cycle_from_arangodb():
     name = "fraud-detection"
     original_fraud_adb_g = adbnx_adapter.db.graph(name)
@@ -292,10 +314,9 @@ def test_full_cycle_from_networkx():
         assert new_grid_nx_g.has_edge(from_node, to_node)
 
 
-def assert_adapter_type(adapter):
-    assert (
-        type(adapter) is ArangoDB_Networkx_Adapter
-        or issubclass(type(adapter), ArangoDB_Networkx_Adapter) is True
+def assert_adapter_type(adapter: ArangoDB_Networkx_Adapter):
+    assert type(adapter) is ArangoDB_Networkx_Adapter and issubclass(
+        type(adapter.cntrl), Base_ADBNX_Controller
     )
 
 
