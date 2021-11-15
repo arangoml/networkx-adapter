@@ -26,7 +26,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
     def __init__(
         self,
         conn: dict,
-        cntrl: Base_ADBNX_Controller = Base_ADBNX_Controller(),
+        controller_class: Base_ADBNX_Controller = Base_ADBNX_Controller,
     ):
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
 
@@ -40,11 +40,11 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         print(f"Connecting to {url}")
         self.db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
 
-        if issubclass(type(cntrl), Base_ADBNX_Controller) is False:
-            msg = "cntrl must inherit from Base_ADBNX_Controller"  # pragma: no cover
+        if issubclass(controller_class, Base_ADBNX_Controller) is False:
+            msg = "controller_class must inherit from Base_ADBNX_Controller"  # pragma: no cover
             raise TypeError(msg)  # pragma: no cover
 
-        self.cntrl: Base_ADBNX_Controller = cntrl
+        self.cntrl: Base_ADBNX_Controller = controller_class()
 
     @final
     def create_networkx_graph(
@@ -122,14 +122,18 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         for definition in edge_definitions:
             e_col = definition["edge_collection"]
-            if self.db.has_collection(e_col) is False and overwrite is False:
+            if self.db.has_collection(e_col):
+                self.db.collection(e_col).truncate() if overwrite else None
+            else:
                 self.db.create_collection(e_col, edge=True)
 
             for v_col in (
                 definition["from_vertex_collections"]
                 + definition["to_vertex_collections"]
             ):
-                if self.db.has_collection(v_col) is False and overwrite is False:
+                if self.db.has_collection(v_col):
+                    self.db.collection(v_col).truncate() if overwrite else None
+                else:
                     self.db.create_collection(v_col)
 
         if overwrite:
