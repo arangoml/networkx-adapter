@@ -1,11 +1,16 @@
+import io
 import os
 import time
 import json
+import zipfile
 import requests
 import subprocess
 from pathlib import Path
-from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
+import urllib.request as urllib
+
+import networkx as nx
 from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
+from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
 
 PROJECT_DIR = Path(__file__).parent.parent.parent
 
@@ -86,7 +91,7 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
         return nx_id
 
     def _identify_nx_node(self, id: tuple, node: dict, overwrite: bool) -> str:
-        return "Node"  # Only one node collection in this dataset
+        return "Grid_Node"  # Only one node collection in this dataset
 
     def _keyify_nx_node(
         self, id: tuple, node: dict, collection: str, overwrite: bool
@@ -99,15 +104,19 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
         from_collection = self.adb_map.get(from_node["id"])["collection"]
         to_collection = self.adb_map.get(to_node["id"])["collection"]
 
-        if from_collection == to_collection == "Node":
+        if from_collection == to_collection == "Grid_Node":
             return "to"
 
         return "Unknown_Edge"
 
 
+def get_grid_graph():
+    return nx.grid_2d_graph(5, 5)
+
+
 class Football_ADBNX_Controller(Base_ADBNX_Controller):
     def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
-        return "Team"  # Only one node collection in this dataset=
+        return "Football_Team"  # Only one node collection in this dataset=
 
     def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
         return self._string_to_arangodb_key_helper(id)
@@ -118,10 +127,21 @@ class Football_ADBNX_Controller(Base_ADBNX_Controller):
         from_collection = self.adb_map.get(from_node["id"])["collection"]
         to_collection = self.adb_map.get(to_node["id"])["collection"]
 
-        if from_collection == to_collection == "Team":
-            return "Played"
+        if from_collection == to_collection == "Football_Team":
+            return "played"
 
         return "Unknown_Edge"
+
+
+def get_football_graph():
+    url = "http://www-personal.umich.edu/~mejn/netdata/football.zip"
+    sock = urllib.urlopen(url)
+    s = io.BytesIO(sock.read())
+    sock.close()
+    zf = zipfile.ZipFile(s)
+    gml = zf.read("football.gml").decode()
+    gml = gml.split("\n")[1:]
+    return nx.parse_gml(gml)
 
 
 class Karate_ADBNX_Controller(Base_ADBNX_Controller):
@@ -141,3 +161,11 @@ class Karate_ADBNX_Controller(Base_ADBNX_Controller):
 
     def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
         return str(id)  # In this case the id is an integer
+
+
+def get_karate_graph():
+    karate_nx_g = nx.karate_club_graph()
+    for id, node in karate_nx_g.nodes(data=True):
+        node["degree"] = karate_nx_g.degree(id)
+
+    return karate_nx_g

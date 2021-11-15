@@ -1,7 +1,11 @@
-from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
 import pytest
 from conftest import (
+    nx,
     ArangoDB_Networkx_Adapter,
+    Base_ADBNX_Controller,
+    get_grid_graph,
+    get_football_graph,
+    get_karate_graph,
     adbnx_adapter,
     imdb_adbnx_adapter,
     grid_adbnx_adapter,
@@ -9,14 +13,8 @@ from conftest import (
     karate_adbnx_adapter,
 )
 
-import networkx as nx
 from arango.graph import Graph as ArangoGraph
 from networkx.classes.graph import Graph as NxGraph
-from networkx.classes.multidigraph import MultiDiGraph as NxMultiDiGraph
-
-import io
-import zipfile
-import urllib.request as urllib
 
 
 @pytest.mark.unit
@@ -87,9 +85,7 @@ def test_create_networkx_graph(
     adapter: ArangoDB_Networkx_Adapter, name: str, attributes: dict
 ):
     assert_adapter_type(adapter)
-
     nx_g = adapter.create_networkx_graph(name, attributes)
-
     assert_networkx_data(
         nx_g,
         attributes["vertexCollections"],
@@ -113,13 +109,11 @@ def test_create_networkx_graph_from_arangodb_collections(
     adapter: ArangoDB_Networkx_Adapter, name: str, vcols: set, ecols: set
 ):
     assert_adapter_type(adapter)
-
     nx_g = adapter.create_networkx_graph_from_arangodb_collections(
         name,
         vcols,
         ecols,
     )
-
     assert_networkx_data(nx_g, vcols, ecols)
 
 
@@ -133,12 +127,11 @@ def test_create_networkx_graph_from_arangodb_graph(
 ):
     assert_adapter_type(adapter)
 
-    if edge_definitions:
+    if edge_definitions: # Re-create the graph if defintions are provided
         adapter.db.delete_graph(name, ignore_missing=True)
         adapter.db.create_graph(name, edge_definitions=edge_definitions)
 
     arango_graph = adapter.db.graph(name)
-
     v_cols = arango_graph.vertex_collections()
     e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
 
@@ -147,65 +140,56 @@ def test_create_networkx_graph_from_arangodb_graph(
 
 
 @pytest.mark.unit
-def test_create_arangodb_graph_from_grid_graph():
-    grid_nx_g = nx.grid_2d_graph(5, 5)
-    grid_edge_definitions = [
-        {
-            "edge_collection": "to",
-            "from_vertex_collections": ["Node"],
-            "to_vertex_collections": ["Node"],
-        }
-    ]
-
-    grid_adb_g = grid_adbnx_adapter.create_arangodb_graph(
-        "Grid", grid_nx_g, grid_edge_definitions
-    )
-    assert_arangodb_data(grid_adbnx_adapter, grid_nx_g, grid_adb_g)
-
-
-@pytest.mark.unit
-def test_create_arangodb_graph_from_football_graph():
-    url = "http://www-personal.umich.edu/~mejn/netdata/football.zip"
-    sock = urllib.urlopen(url)
-    s = io.BytesIO(sock.read())
-    sock.close()
-    zf = zipfile.ZipFile(s)
-    gml = zf.read("football.gml").decode()
-    gml = gml.split("\n")[1:]
-
-    football_nx_g = nx.parse_gml(gml)
-    football_edge_definitions = [
-        {
-            "edge_collection": "Played",
-            "from_vertex_collections": ["Team"],
-            "to_vertex_collections": ["Team"],
-        }
-    ]
-
-    football_adb_g = football_adbnx_adapter.create_arangodb_graph(
-        "Football", football_nx_g, football_edge_definitions
-    )
-    assert_arangodb_data(football_adbnx_adapter, football_nx_g, football_adb_g)
-
-
-@pytest.mark.unit
-def test_create_arangodb_graph_from_karate_graph():
-    karate_nx_g = nx.karate_club_graph()
-    for id, node in karate_nx_g.nodes(data=True):
-        node["degree"] = karate_nx_g.degree(id)
-
-    karate_edge_definitions = [
-        {
-            "edge_collection": "knows",
-            "from_vertex_collections": ["Karate_Student"],
-            "to_vertex_collections": ["Karate_Student"],
-        }
-    ]
-
-    karate_adb_g = karate_adbnx_adapter.create_arangodb_graph(
-        "Karate", karate_nx_g, karate_edge_definitions
-    )
-    assert_arangodb_data(karate_adbnx_adapter, karate_nx_g, karate_adb_g)
+@pytest.mark.parametrize(
+    "adapter, name, nx_g, edge_definitions",
+    [
+        (
+            grid_adbnx_adapter,
+            "Grid",
+            get_grid_graph(),
+            [
+                {
+                    "edge_collection": "to",
+                    "from_vertex_collections": ["Grid_Node"],
+                    "to_vertex_collections": ["Grid_Node"],
+                }
+            ],
+        ),
+        (
+            football_adbnx_adapter,
+            "Football",
+            get_football_graph(),
+            [
+                {
+                    "edge_collection": "played",
+                    "from_vertex_collections": ["Football_Team"],
+                    "to_vertex_collections": ["Football_Team"],
+                }
+            ],
+        ),
+        (
+            karate_adbnx_adapter,
+            "Karate",
+            get_karate_graph(),
+            [
+                {
+                    "edge_collection": "knows",
+                    "from_vertex_collections": ["Karate_Student"],
+                    "to_vertex_collections": ["Karate_Student"],
+                }
+            ],
+        ),
+    ],
+)
+def test_create_arangodb_graph(
+    adapter: ArangoDB_Networkx_Adapter,
+    name: str,
+    nx_g: NxGraph,
+    edge_definitions: list,
+):
+    assert_adapter_type(adapter)
+    adb_g = adapter.create_arangodb_graph(name, nx_g, edge_definitions)
+    assert_arangodb_data(adapter, nx_g, adb_g)
 
 
 @pytest.mark.unit
@@ -321,7 +305,6 @@ def assert_adapter_type(adapter: ArangoDB_Networkx_Adapter):
 
 
 def assert_networkx_data(nx_g: NxGraph, v_cols, e_cols):
-    assert type(nx_g) in [NxGraph, NxMultiDiGraph]
     for col in v_cols:
         for vertex in adbnx_adapter.db.collection(col):
             assert nx_g.has_node(vertex["_id"])
@@ -334,7 +317,6 @@ def assert_networkx_data(nx_g: NxGraph, v_cols, e_cols):
 def assert_arangodb_data(
     adapter: ArangoDB_Networkx_Adapter, nx_g: NxGraph, adb_g: ArangoGraph
 ):
-
     overwrite = False
     for id, node in nx_g.nodes(data=True):
         col = adapter.cntrl._identify_nx_node(id, node, overwrite)
