@@ -9,4 +9,4 @@ adbnx_adapter/dist/
 # Remove the build directory from repo
 adbnx_adapter/build/
 adbnx_adapter/*.egg-info
-
+.vscode
