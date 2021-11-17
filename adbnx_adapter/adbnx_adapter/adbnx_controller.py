@@ -16,7 +16,6 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         self.nx_map = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
 
         self.adb_graph: ArangoDBGraph = None
-
         self.adb_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
 
     def _prepare_adb_vertex(self, vertex: dict, collection: str):

@@ -56,9 +56,9 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         :param name: The NetworkX graph name.
         :type name: str
-        :param graph_attributes: An object defining vertex & edge collections to import to NetworkX, along with their associated attributes to keep/remove.
+        :param graph_attributes: An object defining vertex & edge collections to import to NetworkX, along with their associated attributes to keep.
         :type graph_attributes: dict
-        :param is_keep: Only keep the document attributes specified in **graph_attributes** when importing to NetworkX (is True by default).
+        :param is_keep: Only keep the document attributes specified in **graph_attributes** when importing to NetworkX (is True by default). Otherwise, all document attributes are included.
         :type is_keep: bool
         :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
@@ -249,7 +249,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type col: str
         :param attributes: The set of document attributes.
         :type attributes: set
-        :param is_keep: Only keep the document attributes specified in **attributes** when returning the document.
+        :param is_keep: Only keep the document attributes specified in **attributes** when returning the document. Otherwise, all document attributes are included.
         :type is_keep: bool
         :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
         :type query_options: **kwargs

@@ -1,13 +1,8 @@
-import pathlib
 from setuptools import setup
-
-# The directory containing this file
-HERE = pathlib.Path(__file__).resolve().parents[1]
 
 with open("../README.md", "r") as f:
     long_description = f.read()
 
-# This call to setup() does all the work
 setup(
     name="adbnx_adapter",
     author="ArangoDB",
