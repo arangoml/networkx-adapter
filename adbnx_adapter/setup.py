@@ -7,15 +7,12 @@ HERE = pathlib.Path(__file__).resolve().parents[1]
 with open("../README.md", "r") as f:
     long_description = f.read()
 
-with open("requirements.txt") as f:
-    install_requirements = f.read().splitlines()
-
 # This call to setup() does all the work
 setup(
     name="adbnx_adapter",
     author="ArangoDB",
     author_email="rajiv@arangodb.com",
-    version="1.0.0",
+    version="1.0.1",
     description="Convert ArangoDB graphs to NetworkX & vice-versa.",
     long_description=long_description,
     long_description_content_type="text/markdown",
