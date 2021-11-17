@@ -7,7 +7,7 @@ HERE = pathlib.Path(__file__).resolve().parents[1]
 with open("../README.md", "r") as f:
     long_description = f.read()
 
-with open('requirements.txt') as f:
+with open("requirements.txt") as f:
     install_requirements = f.read().splitlines()
 
 # This call to setup() does all the work
