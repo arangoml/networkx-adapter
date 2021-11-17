@@ -73,8 +73,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     def _identify_nx_edge(
         self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
     ) -> str:
-        """Given a NetworkX edge, its pair of nodes, and the overwrite boolean,
-            identify what ArangoDB collection should it belong to.
+        """Given a NetworkX edge, its pair of nodes, and the overwrite boolean, identify what ArangoDB collection should it belong to.
 
         NOTE: If your NetworkX graph does not comply to ArangoDB standards
         (i.e a node's ID is not "collection/key"), then you must override this function.

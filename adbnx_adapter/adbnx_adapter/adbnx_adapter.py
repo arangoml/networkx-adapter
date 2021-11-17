@@ -19,11 +19,9 @@ from networkx.classes.graph import Graph as NetworkXGraph
 class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
     """ArangoDB-NetworkX adapter.
 
-    :param hosts: Host URL or list of URLs (coordinators in a cluster).
-    :type hosts: str | [str]
-    :param controller_class: The ArangoDB-NetworkX controller,
-        used to identify, keyify and prepare nodes & edges before insertion,
-        optionally re-defined by the user if needed (otherwise defaults to Base_ADBNX_Controller).
+    :param conn: Connection details to an ArangoDB instance.
+    :type conn: dict
+    :param controller_class: The ArangoDB-NetworkX controller, used to identify, keyify and prepare nodes & edges before insertion, optionally re-defined by the user if needed (otherwise defaults to Base_ADBNX_Controller).
     :type controller_class: Base_ADBNX_Controller
     :raise ValueError: If missing required keys in conn
     """
@@ -58,18 +56,30 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         :param name: The NetworkX graph name.
         :type name: str
-        :param graph_attributes: An object defining vertex & edge collections
-            to import to NetworkX, along with their associated attributes to keep/remove.
+        :param graph_attributes: An object defining vertex & edge collections to import to NetworkX, along with their associated attributes to keep/remove.
         :type graph_attributes: dict
-        :param is_keep: Only keep the document attributes specified in
-            **graph_attributes** when importing to NetworkX (is True by default).
+        :param is_keep: Only keep the document attributes specified in **graph_attributes** when importing to NetworkX (is True by default).
         :type is_keep: bool
-        :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance.
+        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         :raise ValueError: If missing required keys in graph_attributes
+
+        Here is an example entry for parameter **graph_attributes**:
+
+        .. code-block:: python
+        {
+            "vertexCollections": {
+                "account": {"Balance", "account_type", "customer_id", "rank"},
+                "bank": {"Country", "Id", "bank_id", "bank_name"},
+                "customer": {"Name", "Sex", "Ssn", "rank"},
+            },
+            "edgeCollections": {
+                "accountHolder": {"_from", "_to"},
+                "transaction": {"_from", "_to"},
+            },
+        }
         """
         self.__validate_attributes("graph", set(graph_attributes), self.GRAPH_ATRIBS)
 
@@ -101,8 +111,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type vertex_collections: set
         :param edge_collections: A set of ArangoDB edge collections to import to NetworkX.
         :type edge_collections: set
-        :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance.
+        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
@@ -122,8 +131,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :param name: The ArangoDB graph name.
         :type name: str
         :param vertex_collections: A set of ArangoDB vertex collections to import to NetworkX.
-        :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance.
+        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
@@ -150,18 +158,11 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type name: str
         :param original_nx_graph: The existing NetworkX graph.
         :type original_nx_graph: networkx.classes.graph.Graph
-        :param edge_definitions: List of edge definitions, where each edge
-            definition entry is a dictionary with fields "edge_collection",
-            "from_vertex_collections" and "to_vertex_collections" (see below
-            for example).
+        :param edge_definitions: List of edge definitions, where each edge definition entry is a dictionary with fields "edge_collection", "from_vertex_collections" and "to_vertex_collections" (see below for example).
         :type edge_definitions: list[dict]
-        :param overwrite: If set to True, overwrites existing ArangoDB collections
-            with the NetworkX graph data. Otherwise, will not remove existing data from
-            collections specified in **edge_definitions**.
+        :param overwrite: If set to True, overwrites existing ArangoDB collections with the NetworkX graph data. Otherwise, will not remove existing data from collections specified in **edge_definitions**.
         :type overwrite: bool
-        :param keyify_edges: If set to True, will create custom edge IDs based on the
-            behavior of the ADBNX_Controller's _keyify_nx_edge() method. Otherwise,
-            edge IDs will be randomly generated.
+        :param keyify_edges: If set to True, will create custom edge IDs based on the behavior of the ADBNX_Controller's _keyify_nx_edge() method. Otherwise, edge IDs will be randomly generated.
         :type overwrite: bool
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
@@ -248,11 +249,9 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type col: str
         :param attributes: The set of document attributes.
         :type attributes: set
-        :param is_keep: Only keep the document attributes specified in
-            **attributes** when returning the document.
+        :param is_keep: Only keep the document attributes specified in **attributes** when returning the document.
         :type is_keep: bool
-        :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance.
+        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: Result cursor.
         :rtype: arango.cursor.Cursor
