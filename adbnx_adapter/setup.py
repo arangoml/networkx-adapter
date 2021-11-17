@@ -7,6 +7,9 @@ HERE = pathlib.Path(__file__).resolve().parents[1]
 with open("../README.md", "r") as f:
     long_description = f.read()
 
+with open('requirements.txt') as f:
+    install_requirements = f.read().splitlines()
+
 # This call to setup() does all the work
 setup(
     name="adbnx_adapter",
@@ -21,7 +24,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.6",
     license="Apache Software License",
-    install_requires=["python-arango", "networkx", "overrides"],
+    install_requires=install_requirements,
     tests_require=["pytest", "pytest-cov"],
     classifiers=[
         "Intended Audience :: Developers",

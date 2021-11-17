@@ -15,14 +15,8 @@ import networkx as nx
 from arango import ArangoClient
 from networkx.classes.graph import Graph as NetworkXGraph
 
-try:  # Python +3.8
-    from typing import final
-except ImportError:  # Python 3.6, 3.7
-    from overrides import final
-
 
 class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
-    @final
     def __init__(
         self,
         conn: dict,
@@ -46,7 +40,6 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         self.cntrl: Base_ADBNX_Controller = controller_class()
 
-    @final
     def create_networkx_graph(
         self, name: str, graph_attributes, is_keep=True, **query_options
     ):
@@ -65,7 +58,6 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         print(f"NetworkX: {name} created")
         return self.cntrl.nx_graph
 
-    @final
     def create_networkx_graph_from_arangodb_collections(
         self,
         name: str,
@@ -82,7 +74,6 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             name, graph_attributes, is_keep=False, **query_options
         )
 
-    @final
     def create_networkx_graph_from_arangodb_graph(self, name: str, **query_options):
         arango_graph = self.db.graph(name)
         v_cols = arango_graph.vertex_collections()
@@ -92,7 +83,6 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             name, v_cols, e_cols, **query_options
         )
 
-    @final
     def create_arangodb_graph(
         self,
         name: str,
@@ -165,13 +155,11 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         print(f"ArangoDB: {name} created")
         return self.cntrl.adb_graph
 
-    @final
     def __validate_attributes(self, type: str, attributes: set, valid_attributes: set):
         if valid_attributes.issubset(attributes) is False:
             missing_attributes = valid_attributes - attributes
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
-    @final
     def __fetch_arangodb_docs(
         self, col: str, attributes: set, is_keep: bool, query_options: dict
     ):
@@ -183,14 +171,12 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         return self.db.aql.execute(aql, **query_options)
 
-    @final
     def __insert_networkx_node(self, adb_id: str, node: dict, col: str):
         nx_id = self.cntrl._prepare_adb_vertex(node, col)
         self.cntrl.nx_map[adb_id] = {"_id": nx_id, "collection": col}
 
         self.cntrl.nx_graph.add_node(nx_id, **node)
 
-    @final
     def __insert_networkx_edge(self, edge: dict, col: str):
         from_node_id = self.cntrl.nx_map.get(edge["_from"])["_id"]
         to_node_id = self.cntrl.nx_map.get(edge["_to"])["_id"]
@@ -198,12 +184,10 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.cntrl._prepare_adb_edge(edge, col)
         self.cntrl.nx_graph.add_edge(from_node_id, to_node_id, **edge)
 
-    @final
     def __insert_arangodb_vertex(self, id, v: dict, col: str, key: str, ow: bool):
         self.cntrl.adb_map[id] = {"_id": v["_id"], "collection": col, "key": key}
         self.db.collection(col).insert(v, overwrite=ow, silent=True)
 
-    @final
     def __insert_arangodb_edge(
         self, edge: dict, from_node: dict, to_node: dict, col: str, ow: bool
     ):

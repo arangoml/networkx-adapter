@@ -3,11 +3,6 @@ from .abc import ADBNX_Controller
 from arango.graph import Graph as ArangoDBGraph
 from networkx.classes.graph import Graph as NetworkXGraph
 
-try:  # Python +3.8
-    from typing import final
-except ImportError:  # Python 3.6, 3.7
-    from overrides import final
-
 
 class Base_ADBNX_Controller(ADBNX_Controller):
     def __init__(self):
@@ -91,7 +86,6 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         edge_id: str = edge["_id"]
         return edge_id.split("/")[1]
 
-    @final
     def _string_to_arangodb_key_helper(self, string: str) -> str:
         """
         Given a string, derive a valid ArangoDB _key string.
@@ -103,7 +97,6 @@ class Base_ADBNX_Controller(ADBNX_Controller):
 
         return res
 
-    @final
     def _tuple_to_arangodb_key_helper(self, tup: tuple) -> str:
         """
         Given a tuple, derive a valid ArangoDB _key string.
