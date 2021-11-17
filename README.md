@@ -9,14 +9,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Downloads per month](https://img.shields.io/pypi/dm/adbnx-adapter)](https://pypi.org/project/adbnx-adapter/)
 
-<center>
-    <span>
-        <img src="examples/assets/logos/ArangoDB_logo.png" width=45% >
-        <img src="examples/assets/logos/networkx_logo.svg" width=45% >
-    </span>
-</center>
-<br></br>
+![](https://raw.githubusercontent.com/arangoml/networkx-adapter/1.0.0/examples/assets/logos/ArangoDB_logo.png)
 
+![](https://raw.githubusercontent.com/arangoml/networkx-adapter/1.0.0/examples/assets/logos/networkx_logo.svg)
 
 The ArangoDB-Networkx Adapter exports Graphs from ArangoDB, a multi-model Graph Database, into NetworkX, the swiss army knife for graph analysis with python, and vice-versa.
 
@@ -30,6 +25,43 @@ Networkx is a commonly used tool for analysis of network-data. If your analytics
 ##  Quickstart
 
 Get Started on Colab: <a href="https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkxAdapter.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+
+```py
+import networkx as nx
+from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
+
+con = {
+    "hostname": "localhost",
+    "protocol": "http",
+    "port": 8529,
+    "username": "root",
+    "password": "rootpassword",
+    "dbName": "_system",
+}
+
+adbnx_adapter = ArangoDB_Networkx_Adapter(con)
+
+# (Assume ArangoDB fraud-detection data dump is imported)
+
+fraud_nx_g = adbnx_adapter.create_networkx_graph_from_arangodb_graph("fraud-detection")
+fraud_nx_g_2 = adbnx_adapter.create_networkx_graph_from_arangodb_collections(
+        "fraud-detection", 
+        {"account", "bank", "branch", "Class", "customer"},
+        {"accountHolder", "Relationship", "transaction"}
+)
+
+
+grid_nx_g = nx.grid_2d_graph(5, 5)
+grid_edge_definitions = [
+    {
+        "edge_collection": "to",
+        "from_vertex_collections": ["Grid_Node"],
+        "to_vertex_collections": ["Grid_Node"],
+    }
+]
+adb_g = adbnx_adapter.create_arangodb_graph("Grid", grid_nx_g, grid_edge_definitions)
+```
 
 ##  Development & Testing
 
