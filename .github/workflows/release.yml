@@ -1,0 +1,104 @@
+name: release
+on:
+  push:
+    branches:
+      - master
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./adbnx_adapter
+    name: Verify version increase
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: pip install requests packaging
+      - name: Assert version increase
+        id: verify
+        run: echo "::set-output name=has_increased::$(python scripts/assert_version.py $(python scripts/extract_version.py) $(cat VERSION))"
+      - name: Fail on no version increase
+        if: ${{ steps.verify.outputs.has_increased != 'true' }}
+        uses: actions/github-script@v3
+        with:
+          script: core.setFailed("Cannot build & release - VERSION has not been updated")
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./adbnx_adapter
+    strategy:
+      matrix:
+        python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+    name: Python ${{ matrix.python }}
+    env:
+      COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Lint with Black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose --diff --color"
+          src: "adbnx_adapter"
+      - name: Install dependencies
+        run: pip install -e . pytest pytest-cov coveralls
+      - name: Run pytest
+        run: |
+          pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          coveralls
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./adbnx_adapter
+    name: Release package
+    env:
+      TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install release packages
+        run: pip install -e . twine wheel
+
+      - name: Ensure clean dist/ and build/ folders
+        run: rm -rf dist build
+        continue-on-error: true
+
+      - name: Build release
+        run: python setup.py sdist bdist_wheel
+
+      - name: Extract last version tag
+        run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
+
+      - name: Extract wheel artifact name
+        run: echo "wheel_name=$(echo dist/*.whl)" >> $GITHUB_ENV
+
+      - name: Extract tar.gz artifact name
+        run: echo "tar_name=$(echo dist/*.tar.gz)" >> $GITHUB_ENV
+
+      - name: Pull tags from the repo
+        run: git pull --tags
+
+      - name:  Create Github release & upload files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "hub release create -a $wheel_name -a $tar_name $(cat VERSION)"
+
+      - name: Release package
+        run: echo "twine upload --repository testpypi dist/*"

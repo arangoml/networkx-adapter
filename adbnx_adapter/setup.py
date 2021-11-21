@@ -1,5 +1,8 @@
 from setuptools import setup
 
+with open("VERSION") as f:
+    version = f.read().strip()
+
 with open("../README.md", "r") as f:
     long_description = f.read()
 
@@ -7,7 +10,7 @@ setup(
     name="adbnx_adapter",
     author="ArangoDB",
     author_email="rajiv@arangodb.com",
-    version="1.0.1",
+    version=version,
     description="Convert ArangoDB graphs to NetworkX & vice-versa.",
     long_description=long_description,
     long_description_content_type="text/markdown",
