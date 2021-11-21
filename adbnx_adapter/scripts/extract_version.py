@@ -2,6 +2,8 @@
 import requests
 
 if __name__ == "__main__":
-    response = requests.get("https://api.github.com/repos/arangoml/networkx-adapter/releases/latest")
+    response = requests.get(
+        "https://api.github.com/repos/arangoml/networkx-adapter/releases/latest"
+    )
     response.raise_for_status()
-    print(response.json().get('tag_name'))
+    print(response.json().get("tag_name"))
