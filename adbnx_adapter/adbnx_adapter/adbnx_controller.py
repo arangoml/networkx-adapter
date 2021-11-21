@@ -1,8 +1,5 @@
 from .abc import ADBNX_Controller
 
-from arango.graph import Graph as ArangoDBGraph
-from networkx.classes.graph import Graph as NetworkXGraph
-
 
 class Base_ADBNX_Controller(ADBNX_Controller):
     """ArangoDB-NetworkX controller.
@@ -12,10 +9,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     """
 
     def __init__(self):
-        self.nx_graph: NetworkXGraph = None
         self.nx_map = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
-
-        self.adb_graph: ArangoDBGraph = None
         self.adb_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
 
     def _prepare_adb_vertex(self, vertex: dict, collection: str):
