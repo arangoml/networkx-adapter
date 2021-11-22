@@ -39,16 +39,18 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         username = conn["username"]
         password = conn["password"]
         db_name = conn["dbName"]
-        port = str(conn.get("port", 8529))
-        protocol = conn.get("protocol", "https")
 
-        url = protocol + "://" + conn["hostname"] + ":" + port
+        protocol = conn.get("protocol", "https")
+        host = conn["hostname"]
+        port = str(conn.get("port", 8529))
+
+        url = protocol + "://" + host + ":" + port
         print(f"Connecting to {url}")
         self.db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
 
         if issubclass(controller_class, Base_ADBNX_Controller) is False:
-            msg = "controller_class must inherit from Base_ADBNX_Controller"  # pragma: no cover
-            raise TypeError(msg)  # pragma: no cover
+            msg = "controller_class must inherit from Base_ADBNX_Controller"
+            raise TypeError(msg)
 
         self.cntrl: Base_ADBNX_Controller = controller_class()
 

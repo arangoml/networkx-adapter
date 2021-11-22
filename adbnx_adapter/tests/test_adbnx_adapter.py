@@ -11,6 +11,7 @@ from conftest import (
     grid_adbnx_adapter,
     football_adbnx_adapter,
     karate_adbnx_adapter,
+    con,
 )
 
 from arango.graph import Graph as ArangoGraph
@@ -18,22 +19,41 @@ from networkx.classes.graph import Graph as NxGraph
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize(
-    "bad_connection",
-    [
-        {
-            "dbName": "_system",
-            "hostname": "localhost",
-            "protocol": "http",
-            "port": 8529,
-            # "username": "root",
-            # "password": "password",
-        }
-    ],
-)
-def test_validate_attributes(bad_connection):
+def test_validate_attributes():
+    bad_connection = {
+        "dbName": "_system",
+        "hostname": "localhost",
+        "protocol": "http",
+        "port": 8529,
+        # "username": "root",
+        # "password": "password",
+    }
+
     with pytest.raises(ValueError):
         ArangoDB_Networkx_Adapter(bad_connection)
+
+
+@pytest.mark.unit
+def test_validate_controller_class():
+    class Bad_ADBNX_Controller:
+        def _prepare_adb_vertex(self, vertex: dict, collection: str):
+            pass
+
+        def _identify_nx_node(self, id: tuple, node: dict, overwrite: bool) -> str:
+            pass
+
+        def _keyify_nx_node(
+            self, id: tuple, node: dict, collection: str, overwrite: bool
+        ) -> str:
+            pass
+
+        def _identify_nx_edge(
+            self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+        ) -> str:
+            pass
+
+    with pytest.raises(TypeError):
+        ArangoDB_Networkx_Adapter(con, Bad_ADBNX_Controller)
 
 
 @pytest.mark.unit
