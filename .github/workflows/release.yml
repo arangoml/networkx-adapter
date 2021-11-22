@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+    paths:
+      - './adbnx_adapter/**'
 jobs:
   version:
     runs-on: ubuntu-latest
