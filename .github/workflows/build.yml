@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./adbnx_adapter
+        working-directory: adbnx_adapter/
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
@@ -23,10 +23,8 @@ jobs:
         uses: psf/black@stable
         with:
           options: "--check --verbose --diff --color"
-          src: "adbnx_adapter"
+          src: "adbnx_adapter/"
       - name: Install dependencies
-        run: pip install -e . pytest pytest-cov coveralls
+        run: pip install -e . pytest
       - name: Run pytest
-        run: |
-          pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
-          coveralls
+        run: pytest --color=yes --code-highlight=yes
