@@ -8,9 +8,6 @@ on:
 jobs:
   version:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: adbnx_adapter/
     name: Verify version increase
     steps:
       - uses: actions/checkout@v2
@@ -21,7 +18,7 @@ jobs:
         run: pip install requests packaging
       - name: Assert version increase
         id: verify
-        run: echo "::set-output name=has_increased::$(python scripts/assert_version.py $(python scripts/extract_version.py) $(cat VERSION))"
+        run: echo "::set-output name=has_increased::$(python scripts/assert_version.py $(python scripts/extract_version.py) $(cat adbnx_adapter/VERSION))"
       - name: Fail on no version increase
         if: ${{ steps.verify.outputs.has_increased != 'true' }}
         uses: actions/github-script@v3
