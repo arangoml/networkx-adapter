@@ -27,4 +27,4 @@ jobs:
       - name: Install dependencies
         run: pip install -e . pytest
       - name: Run pytest
-        run: pytest --color=yes --code-highlight=yes
+        run: pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
