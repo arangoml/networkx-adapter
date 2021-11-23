@@ -1,5 +1,8 @@
 name: build
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - 'adbnx_adapter/**'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,6 +28,6 @@ jobs:
           options: "--check --verbose --diff --color"
           src: "adbnx_adapter/"
       - name: Install dependencies
-        run: pip install -e . pytest
+        run: pip install -e . pytest pytest-cov 
       - name: Run pytest
         run: pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
