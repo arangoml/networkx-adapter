@@ -28,6 +28,8 @@ jobs:
           options: "--check --verbose --diff --color"
           src: "adbnx_adapter/"
       - name: Install dependencies
-        run: pip install -e . pytest pytest-cov 
+        run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
-        run: pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+        run: |
+          pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          coveralls
