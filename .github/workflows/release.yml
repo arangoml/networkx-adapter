@@ -89,6 +89,9 @@ jobs:
       - name: Pypi release
         run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }}
 
+      - name: Generate changelog file
+        run: echo "v$(cat VERSION)" > version_changelog.md
+
       - name:  Github release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
