@@ -1,6 +1,6 @@
 # ArangoDB-Networkx Adapter
-[![build](https://github.com/arangoml/networkx-adapter/actions/workflows/build.yml/badge.svg)](https://github.com/arangoml/networkx-adapter/actions/workflows/build.yml)
-[![Coverage Status](https://coveralls.io/repos/github/arangoml/networkx-adapter/badge.svg)](https://coveralls.io/github/arangoml/networkx-adapter)
+[![build](https://github.com/arangoml/networkx-adapter/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/arangoml/networkx-adapter/actions/workflows/build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/arangoml/networkx-adapter/badge.svg?branch=master)](https://coveralls.io/github/arangoml/networkx-adapter)
 
 [![PyPI version badge](https://img.shields.io/pypi/v/adbnx-adapter)](https://pypi.org/project/adbnx-adapter/)
 [![Python versions badge](https://img.shields.io/pypi/pyversions/adbnx-adapter)](https://github.com/arangoml/networkx-adapter)
