@@ -69,10 +69,10 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.8'
 
       - name: Install release packages
-        run: pip install -e . twine wheel
+        run: pip install -e . wheel gitchangelog pystache twine
 
       - name: Ensure clean dist/ and build/ folders
         run: rm -rf dist build
@@ -80,16 +80,80 @@ jobs:
       - name: Build package
         run: python setup.py sdist bdist_wheel
 
+      - name: Extract current version
+        run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
+
+      - name: Pull tags from the repo
+        run: git pull --tags
+
+      - name: Generate changelog file
+        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/v$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
+
       - name: TestPypi release
         run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }}
 
       - name: Pypi release
         run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }}
 
-      - name: Generate changelog file
-        run: echo "v$(cat VERSION)" > version_changelog.md
-
       - name:  Github release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: hub release create -F version_changelog.md $(cat VERSION)
+
+  changelog:
+    needs: release
+    runs-on: ubuntu-latest
+    name: Update Changelog
+    defaults:
+      run:
+        working-directory: adbnx_adapter/
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Needed for changelog generation
+
+      - name: Create new branch
+        run: git checkout -b actions/changelog
+
+      - name: Set branch upstream
+        run: git push -u origin actions/changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: pip install -e . wheel gitchangelog pystache
+
+      - name: Generate newest changelog
+        run: gitchangelog $(cat VERSION) > CHANGELOG.md
+
+      - name: Make commit for auto-generated changelog
+        uses: EndBug/add-and-commit@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          add: 'CHANGELOG.md'
+          branch: actions/changelog
+          message: '!gitchangelog'
+
+      - name: Create pull request for the auto generated changelog
+        run: |
+          echo "PR_URL=$(gh pr create \
+            --title "changelog: release $(cat VERSION)" \
+            --body "I am robot" \
+            --label documentation)" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set pull request to auto-merge as rebase
+        run: |
+          gh pr merge $PR_URL \
+            --auto \
+            --delete-branch \
+            --rebase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
