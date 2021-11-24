@@ -87,7 +87,7 @@ jobs:
         run: git pull --tags
 
       - name: Generate changelog file
-        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/v$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
+        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
       - name: TestPypi release
         run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }}
