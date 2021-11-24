@@ -1,11 +1,14 @@
 name: build
-on: [push]
+on:
+  pull_request:
+    paths:
+      - 'adbnx_adapter/**'
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./adbnx_adapter
+        working-directory: adbnx_adapter/
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
@@ -23,7 +26,7 @@ jobs:
         uses: psf/black@stable
         with:
           options: "--check --verbose --diff --color"
-          src: "adbnx_adapter"
+          src: "adbnx_adapter/"
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
