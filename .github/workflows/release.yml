@@ -77,6 +77,9 @@ jobs:
       - name: Ensure clean dist/ and build/ folders
         run: rm -rf dist build
 
+      - name: Copy README
+        run: cp ../README.md .
+
       - name: Build package
         run: python setup.py sdist bdist_wheel
 
