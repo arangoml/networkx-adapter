@@ -71,14 +71,14 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Copy README
+        run: cp ../README.md .
+
       - name: Install release packages
         run: pip install -e . wheel gitchangelog pystache twine
 
       - name: Ensure clean dist/ and build/ folders
         run: rm -rf dist build
-
-      - name: Copy README
-        run: cp ../README.md .
 
       - name: Build package
         run: python setup.py sdist bdist_wheel
