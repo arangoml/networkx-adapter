@@ -15,16 +15,16 @@ class ADBNX_Adapter(ABC):
     def __init__(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_networkx_graph(self):
+    def adb_to_nx(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_networkx_graph_from_arangodb_collections(self):
+    def adb_to_nx_from_collections(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_networkx_graph_from_arangodb_graph(self):
+    def adb_to_nx_from_graph(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_arangodb_graph(self):
+    def nx_to_adb(self):
         raise NotImplementedError()  # pragma: no cover
 
     def __validate_attributes(self):
