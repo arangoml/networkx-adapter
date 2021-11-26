@@ -170,10 +170,10 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type original_nx_graph: networkx.classes.graph.Graph
         :param edge_definitions: List of edge definitions, where each edge definition entry is a dictionary with fields "edge_collection", "from_vertex_collections" and "to_vertex_collections" (see below for example).
         :type edge_definitions: list[dict]
+        :param batch_size: The maximum number of documents to insert at once
+        :type batch_size: int
         :param keyify_edges: If set to True, will create custom edge IDs based on the behavior of the ADBNX_Controller's _keyify_nx_edge() method. Otherwise, edge IDs will be randomly generated.
         :type keyify_edges: bool
-        :param batch_size: The number of documents to insert at once
-        :type batch_size: int
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
 
@@ -332,7 +332,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type key: str
         :param v_col: A group of vertexes belonging to the same collection
         :type v_col: list
-        :param batch_size: The number of documents to insert at once
+        :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
         """
         self.cntrl.adb_map[nx_id] = {
@@ -367,7 +367,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type col: str
         :param e_col: A group of vertexes belonging to the same collection
         :type e_col: list
-        :param batch_size: The number of documents to insert at once
+        :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
         """
         edge["_from"] = self.cntrl.adb_map.get(from_node["id"])["_id"]
