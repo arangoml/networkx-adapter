@@ -270,7 +270,9 @@ def test_full_cycle_from_arangodb_with_new_collections():
             adb_id: str = id
             return adb_id.split("/")[0] + "_nx"
 
-        def _identify_networkx_edge(self, edge: dict, from_node: dict, to_node: dict) -> str:
+        def _identify_networkx_edge(
+            self, edge: dict, from_node: dict, to_node: dict
+        ) -> str:
             edge_id: str = edge["_id"]
             return edge_id.split("/")[0] + "_nx"
 
