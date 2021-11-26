@@ -90,16 +90,14 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
         )
         return nx_id
 
-    def _identify_networkx_node(self, id: tuple, node: dict, overwrite: bool) -> str:
+    def _identify_networkx_node(self, id: tuple, node: dict) -> str:
         return "Grid_Node"  # Only one node collection in this dataset
 
-    def _keyify_networkx_node(
-        self, id: tuple, node: dict, collection: str, overwrite: bool
-    ) -> str:
+    def _keyify_networkx_node(self, id: tuple, node: dict, collection: str) -> str:
         return self._tuple_to_arangodb_key_helper(id)
 
     def _identify_networkx_edge(
-        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+        self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
         from_collection = self.adb_map.get(from_node["id"])["collection"]
         to_collection = self.adb_map.get(to_node["id"])["collection"]
@@ -115,16 +113,14 @@ def get_grid_graph():
 
 
 class Football_ADBNX_Controller(Base_ADBNX_Controller):
-    def _identify_networkx_node(self, id, node: dict, overwrite: bool) -> str:
+    def _identify_networkx_node(self, id, node: dict) -> str:
         return "Football_Team"  # Only one node collection in this dataset=
 
-    def _keyify_networkx_node(
-        self, id, node: dict, collection: str, overwrite: bool
-    ) -> str:
+    def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
         return self._string_to_arangodb_key_helper(id)
 
     def _identify_networkx_edge(
-        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+        self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
         from_collection = self.adb_map.get(from_node["id"])["collection"]
         to_collection = self.adb_map.get(to_node["id"])["collection"]
@@ -147,11 +143,11 @@ def get_football_graph():
 
 
 class Karate_ADBNX_Controller(Base_ADBNX_Controller):
-    def _identify_networkx_node(self, id, node: dict, overwrite: bool) -> str:
+    def _identify_networkx_node(self, id, node: dict) -> str:
         return "Karate_Student"
 
     def _identify_networkx_edge(
-        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+        self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
         from_collection = self.adb_map.get(from_node["id"])["collection"]
         to_collection = self.adb_map.get(to_node["id"])["collection"]
@@ -161,9 +157,7 @@ class Karate_ADBNX_Controller(Base_ADBNX_Controller):
 
         return "Unknown_Edge"
 
-    def _keyify_networkx_node(
-        self, id, node: dict, collection: str, overwrite: bool
-    ) -> str:
+    def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
         return str(id)  # In this case the id is an integer
 
 

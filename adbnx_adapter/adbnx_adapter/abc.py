@@ -53,38 +53,31 @@ class ADBNX_Adapter(ABC):
     def GRAPH_ATRIBS(self):
         return {"vertexCollections", "edgeCollections"}
 
+    @property
+    def EDGE_DEFINITION_ATRIBS(self):
+        return {"edge_collection", "from_vertex_collections", "to_vertex_collections"}
+
 
 class ADBNX_Controller(ABC):
     def __init__(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _prepare_arangodb_vertex(self, vertex: dict, collection: str):
+    def _prepare_arangodb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _prepare_arangodb_edge(self, edge: dict, collection: str):
+    def _prepare_arangodb_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _identify_networkx_node(self, id, node: dict, overwrite: bool) -> str:
+    def _identify_networkx_node(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _identify_networkx_edge(
-        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
-    ) -> str:
+    def _identify_networkx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _keyify_networkx_node(
-        self, id, node: dict, collection: str, overwrite: bool
-    ) -> str:
+    def _keyify_networkx_node(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _keyify_networkx_edge(
-        self,
-        edge: dict,
-        from_node: dict,
-        to_node: dict,
-        collection: str,
-        overwrite: bool,
-    ):
+    def _keyify_networkx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
     @property
