@@ -48,8 +48,8 @@ adbnx_adapter = ArangoDB_Networkx_Adapter(con)
 
 # (Assume ArangoDB fraud-detection data dump is imported)
 
-fraud_nx_g = adbnx_adapter.adb_to_nx_from_graph("fraud-detection")
-fraud_nx_g_2 = adbnx_adapter.adb_to_nx_from_collections(
+fraud_nx_g = adbnx_adapter.create_networkx_graph_from_arangodb_graph("fraud-detection")
+fraud_nx_g_2 = adbnx_adapter.create_networkx_graph_from_arangodb_collections(
         "fraud-detection", 
         {"account", "bank", "branch", "Class", "customer"},
         {"accountHolder", "Relationship", "transaction"}
@@ -64,7 +64,7 @@ grid_edge_definitions = [
         "to_vertex_collections": ["Grid_Node"],
     }
 ]
-adb_g = adbnx_adapter.nx_to_adb("Grid", grid_nx_g, grid_edge_definitions)
+adb_g = adbnx_adapter.create_arangodb_graph("Grid", grid_nx_g, grid_edge_definitions)
 ```
 
 ##  Development & Testing
