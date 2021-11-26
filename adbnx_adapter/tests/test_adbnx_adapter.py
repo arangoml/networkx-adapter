@@ -182,14 +182,14 @@ def test_adb_to_nx_from_graph(
         ),
     ],
 )
-def test_create_arangodb_graph(
+def test_nx_to_adb(
     adapter: ArangoDB_Networkx_Adapter,
     name: str,
     nx_g: NxGraph,
     edge_definitions: list,
 ):
     assert_adapter_type(adapter)
-    adb_g = adapter.create_arangodb_graph(name, nx_g, edge_definitions)
+    adb_g = adapter.nx_to_adb(name, nx_g, edge_definitions)
     assert_arangodb_data(adapter, nx_g, adb_g)
 
 
@@ -213,7 +213,7 @@ def test_full_cycle_from_arangodb():
     ]
 
     new_name = name + "-nx"
-    new_fraud_adb_g = adbnx_adapter.create_arangodb_graph(
+    new_fraud_adb_g = adbnx_adapter.nx_to_adb(
         new_name, fraud_nx_g, edge_definitions, keyify_edges=True
     )
 
@@ -253,7 +253,7 @@ def test_full_cycle_from_arangodb_with_overwrite():
     for _, _, edge in fraud_nx_g.edges(data=True):
         edge["new_edge_data"] = ["new", "edge", "data", "here"]
 
-    updated_fraud_adb_g = adbnx_adapter.create_arangodb_graph(
+    updated_fraud_adb_g = adbnx_adapter.nx_to_adb(
         name, fraud_nx_g, edge_definitions, overwrite=True, keyify_edges=True
     )
 
@@ -286,7 +286,7 @@ def test_full_cycle_from_networkx():
         }
     ]
 
-    grid_adbnx_adapter.create_arangodb_graph(
+    grid_adbnx_adapter.nx_to_adb(
         name, original_grid_nx_g, grid_edge_definitions
     )
 
