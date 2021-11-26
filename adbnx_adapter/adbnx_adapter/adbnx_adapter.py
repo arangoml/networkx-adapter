@@ -13,7 +13,10 @@ from .adbnx_controller import Base_ADBNX_Controller
 
 import networkx as nx
 from arango import ArangoClient
+from collections import defaultdict
+
 from networkx.classes.graph import Graph as NetworkXGraph
+from arango.graph import Graph as ArangoDBGraph
 
 
 class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
@@ -36,16 +39,18 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         username = conn["username"]
         password = conn["password"]
         db_name = conn["dbName"]
-        port = str(conn.get("port", 8529))
-        protocol = conn.get("protocol", "https")
 
-        url = protocol + "://" + conn["hostname"] + ":" + port
+        protocol = conn.get("protocol", "https")
+        host = conn["hostname"]
+        port = str(conn.get("port", 8529))
+
+        url = protocol + "://" + host + ":" + port
         print(f"Connecting to {url}")
         self.db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
 
         if issubclass(controller_class, Base_ADBNX_Controller) is False:
-            msg = "controller_class must inherit from Base_ADBNX_Controller"  # pragma: no cover
-            raise TypeError(msg)  # pragma: no cover
+            msg = "controller_class must inherit from Base_ADBNX_Controller"
+            raise TypeError(msg)
 
         self.cntrl: Base_ADBNX_Controller = controller_class()
 
@@ -83,18 +88,23 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         """
         self.__validate_attributes("graph", set(graph_attributes), self.GRAPH_ATRIBS)
 
-        self.cntrl.nx_graph = nx.MultiDiGraph(name=name)
+        nx_graph = nx.MultiDiGraph(name=name)
+        nodes: list = []
+        edges: list = []
 
         for col, atribs in graph_attributes["vertexCollections"].items():
             for v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                self.__insert_nx_node(v["_id"], v, col)
+                self.__insert_nx_node(v["_id"], v, col, nodes)
 
         for col, atribs in graph_attributes["edgeCollections"].items():
             for e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                self.__insert_nx_edge(e, col)
+                self.__insert_nx_edge(e, col, edges)
+
+        nx_graph.add_nodes_from(nodes)
+        nx_graph.add_edges_from(edges)
 
         print(f"NetworkX: {name} created")
-        return self.cntrl.nx_graph
+        return nx_graph
 
     def arangodb_collections_to_networkx(
         self,
@@ -199,15 +209,14 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         if overwrite:
             self.db.delete_graph(name, ignore_missing=True)
 
-        self.cntrl.adb_graph = self.db.create_graph(
-            name, edge_definitions=edge_definitions
-        )
+        adb_graph: ArangoDBGraph = self.db.create_graph(name, edge_definitions)
+        adb_documents = defaultdict(list)
 
         for node_id, node in nx_graph.nodes(data=True):
             col = self.cntrl._identify_networkx_node(node_id, node, overwrite)
             key = self.cntrl._keyify_networkx_node(node_id, node, col, overwrite)
             node["_id"] = col + "/" + key
-            self.__insert_adb_vertex(node_id, node, col, key, overwrite)
+            self.__insert_adb_vertex(node_id, node, col, key, adb_documents)
 
         for from_node_id, to_node_id, edge in nx_graph.edges(data=True):
             from_node = {"id": from_node_id, **nx_graph.nodes[from_node_id]}
@@ -222,10 +231,15 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
                 )
                 edge["_id"] = col + "/" + key
 
-            self.__insert_adb_edge(edge, from_node, to_node, col, overwrite)
+            self.__insert_adb_edge(edge, from_node, to_node, col, adb_documents)
+
+        batch_db = self.db.begin_batch_execution(return_result=False)
+        for col, doc_list in adb_documents.items():
+            batch_db.collection(col).import_bulk(doc_list, overwrite=overwrite)
+        batch_db.commit()
 
         print(f"ArangoDB: {name} created")
-        return self.cntrl.adb_graph
+        return adb_graph
 
     def __validate_attributes(self, type: str, attributes: set, valid_attributes: set):
         """Validates that a set of attributes includes the required valid attributes.
@@ -266,8 +280,8 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         return self.db.aql.execute(aql, **query_options)
 
-    def __insert_nx_node(self, adb_id: str, node: dict, col: str):
-        """Insert a NetworkX node into the NetworkX graph.
+    def __insert_nx_node(self, adb_id: str, node: dict, col: str, nodes: list):
+        """Insert the NetworkX node into a list for batch insertion.
 
         :param adb_id: The ArangoDB ID of the node.
         :type adb_id: str
@@ -275,28 +289,31 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type node: dict
         :param col: The ArangoDB collection it came from.
         :type col: str
+        :param nodes: A list of NetworkX nodes.
+        :type nodes: list
         """
         nx_id = self.cntrl._prepare_arangodb_vertex(node, col)
         self.cntrl.nx_map[adb_id] = {"_id": nx_id, "collection": col}
+        nodes.append((nx_id, node))
 
-        self.cntrl.nx_graph.add_node(nx_id, **node)
-
-    def __insert_nx_edge(self, edge: dict, col: str):
-        """Insert a NetworkX edge into the NetworkX graph.
+    def __insert_nx_edge(self, edge: dict, col: str, edges: list):
+        """Insert a NetworkX edge into a list for batch insertion.
 
         :param edge: The edge object to insert.
         :type edge: dict
         :param col: The ArangoDB collection it came from.
         :type col: str
+        :param edges: A list of NetworkX edges.
+        :type edges: list
         """
         from_node_id = self.cntrl.nx_map.get(edge["_from"])["_id"]
         to_node_id = self.cntrl.nx_map.get(edge["_to"])["_id"]
 
         self.cntrl._prepare_arangodb_edge(edge, col)
-        self.cntrl.nx_graph.add_edge(from_node_id, to_node_id, **edge)
+        edges.append((from_node_id, to_node_id, edge))
 
-    def __insert_adb_vertex(self, id, v: dict, col: str, key: str, ow: bool):
-        """Insert an ArangoDB vertex into an ArangoDB collection.
+    def __insert_adb_vertex(self, id, v: dict, col: str, key: str, vertices: dict):
+        """Insert an ArangoDB vertex into an ArangoDB collection dictionary.
 
         :param id: The NetworkX ID of the vertex.
         :type id: Any
@@ -306,16 +323,22 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type col: str
         :param key: The _key value of the vertex.
         :type key: str
-        :param ow: If set to True, overwrite existing document with matching _id.
-        :type ow: bool
+        :param vertices: The ArangoDB vertex collection dictionary
+        :type vertices: dict
         """
         self.cntrl.adb_map[id] = {"_id": v["_id"], "collection": col, "key": key}
-        self.db.collection(col).insert(v, overwrite=ow, silent=True)
+        v_col: list = vertices[col]
+        v_col.append(v)
 
     def __insert_adb_edge(
-        self, edge: dict, from_node: dict, to_node: dict, col: str, ow: bool
+        self,
+        edge: dict,
+        from_node: dict,
+        to_node: dict,
+        col: str,
+        edges: dict,
     ):
-        """Insert an ArangoDB edge into an ArangoDB collection.
+        """Insert an ArangoDB edge into an ArangoDB collection dictionary.
 
         :param edge: The edge object to insert.
         :type edge: dict
@@ -325,9 +348,10 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type to_node: dict
         :param col: The ArangoDB collection the edge belongs to.
         :type col: str
-        :param ow: If set to True, overwrite existing document with matching _id.
-        :type ow: bool
+        :param edges: The ArangoDB edge collection dictionary
+        :type edges: dict
         """
         edge["_from"] = self.cntrl.adb_map.get(from_node["id"])["_id"]
         edge["_to"] = self.cntrl.adb_map.get(to_node["id"])["_id"]
-        self.db.collection(col).insert(edge, overwrite=ow, silent=True)
+        e_col: list = edges[col]
+        e_col.append(edge)
