@@ -49,7 +49,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         self.cntrl: Base_ADBNX_Controller = controller_class()
 
-    def adb_to_nx(
+    def arangodb_to_networkx(
         self, name: str, graph_attributes: dict, is_keep=True, **query_options
     ):
         """Create a NetworkX graph from graph attributes.
@@ -86,17 +86,17 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.cntrl.nx_graph = nx.MultiDiGraph(name=name)
 
         for col, atribs in graph_attributes["vertexCollections"].items():
-            for v in self.__fetch_arangodb_docs(col, atribs, is_keep, query_options):
-                self.__insert_networkx_node(v["_id"], v, col)
+            for v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+                self.__insert_nx_node(v["_id"], v, col)
 
         for col, atribs in graph_attributes["edgeCollections"].items():
-            for e in self.__fetch_arangodb_docs(col, atribs, is_keep, query_options):
-                self.__insert_networkx_edge(e, col)
+            for e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+                self.__insert_nx_edge(e, col)
 
         print(f"NetworkX: {name} created")
         return self.cntrl.nx_graph
 
-    def adb_to_nx_from_collections(
+    def arangodb_collections_to_networkx(
         self,
         name: str,
         vertex_collections: set,
@@ -121,9 +121,11 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             "edgeCollections": {col: {} for col in edge_collections},
         }
 
-        return self.adb_to_nx(name, graph_attributes, is_keep=False, **query_options)
+        return self.arangodb_to_networkx(
+            name, graph_attributes, is_keep=False, **query_options
+        )
 
-    def adb_to_nx_from_graph(self, name: str, **query_options):
+    def arangodb_graph_to_networkx(self, name: str, **query_options):
         """Create a NetworkX graph from an ArangoDB graph.
 
         :param name: The ArangoDB graph name.
@@ -134,13 +136,15 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
-        arango_graph = self.db.graph(name)
-        v_cols = arango_graph.vertex_collections()
-        e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
+        graph = self.db.graph(name)
+        v_cols = graph.vertex_collections()
+        e_cols = {col["edge_collection"] for col in graph.edge_definitions()}
 
-        return self.adb_to_nx_from_collections(name, v_cols, e_cols, **query_options)
+        return self.arangodb_collections_to_networkx(
+            name, v_cols, e_cols, **query_options
+        )
 
-    def nx_to_adb(
+    def networkx_to_arangodb(
         self,
         name: str,
         original_nx_graph: NetworkXGraph,
@@ -200,23 +204,25 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         )
 
         for node_id, node in nx_graph.nodes(data=True):
-            col = self.cntrl._identify_nx_node(node_id, node, overwrite)
-            key = self.cntrl._keyify_nx_node(node_id, node, col, overwrite)
+            col = self.cntrl._identify_networkx_node(node_id, node, overwrite)
+            key = self.cntrl._keyify_networkx_node(node_id, node, col, overwrite)
             node["_id"] = col + "/" + key
-            self.__insert_arangodb_vertex(node_id, node, col, key, overwrite)
+            self.__insert_adb_vertex(node_id, node, col, key, overwrite)
 
         for from_node_id, to_node_id, edge in nx_graph.edges(data=True):
             from_node = {"id": from_node_id, **nx_graph.nodes[from_node_id]}
             to_node = {"id": to_node_id, **nx_graph.nodes[to_node_id]}
 
-            col = self.cntrl._identify_nx_edge(edge, from_node, to_node, overwrite)
+            col = self.cntrl._identify_networkx_edge(
+                edge, from_node, to_node, overwrite
+            )
             if keyify_edges:
-                key = self.cntrl._keyify_nx_edge(
+                key = self.cntrl._keyify_networkx_edge(
                     edge, from_node, to_node, col, overwrite
                 )
                 edge["_id"] = col + "/" + key
 
-            self.__insert_arangodb_edge(edge, from_node, to_node, col, overwrite)
+            self.__insert_adb_edge(edge, from_node, to_node, col, overwrite)
 
         print(f"ArangoDB: {name} created")
         return self.cntrl.adb_graph
@@ -236,7 +242,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             missing_attributes = valid_attributes - attributes
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
-    def __fetch_arangodb_docs(
+    def __fetch_adb_docs(
         self, col: str, attributes: set, is_keep: bool, query_options: dict
     ):
         """Fetches ArangoDB documents within a collection.
@@ -260,7 +266,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         return self.db.aql.execute(aql, **query_options)
 
-    def __insert_networkx_node(self, adb_id: str, node: dict, col: str):
+    def __insert_nx_node(self, adb_id: str, node: dict, col: str):
         """Insert a NetworkX node into the NetworkX graph.
 
         :param adb_id: The ArangoDB ID of the node.
@@ -270,12 +276,12 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :param col: The ArangoDB collection it came from.
         :type col: str
         """
-        nx_id = self.cntrl._prepare_adb_vertex(node, col)
+        nx_id = self.cntrl._prepare_arangodb_vertex(node, col)
         self.cntrl.nx_map[adb_id] = {"_id": nx_id, "collection": col}
 
         self.cntrl.nx_graph.add_node(nx_id, **node)
 
-    def __insert_networkx_edge(self, edge: dict, col: str):
+    def __insert_nx_edge(self, edge: dict, col: str):
         """Insert a NetworkX edge into the NetworkX graph.
 
         :param edge: The edge object to insert.
@@ -286,10 +292,10 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         from_node_id = self.cntrl.nx_map.get(edge["_from"])["_id"]
         to_node_id = self.cntrl.nx_map.get(edge["_to"])["_id"]
 
-        self.cntrl._prepare_adb_edge(edge, col)
+        self.cntrl._prepare_arangodb_edge(edge, col)
         self.cntrl.nx_graph.add_edge(from_node_id, to_node_id, **edge)
 
-    def __insert_arangodb_vertex(self, id, v: dict, col: str, key: str, ow: bool):
+    def __insert_adb_vertex(self, id, v: dict, col: str, key: str, ow: bool):
         """Insert an ArangoDB vertex into an ArangoDB collection.
 
         :param id: The NetworkX ID of the vertex.
@@ -306,7 +312,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.cntrl.adb_map[id] = {"_id": v["_id"], "collection": col, "key": key}
         self.db.collection(col).insert(v, overwrite=ow, silent=True)
 
-    def __insert_arangodb_edge(
+    def __insert_adb_edge(
         self, edge: dict, from_node: dict, to_node: dict, col: str, ow: bool
     ):
         """Insert an ArangoDB edge into an ArangoDB collection.
