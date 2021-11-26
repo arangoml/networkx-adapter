@@ -121,9 +121,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             "edgeCollections": {col: {} for col in edge_collections},
         }
 
-        return self.adb_to_nx(
-            name, graph_attributes, is_keep=False, **query_options
-        )
+        return self.adb_to_nx(name, graph_attributes, is_keep=False, **query_options)
 
     def adb_to_nx_from_graph(self, name: str, **query_options):
         """Create a NetworkX graph from an ArangoDB graph.
@@ -140,9 +138,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         v_cols = arango_graph.vertex_collections()
         e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
 
-        return self.adb_to_nx_from_collections(
-            name, v_cols, e_cols, **query_options
-        )
+        return self.adb_to_nx_from_collections(name, v_cols, e_cols, **query_options)
 
     def nx_to_adb(
         self,

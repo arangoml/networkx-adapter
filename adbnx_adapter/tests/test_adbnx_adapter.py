@@ -81,9 +81,7 @@ def test_validate_attributes(bad_connection):
         ),
     ],
 )
-def test_adb_to_nx(
-    adapter: ArangoDB_Networkx_Adapter, name: str, attributes: dict
-):
+def test_adb_to_nx(adapter: ArangoDB_Networkx_Adapter, name: str, attributes: dict):
     assert_adapter_type(adapter)
     nx_g = adapter.adb_to_nx(name, attributes)
     assert_networkx_data(
@@ -286,9 +284,7 @@ def test_full_cycle_from_networkx():
         }
     ]
 
-    grid_adbnx_adapter.nx_to_adb(
-        name, original_grid_nx_g, grid_edge_definitions
-    )
+    grid_adbnx_adapter.nx_to_adb(name, original_grid_nx_g, grid_edge_definitions)
 
     new_grid_nx_g = grid_adbnx_adapter.adb_to_nx_from_graph(name)
 
