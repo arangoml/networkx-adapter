@@ -61,7 +61,7 @@ grid_edge_definitions = [
         "to_vertex_collections": ["Grid_Node"],
     }
 ]
-adb_g = adbnx_adapter.create_arangodb_graph("Grid", grid_nx_g, grid_edge_definitions)
+adb_g = adbnx_adapter.nx_to_adb("Grid", grid_nx_g, grid_edge_definitions)
 ```
 
 ##  Development & Testing
