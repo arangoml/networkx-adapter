@@ -1,5 +1,5 @@
 name: release
-on: [pull_request]
+on: [push]
 # on:
 #   push:
 #     branches:
@@ -62,7 +62,7 @@ jobs:
     defaults:
       run:
         working-directory: adbnx_adapter/
-    name: Release package
+    name: (Debug) Release package
     env:
       TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
     steps:
@@ -87,8 +87,8 @@ jobs:
       - name: Extract current version
         run: echo "previous_tag=$(python ../scripts/extract_version.py)" >> $GITHUB_ENV
 
-      - name: Pull tags from the repo
-        run: git pull --tags
+      # - name: Pull tags from the repo
+      #   run: git pull --tags
 
       - name: (TEMP) Run gitchangelog
         run: gitchangelog $previous_tag..HEAD
