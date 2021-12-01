@@ -93,10 +93,10 @@ jobs:
         run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
       - name: TestPypi release
-        run: twine upload --skip-existing --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }}
+        run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing 
 
       - name: Pypi release
-        run: twine upload --skip-existing dist/* -p ${{ secrets.TWINE_PASSWORD }}
+        run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
 
       - name:  Github release
         env:
