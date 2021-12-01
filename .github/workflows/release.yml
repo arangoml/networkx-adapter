@@ -1,10 +1,11 @@
 name: release
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'adbnx_adapter/adbnx_adapter/**'
+on: [push]
+# on:
+#   push:
+#     branches:
+#       - master
+#     paths:
+#       - 'adbnx_adapter/adbnx_adapter/**'
 env:
   PACKAGE_DIR: "adbnx_adapter"
   NEW_VERSION: "$(cat adbnx_adapter/VERSION)"
@@ -110,63 +111,63 @@ jobs:
       - name:  Github release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: hub release create -F version_changelog.md $NEW_VERSION
+        run: echo "hub release create -F version_changelog.md $NEW_VERSION"
 
-  changelog:
-    needs: release
-    runs-on: ubuntu-latest
-    name: Update Changelog
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Needed for changelog generation
+  # changelog:
+  #   needs: release
+  #   runs-on: ubuntu-latest
+  #   name: Update Changelog
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0  # Needed for changelog generation
 
-      - name: Create new branch
-        run: git checkout -b actions/changelog
+  #     - name: Create new branch
+  #       run: git checkout -b actions/changelog
 
-      - name: Set branch upstream
-        run: git push -u origin actions/changelog
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Set branch upstream
+  #       run: git push -u origin actions/changelog
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
+  #     - name: Setup python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: '3.8'
 
-      - name: Install release packages
-        run: pip install wheel gitchangelog pystache
+  #     - name: Install release packages
+  #       run: pip install wheel gitchangelog pystache
 
-      - name: Install dependencies
-        run: pip install -e .
-        working-directory: $PACKAGE_DIR
+  #     - name: Install dependencies
+  #       run: pip install -e .
+  #       working-directory: $PACKAGE_DIR
 
-      - name: Generate newest changelog
-        run: gitchangelog $NEW_VERSION > CHANGELOG.md
+  #     - name: Generate newest changelog
+  #       run: gitchangelog $NEW_VERSION > CHANGELOG.md
 
-      - name: Make commit for auto-generated changelog
-        uses: EndBug/add-and-commit@v7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          add: 'CHANGELOG.md'
-          branch: actions/changelog
-          message: '!gitchangelog'
+  #     - name: Make commit for auto-generated changelog
+  #       uses: EndBug/add-and-commit@v7
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         add: 'CHANGELOG.md'
+  #         branch: actions/changelog
+  #         message: '!gitchangelog'
 
-      - name: Create pull request for the auto generated changelog
-        run: |
-          echo "PR_URL=$(gh pr create \
-            --title "changelog: release $NEW_VERSION" \
-            --body "beep boop, i am a robot" \
-            --label documentation)" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Create pull request for the auto generated changelog
+  #       run: |
+  #         echo "PR_URL=$(gh pr create \
+  #           --title "changelog: release $NEW_VERSION" \
+  #           --body "beep boop, i am a robot" \
+  #           --label documentation)" >> $GITHUB_ENV
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set pull request to auto-merge as rebase
-        run: |
-          gh pr merge $PR_URL \
-            --auto \
-            --delete-branch \
-            --rebase
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Set pull request to auto-merge as rebase
+  #       run: |
+  #         gh pr merge $PR_URL \
+  #           --auto \
+  #           --delete-branch \
+  #           --rebase
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
