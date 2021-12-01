@@ -1,11 +1,10 @@
 name: release
-on: [push]
-# on:
-#   push:
-#     branches:
-#       - master
-#     paths:
-#       - 'adbnx_adapter/adbnx_adapter/**'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'adbnx_adapter/adbnx_adapter/**'
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -25,41 +24,41 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: core.setFailed("Cannot build & release - VERSION has not been manually incremented")
-  # build:
-  #   needs: version
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: adbnx_adapter/
-  #   strategy:
-  #     matrix:
-  #       python: ['3.6', '3.7', '3.8', '3.9', '3.10']
-  #   name: Python ${{ matrix.python }}
-  #   env:
-  #     COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
-  #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Setup python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python }}
-  #     - name: Lint with Black
-  #       uses: psf/black@stable
-  #       with:
-  #         options: "--check --verbose --diff --color"
-  #         src: "adbnx_adapter/"
-  #     - name: Install dependencies
-  #       run: pip install -e . pytest pytest-cov coveralls
-  #     - name: Run pytest
-  #       run: |
-  #         pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
-  #         coveralls
-
-  releasedebug:
+  build:
     needs: version
     runs-on: ubuntu-latest
-    name: (Debug) Release package
+    defaults:
+      run:
+        working-directory: adbnx_adapter/
+    strategy:
+      matrix:
+        python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+    name: Python ${{ matrix.python }}
+    env:
+      COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Lint with Black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose --diff --color"
+          src: "adbnx_adapter/"
+      - name: Install dependencies
+        run: pip install -e . pytest pytest-cov coveralls
+      - name: Run pytest
+        run: |
+          pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          coveralls
+
+  release:
+    needs: version
+    runs-on: ubuntu-latest
+    name: Release package
     env:
       TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
     steps:
@@ -68,6 +67,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
+
+      - name: Copy README
+        run: cp README.md adbnx_adapter/
 
       - name: Install release packages
         run: pip install wheel gitchangelog pystache twine
@@ -83,7 +85,7 @@ jobs:
         run: python setup.py sdist bdist_wheel
         working-directory: adbnx_adapter/
 
-      - name: Extract last version tag
+      - name: Extract current version
         run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
 
       - name: Pull tags from the repo
@@ -92,132 +94,78 @@ jobs:
       - name: Run gitchangelog
         run: gitchangelog $previous_tag..HEAD
 
-      - name: Generate changelog file
-        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
+      - name: Create version_changelog.md
+        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat adbnx_adapter/VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
-      - name: Read version_changelog
+      - name: Read version_changelog.md
         run: cat version_changelog.md
 
-      # - name: TestPypi release
-      #   run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }}
+      - name: TestPypi release
+        run: twine upload --repository testpypi adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
 
-      # - name: Pypi release
-      #   run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }}
+      - name: Pypi release
+        run: twine upload adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
 
-      # - name:  Github release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: hub release create -F version_changelog.md $(cat VERSION)
+      - name:  Github release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: hub release create -F version_changelog.md $(cat adbnx_adapter/VERSION)
 
+  changelog:
+    needs: release
+    runs-on: ubuntu-latest
+    name: Update Changelog
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Needed for changelog generation
 
-  # release:
-  #   needs: version
-  #   runs-on: ubuntu-latest
-  #   name: Release package
-  #   env:
-  #     TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Setup python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: '3.8'
+      - name: Create new branch
+        run: git checkout -b actions/changelog
 
-  #     - name: Copy README
-  #       run: cp README.md adbnx_adapter/
+      - name: Set branch upstream
+        run: git push -u origin actions/changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Install release packages
-  #       run: pip install wheel gitchangelog pystache twine
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
 
-  #     - name: Install dependencies
-  #       run: pip install -e .
-  #       working-directory: adbnx_adapter/
+      - name: Install release packages
+        run: pip install wheel gitchangelog pystache
 
-  #     - name: Ensure clean dist/ and build/ folders
-  #       run: rm -rf dist build
-  #       working-directory: adbnx_adapter/
+      - name: Install dependencies
+        run: pip install -e .
+        working-directory: adbnx_adapter/
 
-  #     - name: Build package
-  #       run: python setup.py sdist bdist_wheel
-  #       working-directory: adbnx_adapter/
+      - name: Generate newest changelog
+        run: gitchangelog $(cat VERSION) > CHANGELOG.md
 
-  #     - name: Extract current version
-  #       run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
+      - name: Make commit for auto-generated changelog
+        uses: EndBug/add-and-commit@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          add: 'CHANGELOG.md'
+          branch: actions/changelog
+          message: '!gitchangelog'
 
-  #     - name: Pull tags from the repo
-  #       run: git pull --tags
+      - name: Create pull request for the auto generated changelog
+        run: |
+          echo "PR_URL=$(gh pr create \
+            --title "changelog: release $(cat VERSION)" \
+            --body "beep boop, i am a robot" \
+            --label documentation)" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: (TEMP) Run gitchangelog
-  #       run: gitchangelog $previous_tag..HEAD
-
-  #     - name: Generate changelog file
-  #       run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat ./adbnx_adapter/VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
-
-  #     - name: (TEMP) Read changelog file
-  #       run: cat version_changelog.md
-
-  #     # - name: TestPypi release
-  #     #   run: twine upload --repository testpypi adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
-
-  #     # - name: Pypi release
-  #     #   run: twine upload adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
-
-  #     # - name:  Github release
-  #     #   env:
-  #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     #   run: hub release create -F version_changelog.md $(cat VERSION)
-
-  # changelog:
-  #   needs: release
-  #   runs-on: ubuntu-latest
-  #   name: Update Changelog
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0  # Needed for changelog generation
-
-  #     - name: Create new branch
-  #       run: git checkout -b actions/changelog
-
-  #     - name: Set branch upstream
-  #       run: git push -u origin actions/changelog
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Setup python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: '3.8'
-
-  #     - name: Install dependencies
-  #       run: pip install -e . wheel gitchangelog pystache
-
-  #     - name: Generate newest changelog
-  #       run: gitchangelog $(cat VERSION) > CHANGELOG.md
-
-  #     - name: Make commit for auto-generated changelog
-  #       uses: EndBug/add-and-commit@v7
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         add: 'CHANGELOG.md'
-  #         branch: actions/changelog
-  #         message: '!gitchangelog'
-
-  #     - name: Create pull request for the auto generated changelog
-  #       run: |
-  #         echo "PR_URL=$(gh pr create \
-  #           --title "changelog: release $(cat VERSION)" \
-  #           --body "I am robot" \
-  #           --label documentation)" >> $GITHUB_ENV
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Set pull request to auto-merge as rebase
-  #       run: |
-  #         gh pr merge $PR_URL \
-  #           --auto \
-  #           --delete-branch \
-  #           --rebase
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set pull request to auto-merge as rebase
+        run: |
+          gh pr merge $PR_URL \
+            --auto \
+            --delete-branch \
+            --rebase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
