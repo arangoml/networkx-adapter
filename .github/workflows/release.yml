@@ -56,7 +56,7 @@ jobs:
   #         pytest --cov=adbnx_adapter --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
   #         coveralls
 
-  release:
+  releasedebug:
     needs: version
     runs-on: ubuntu-latest
     name: (Debug) Release package
@@ -69,9 +69,6 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Copy README
-        run: cp README.md adbnx_adapter/
-
       - name: Install release packages
         run: pip install wheel gitchangelog pystache twine
 
@@ -80,38 +77,95 @@ jobs:
         working-directory: adbnx_adapter/
 
       - name: Ensure clean dist/ and build/ folders
-        run: rm -rf dist build
-        working-directory: adbnx_adapter/
+        run: rm -rf adbnx_adapter/dist adbnx_adapter/build
 
       - name: Build package
         run: python setup.py sdist bdist_wheel
         working-directory: adbnx_adapter/
 
-      - name: Extract current version
+      - name: Extract last version tag
         run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
 
       - name: Pull tags from the repo
         run: git pull --tags
 
-      - name: (TEMP) Run gitchangelog
+      - name: Run gitchangelog
         run: gitchangelog $previous_tag..HEAD
 
       - name: Generate changelog file
-        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat ./adbnx_adapter/VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
+        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
-      - name: (TEMP) Read changelog file
+      - name: Read changelog
         run: cat version_changelog.md
 
       # - name: TestPypi release
-      #   run: twine upload --repository testpypi adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+      #   run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }}
 
       # - name: Pypi release
-      #   run: twine upload adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+      #   run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }}
 
       # - name:  Github release
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   run: hub release create -F version_changelog.md $(cat VERSION)
+
+
+  # release:
+  #   needs: version
+  #   runs-on: ubuntu-latest
+  #   name: Release package
+  #   env:
+  #     TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Setup python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: '3.8'
+
+  #     - name: Copy README
+  #       run: cp README.md adbnx_adapter/
+
+  #     - name: Install release packages
+  #       run: pip install wheel gitchangelog pystache twine
+
+  #     - name: Install dependencies
+  #       run: pip install -e .
+  #       working-directory: adbnx_adapter/
+
+  #     - name: Ensure clean dist/ and build/ folders
+  #       run: rm -rf dist build
+  #       working-directory: adbnx_adapter/
+
+  #     - name: Build package
+  #       run: python setup.py sdist bdist_wheel
+  #       working-directory: adbnx_adapter/
+
+  #     - name: Extract current version
+  #       run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
+
+  #     - name: Pull tags from the repo
+  #       run: git pull --tags
+
+  #     - name: (TEMP) Run gitchangelog
+  #       run: gitchangelog $previous_tag..HEAD
+
+  #     - name: Generate changelog file
+  #       run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat ./adbnx_adapter/VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
+
+  #     - name: (TEMP) Read changelog file
+  #       run: cat version_changelog.md
+
+  #     # - name: TestPypi release
+  #     #   run: twine upload --repository testpypi adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+
+  #     # - name: Pypi release
+  #     #   run: twine upload adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+
+  #     # - name:  Github release
+  #     #   env:
+  #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     #   run: hub release create -F version_changelog.md $(cat VERSION)
 
   # changelog:
   #   needs: release
