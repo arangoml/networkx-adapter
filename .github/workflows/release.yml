@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${PACKAGE_DIR}
+        working-directory: "$PACKAGE_DIR"
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
@@ -57,7 +57,7 @@ jobs:
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
         run: |
-          pytest --cov=${PACKAGE_DIR} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          pytest --cov="$PACKAGE_DIR" --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
           coveralls
 
   release:
@@ -74,14 +74,14 @@ jobs:
           python-version: '3.8'
 
       - name: Copy README
-        run: cp README.md ${PACKAGE_DIR}
+        run: cp README.md "$PACKAGE_DIR"
 
       - name: Install release packages
         run: pip install wheel gitchangelog pystache twine
 
       - name: Install dependencies
         run: pip install -e .
-        working-directory: ${PACKAGE_DIR}
+        working-directory: "$PACKAGE_DIR"
 
       - name: Set variables
         run: |
@@ -89,11 +89,11 @@ jobs:
           echo "NEW_VERSION=$(cat $PACKAGE_DIR/VERSION)" >> $GITHUB_ENV
 
       - name: Ensure clean dist/ and build/ folders
-        run: rm -rf $PACKAGE_DIR/dist $PACKAGE_DIR/build
+        run: rm -rf "$PACKAGE_DIR"/dist "$PACKAGE_DIR"/build
 
       - name: Build package
         run: python setup.py sdist bdist_wheel
-        working-directory: $PACKAGE_DIR
+        working-directory: "$PACKAGE_DIR"
 
       - name: Pull tags from the repo
         run: git pull --tags
@@ -108,10 +108,10 @@ jobs:
         run: cat version_changelog.md
 
       - name: TestPypi release
-        run: twine upload --repository testpypi $PACKAGE_DIR/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+        run: twine upload --repository testpypi "$PACKAGE_DIR"/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
 
       - name: Pypi release
-        run: twine upload $PACKAGE_DIR/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+        run: twine upload "$PACKAGE_DIR"/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
 
       - name:  Github release
         env:
@@ -145,13 +145,13 @@ jobs:
 
   #     - name: Install dependencies
   #       run: pip install -e .
-  #       working-directory: $PACKAGE_DIR
+  #       working-directory: "$PACKAGE_DIR"
 
   #     - name: Set variables
   #       run: echo "NEW_VERSION=$(cat $PACKAGE_DIR/VERSION)" >> $GITHUB_ENV
 
   #     - name: Generate newest changelog
-  #       run: gitchangelog ${{ env.NEW_VERSION }} > $PACKAGE_DIR/CHANGELOG.md
+  #       run: gitchangelog ${{ env.NEW_VERSION }} > "$PACKAGE_DIR"/CHANGELOG.md
 
   #     - name: Make commit for auto-generated changelog
   #       uses: EndBug/add-and-commit@v7
