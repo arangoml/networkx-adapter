@@ -355,7 +355,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         e_col: list,
         batch_size: int,
     ):
-        """Insert an ArangoDB edge into a list. If the list exceeds 1000 documents, insert into the ArangoDB collection.
+        """Insert an ArangoDB edge into a list. If the list exceeds batch_size documents, insert into the ArangoDB collection.
 
         :param edge: The edge object to insert.
         :type edge: dict
