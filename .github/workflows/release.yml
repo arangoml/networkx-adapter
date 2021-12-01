@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: $PACKAGE_DIR
+        working-directory: ${PACKAGE_DIR}
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
@@ -57,7 +57,7 @@ jobs:
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
         run: |
-          pytest --cov=$PACKAGE_DIR --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          pytest --cov=${PACKAGE_DIR} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
           coveralls
 
   release:
@@ -74,14 +74,14 @@ jobs:
           python-version: '3.8'
 
       - name: Copy README
-        run: cp README.md $PACKAGE_DIR
+        run: cp README.md ${PACKAGE_DIR}
 
       - name: Install release packages
         run: pip install wheel gitchangelog pystache twine
 
       - name: Install dependencies
         run: pip install -e .
-        working-directory: $PACKAGE_DIR
+        working-directory: ${PACKAGE_DIR}
 
       - name: Set variables
         run: |
