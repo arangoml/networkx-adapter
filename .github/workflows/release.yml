@@ -84,7 +84,7 @@ jobs:
         run: python setup.py sdist bdist_wheel
 
       - name: Extract current version
-        run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
+        run: echo "previous_tag=$(python ../scripts/extract_version.py)" >> $GITHUB_ENV
 
       - name: Pull tags from the repo
         run: git pull --tags
@@ -93,10 +93,10 @@ jobs:
         run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
       - name: TestPypi release
-        run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }}
+        run: twine upload --skip-existing --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }}
 
       - name: Pypi release
-        run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }}
+        run: twine upload --skip-existing dist/* -p ${{ secrets.TWINE_PASSWORD }}
 
       - name:  Github release
         env:
