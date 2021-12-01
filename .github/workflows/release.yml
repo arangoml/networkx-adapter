@@ -71,6 +71,9 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Copy README
+        run: cp ../README.md .
+
       - name: Install release packages
         run: pip install -e . wheel gitchangelog pystache twine
 

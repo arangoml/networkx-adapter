@@ -15,34 +15,34 @@ class ADBNX_Adapter(ABC):
     def __init__(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_networkx_graph(self):
+    def arangodb_to_networkx(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_networkx_graph_from_arangodb_collections(self):
+    def arangodb_collections_to_networkx(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_networkx_graph_from_arangodb_graph(self):
+    def arangodb_graph_to_networkx(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def create_arangodb_graph(self):
+    def networkx_to_arangodb(self):
         raise NotImplementedError()  # pragma: no cover
 
     def __validate_attributes(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __fetch_arangodb_docs(self):
+    def __fetch_adb_docs(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __insert_arangodb_vertex(self):
+    def __insert_adb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __insert_arangodb_edge(self):
+    def __insert_adb_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __insert_networkx_node(self):
+    def __insert_nx_node(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __insert_networkx_edge(self):
+    def __insert_nx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
     @property
@@ -53,36 +53,31 @@ class ADBNX_Adapter(ABC):
     def GRAPH_ATRIBS(self):
         return {"vertexCollections", "edgeCollections"}
 
+    @property
+    def EDGE_DEFINITION_ATRIBS(self):
+        return {"edge_collection", "from_vertex_collections", "to_vertex_collections"}
+
 
 class ADBNX_Controller(ABC):
     def __init__(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _prepare_adb_vertex(self, vertex: dict, collection: str):
+    def _prepare_arangodb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _prepare_adb_edge(self, edge: dict, collection: str):
+    def _prepare_arangodb_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
+    def _identify_networkx_node(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _identify_nx_edge(
-        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
-    ) -> str:
+    def _identify_networkx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
+    def _keyify_networkx_node(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def _keyify_nx_edge(
-        self,
-        edge: dict,
-        from_node: dict,
-        to_node: dict,
-        collection: str,
-        overwrite: bool,
-    ):
+    def _keyify_networkx_edge(self):
         raise NotImplementedError()  # pragma: no cover
 
     @property

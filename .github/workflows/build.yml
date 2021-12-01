@@ -2,7 +2,8 @@ name: build
 on:
   pull_request:
     paths:
-      - 'adbnx_adapter/**'
+      - 'adbnx_adapter/adbnx_adapter/**'
+      - 'adbnx_adapter/tests/**'
 jobs:
   build:
     runs-on: ubuntu-latest

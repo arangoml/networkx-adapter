@@ -1,8 +1,5 @@
 from .abc import ADBNX_Controller
 
-from arango.graph import Graph as ArangoDBGraph
-from networkx.classes.graph import Graph as NetworkXGraph
-
 
 class Base_ADBNX_Controller(ADBNX_Controller):
     """ArangoDB-NetworkX controller.
@@ -12,13 +9,10 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     """
 
     def __init__(self):
-        self.nx_graph: NetworkXGraph = None
         self.nx_map = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
-
-        self.adb_graph: ArangoDBGraph = None
         self.adb_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
 
-    def _prepare_adb_vertex(self, vertex: dict, collection: str):
+    def _prepare_arangodb_vertex(self, vertex: dict, collection: str):
         """Prepare an ArangoDB vertex before it gets inserted into the NetworkX graph.
 
         Given an ArangoDB vertex, you can modify it before it gets inserted
@@ -35,7 +29,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         """
         return vertex["_id"]
 
-    def _prepare_adb_edge(self, edge: dict, collection: str):
+    def _prepare_arangodb_edge(self, edge: dict, collection: str):
         """Prepare an ArangoDB edge before it gets inserted into the NetworkX graph.
 
         Given an ArangoDB edge, you can modify it before it gets inserted
@@ -50,7 +44,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         """
         pass
 
-    def _identify_nx_node(self, id, node: dict, overwrite: bool) -> str:
+    def _identify_networkx_node(self, id, node: dict) -> str:
         """Given a NetworkX node, identify what ArangoDB collection it should belong to.
 
         NOTE: If your NetworkX graph does not comply to ArangoDB standards
@@ -60,19 +54,17 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         :type id: Any
         :param node: The NetworkX node object.
         :type node: dict
-        :param overwrite: Whether overwrite is enabled or not.
-        :type overwrite: bool
         :return: The ArangoDB collection name
         :rtype: str
         """
         # In this case, id is already a valid ArangoDB _id
         adb_id: str = id
-        return adb_id.split("/")[0] + ("" if overwrite else "_nx")
+        return adb_id.split("/")[0]
 
-    def _identify_nx_edge(
-        self, edge: dict, from_node: dict, to_node: dict, overwrite: bool
+    def _identify_networkx_edge(
+        self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
-        """Given a NetworkX edge, its pair of nodes, and the overwrite boolean, identify what ArangoDB collection should it belong to.
+        """Given a NetworkX edge, and its pair of nodes, identify what ArangoDB collection should it belong to.
 
         NOTE: If your NetworkX graph does not comply to ArangoDB standards
         (i.e a node's ID is not "collection/key"), then you must override this function.
@@ -83,16 +75,14 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         :type from_node: dict
         :param to_node: The NetworkX node object representing the edge destination.
         :type to_node: dict
-        :param overwrite: Whether overwrite is enabled or not.
-        :type overwrite: bool
         :return: The ArangoDB collection name
         :rtype: str
         """
         # In this case, edge["_id"] is already a valid ArangoDB _id
         edge_id: str = edge["_id"]
-        return edge_id.split("/")[0] + ("" if overwrite else "_nx")
+        return edge_id.split("/")[0]
 
-    def _keyify_nx_node(self, id, node: dict, collection: str, overwrite: bool) -> str:
+    def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
         """Given a NetworkX node, derive its valid ArangoDB key.
 
         NOTE: If your NetworkX graph does not comply to ArangoDB standards
@@ -102,8 +92,6 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         :type node: dict
         :param collection: The ArangoDB collection the node belongs to.
         :type collection: str
-        :param overwrite: Whether overwrite is enabled or not.
-        :type overwrite: bool
         :return: A valid ArangoDB _key value.
         :rtype: str
         """
@@ -111,16 +99,14 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         adb_id: str = id
         return adb_id.split("/")[1]
 
-    def _keyify_nx_edge(
+    def _keyify_networkx_edge(
         self,
         edge: dict,
         from_node: dict,
         to_node: dict,
         collection: str,
-        overwrite: bool,
     ):
-        """Given a NetworkX edge, its collection, its pair of nodes, and the overwrite boolean,
-            derive its valid ArangoDB key.
+        """Given a NetworkX edge, its collection, and its pair of nodes, derive its valid ArangoDB key.
 
         NOTE: If your NetworkX graph does not comply to ArangoDB standards
         (i.e a node's ID is not "collection/key"), then you must override this function.
@@ -133,8 +119,6 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         :type to_node: dict
         :param collection: The ArangoDB collection the node belongs to.
         :type collection: str
-        :param overwrite: Whether overwrite is enabled or not.
-        :type overwrite: bool
         :return: The ArangoDB collection name
         :rtype: str
         """
