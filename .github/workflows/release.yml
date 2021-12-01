@@ -97,7 +97,7 @@ jobs:
         run: gitchangelog $previous_tag..HEAD
 
       - name: Generate changelog file
-        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat adbnx_adapter/VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
+        run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat ./adbnx_adapter/VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
       - name: (TEMP) Read changelog file
         run: cat version_changelog.md
