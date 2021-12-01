@@ -53,7 +53,7 @@ jobs:
         uses: psf/black@stable
         with:
           options: "--check --verbose --diff --color"
-          src: "$PACKAGE_DIR"
+          src: "${PACKAGE_DIR}"
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
