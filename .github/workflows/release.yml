@@ -49,11 +49,13 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
+      - name: Get directory
+        run: echo "$(pwd)"
       - name: Lint with Black
         uses: psf/black@stable
         with:
           options: "--check --verbose --diff --color"
-          src: "./"
+          src: ${{ env.PACKAGE_DIR }}
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
