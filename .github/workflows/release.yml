@@ -51,14 +51,13 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Lint with Black
         uses: psf/black@stable
-        src: "."
         with:
           options: "--check --verbose --diff --color"
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
         run: |
-          pytest --cov=${{PACKAGE_DIR}} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          pytest --cov=${{env.PACKAGE_DIR}} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
           coveralls
 
   release:
@@ -82,7 +81,7 @@ jobs:
 
       - name: Install dependencies
         run: pip install -e .
-        working-directory: "$PACKAGE_DIR"
+        working-directory: ${{env.PACKAGE_DIR}}
 
       - name: Set variables
         run: |
