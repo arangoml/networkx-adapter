@@ -1,5 +1,9 @@
 from .abc import ADBNX_Controller
+"""
+Created on Tue Nov 9 2021
 
+@author: Anthony Mahanna
+"""
 
 class Base_ADBNX_Controller(ADBNX_Controller):
     """ArangoDB-NetworkX controller.
