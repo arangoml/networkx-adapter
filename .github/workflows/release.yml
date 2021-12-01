@@ -73,22 +73,28 @@ jobs:
           python-version: '3.8'
 
       - name: Copy README
-        run: cp ../README.md .
+        run: cp README.md adbnx_adapter/
 
       - name: Install release packages
-        run: pip install -e . wheel gitchangelog pystache twine
+        run: pip install wheel gitchangelog pystache twine
+
+      - name: Install dependencies
+        run: pip install -e .
+        working-directory: adbnx_adapter/
 
       - name: Ensure clean dist/ and build/ folders
         run: rm -rf dist build
+        working-directory: adbnx_adapter/
 
-      # - name: Build package
-      #   run: python setup.py sdist bdist_wheel
+      - name: Build package
+        run: python setup.py sdist bdist_wheel
+        working-directory: adbnx_adapter/
 
       - name: Extract current version
-        run: echo "previous_tag=$(python ../scripts/extract_version.py)" >> $GITHUB_ENV
+        run: echo "previous_tag=$(python scripts/extract_version.py)" >> $GITHUB_ENV
 
-      # - name: Pull tags from the repo
-      #   run: git pull --tags
+      - name: Pull tags from the repo
+        run: git pull --tags
 
       - name: (TEMP) Run gitchangelog
         run: gitchangelog $previous_tag..HEAD
@@ -96,14 +102,14 @@ jobs:
       - name: Generate changelog file
         run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
-      - name: Read changelog file
+      - name: (TEMP) Read changelog file
         run: cat version_changelog.md
 
       # - name: TestPypi release
-      #   run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing 
+      #   run: twine upload --repository testpypi adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
 
       # - name: Pypi release
-      #   run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+      #   run: twine upload adbnx_adapter/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
 
       # - name:  Github release
       #   env:
