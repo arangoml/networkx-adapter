@@ -50,7 +50,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Get directory
-        run: pwd
+        run: "ls -la"
       - name: Lint with Black
         uses: psf/black@stable
         with:
