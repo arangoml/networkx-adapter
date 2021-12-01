@@ -56,7 +56,7 @@ jobs:
           coveralls
 
   release:
-    needs: version
+    needs: build
     runs-on: ubuntu-latest
     name: Release package
     env:
