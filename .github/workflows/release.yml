@@ -95,7 +95,7 @@ jobs:
       - name: Generate changelog file
         run: gitchangelog $previous_tag..HEAD | sed "s/## (unreleased)/$(cat VERSION) ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
-      - name: Read changelog
+      - name: Read version_changelog
         run: cat version_changelog.md
 
       # - name: TestPypi release
