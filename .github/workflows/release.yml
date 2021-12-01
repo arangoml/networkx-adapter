@@ -7,7 +7,7 @@ on: [push]
 #     paths:
 #       - 'adbnx_adapter/adbnx_adapter/**'
 env:
-  PACKAGE_DIR: "./adbnx_adapter"
+  PACKAGE_DIR: ./adbnx_adapter
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{env.PACKAGE_DIR}}
+        working-directory: ${{ env.PACKAGE_DIR }}
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
@@ -58,7 +58,7 @@ jobs:
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
         run: |
-          pytest --cov=${{env.PACKAGE_DIR}} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          pytest --cov=${{ env.PACKAGE_DIR }} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
           coveralls
 
   release:
