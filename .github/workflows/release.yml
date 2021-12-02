@@ -1,13 +1,13 @@
 name: release
-env:
-  SOURCE_DIR: adbnx_adapter
-  PACKAGE_DIR: adbnx_adapter
 on:
   push:
     branches:
       - master
     paths:
-      - '${{env.SOURCE_DIR}}/${{env.PACKAGE_DIR}}/**'
+      - 'adbnx_adapter/adbnx_adapter/**'
+env:
+  SOURCE_DIR: adbnx_adapter
+  PACKAGE_DIR: adbnx_adapter
 jobs:
   version:
     runs-on: ubuntu-latest
