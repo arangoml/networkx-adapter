@@ -101,12 +101,10 @@ jobs:
         working-directory: ${{env.SOURCE_DIR}}
 
       - name: Extract wheel artifact name
-        run: echo "wheel_name=$(echo dist/*.whl)" >> $GITHUB_ENV
-        working-directory: ${{env.SOURCE_DIR}}
+        run: echo "wheel_name=$(echo ${{env.SOURCE_DIR}}/dist/*.whl)" >> $GITHUB_ENV
 
       - name: Extract tar.gz artifact name
-        run: echo "tar_name=$(echo dist/*.tar.gz)" >> $GITHUB_ENV
-        working-directory: ${{env.SOURCE_DIR}}
+        run: echo "tar_name=$(echo ${{env.SOURCE_DIR}}/dist/*.tar.gz)" >> $GITHUB_ENV
 
       - name: Pull tags from the repo
         run: git pull --tags
