@@ -1,11 +1,9 @@
 from setuptools import setup
 
-# VERSION is copied over during Release Action
-with open("VERSION") as f:
+with open("../VERSION") as f:
     version = f.read().strip()
 
-# README is copied over during Release Action
-with open("README.md", "r") as f:
+with open("../README.md", "r") as f:
     long_description = f.read()
 
 setup(

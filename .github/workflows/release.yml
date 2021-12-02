@@ -76,11 +76,8 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Copy README
-        run: cp README.md ${{env.SOURCE_DIR}}
-
-      - name: Copy VERSION
-        run: cp VERSION ${{env.SOURCE_DIR}}
+      - name: Copy static repo files
+        run: cp {CHANGELOG.md,LICENSE,README.md,VERSION} ${{env.SOURCE_DIR}}
 
       - name: Install release packages
         run: pip install wheel gitchangelog pystache twine
