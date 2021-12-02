@@ -6,7 +6,7 @@ env:
 on:
   pull_request:
     paths:
-      - '${{env.SOURCE_DIR}}/${{env.PACKAGE_DIR}}/**'
+      - 'adbnx_adapter/adbnx_adapter/**'
       - '${{env.SOURCE_DIR}}/${{env.TESTS_DIR}}/**'
 jobs:
   build:
