@@ -4,7 +4,7 @@ on:
     branches:
       - master
     paths:
-      - 'adbnx_adapter/adbnx_adapter/**'
+      - "adbnx_adapter/adbnx_adapter/**"
 env:
   SOURCE_DIR: adbnx_adapter
   PACKAGE_DIR: adbnx_adapter
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: "3.9"
       - name: Install dependencies
         run: pip install requests packaging
       - name: Set variables
@@ -39,7 +39,7 @@ jobs:
         working-directory: ${{env.SOURCE_DIR}}
     strategy:
       matrix:
-        python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        python: ["3.6", "3.7", "3.8", "3.9", "3.10"]
     name: Python ${{ matrix.python }}
     env:
       COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
@@ -71,10 +71,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: "3.8"
 
       - name: Copy static repo files
         run: cp {CHANGELOG.md,LICENSE,README.md,VERSION} ${{env.SOURCE_DIR}}
@@ -92,17 +93,20 @@ jobs:
           echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
       - name: Ensure clean dist/ and build/ folders
-        run: rm -rf ${{env.SOURCE_DIR}}/dist ${{env.SOURCE_DIR}}/build
+        run: rm -rf dist build
+        working-directory: ${{env.SOURCE_DIR}}
 
       - name: Build package
         run: python setup.py sdist bdist_wheel
         working-directory: ${{env.SOURCE_DIR}}
 
       - name: Extract wheel artifact name
-        run: echo "wheel_name=$(echo ${{env.SOURCE_DIR}}/dist/*.whl)" >> $GITHUB_ENV
+        run: echo "wheel_name=$(echo dist/*.whl)" >> $GITHUB_ENV
+        working-directory: ${{env.SOURCE_DIR}}
 
       - name: Extract tar.gz artifact name
-        run: echo "tar_name=$(echo ${{env.SOURCE_DIR}}/dist/*.tar.gz)" >> $GITHUB_ENV
+        run: echo "tar_name=$(echo dist/*.tar.gz)" >> $GITHUB_ENV
+        working-directory: ${{env.SOURCE_DIR}}
 
       - name: Pull tags from the repo
         run: git pull --tags
@@ -114,12 +118,14 @@ jobs:
         run: cat version_changelog.md
 
       - name: TestPypi release
-        run: twine upload --repository testpypi ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+        run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+        working-directory: ${{env.SOURCE_DIR}}
 
       - name: Pypi release
-        run: twine upload ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+        run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+        working-directory: ${{env.SOURCE_DIR}}
 
-      - name:  Github release
+      - name: Github release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: hub release create -a $wheel_name -a $tar_name -F version_changelog.md ${{env.NEW_VERSION}}
@@ -131,7 +137,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Needed for changelog generation
+          fetch-depth: 0
 
       - name: Create new branch
         run: git checkout -b actions/changelog
@@ -144,7 +150,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: "3.8"
 
       - name: Install release packages
         run: pip install wheel gitchangelog pystache
@@ -164,9 +170,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          add: 'CHANGELOG.md'
+          add: "CHANGELOG.md"
           branch: actions/changelog
-          message: '!gitchangelog'
+          message: "!gitchangelog"
 
       - name: Create pull request for the auto generated changelog
         run: |
@@ -185,4 +191,3 @@ jobs:
             --rebase
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
