@@ -10,16 +10,18 @@
 # supported CodeQL languages.
 #
 name: "CodeQL"
+env:
+  SOURCE_DIR: adbnx_adapter
 on:
   push:
     branches: [ master ]
     paths:
-      - 'adbnx_adapter/**'
+      - '${{env.SOURCE_DIR}}/**'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
     paths:
-      - 'adbnx_adapter/**'
+      - '${{env.SOURCE_DIR}}/**'
   schedule:
     - cron: '00 9 * * 1'
 
@@ -29,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: adbnx_adapter/
+        working-directory: ${{env.SOURCE_DIR}}
     permissions:
       actions: read
       contents: read

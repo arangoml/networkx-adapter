@@ -1,17 +1,19 @@
 name: build
+env:
+  SOURCE_DIR: adbnx_adapter
+  PACKAGE_DIR: adbnx_adapter
+  TESTS_DIR: tests
 on:
   pull_request:
     paths:
-      - 'adbnx_adapter/adbnx_adapter/**'
-      - 'adbnx_adapter/tests/**'
-env:
-  PACKAGE_DIR: "adbnx_adapter"
+      - '${{env.SOURCE_DIR}}/${{env.PACKAGE_DIR}}/**'
+      - '${{env.SOURCE_DIR}}/${{env.TESTS_DIR}}/**'
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: $PACKAGE_DIR
+        working-directory: ${{env.SOURCE_DIR}}
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
@@ -29,10 +31,10 @@ jobs:
         uses: psf/black@stable
         with:
           options: "--check --verbose --diff --color"
-          src: "$PACKAGE_DIR"
+          src: ${{env.PACKAGE_DIR}}
       - name: Install dependencies
         run: pip install -e . pytest pytest-cov coveralls
       - name: Run pytest
         run: |
-          pytest --cov=$PACKAGE_DIR --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          pytest --cov=${{env.PACKAGE_DIR}} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
           coveralls

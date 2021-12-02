@@ -1,13 +1,13 @@
 name: release
 env:
+  SOURCE_DIR: adbnx_adapter
   PACKAGE_DIR: adbnx_adapter
-on: [push]
-# on:
-#   push:
-#     branches:
-#       - master
-#     paths:
-#       - '${{env.PACKAGE_DIR}}/${{env.PACKAGE_DIR}}/**'
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '${{env.SOURCE_DIR}}/${{env.PACKAGE_DIR}}/**'
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
       - name: Set variables
         run: |
           echo "OLD_VERSION=$(python scripts/extract_version.py)" >> $GITHUB_ENV
-          echo "NEW_VERSION=$(cat ${{env.PACKAGE_DIR}}/VERSION)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
       - name: Assert version increase
         id: verify
         run: echo "::set-output name=has_increased::$(python scripts/assert_version.py ${{env.OLD_VERSION}} ${{env.NEW_VERSION}})"
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{env.PACKAGE_DIR}}
+        working-directory: ${{env.SOURCE_DIR}}
     strategy:
       matrix:
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
@@ -75,44 +75,44 @@ jobs:
           python-version: '3.8'
 
       - name: Copy README
-        run: cp README.md ${{env.PACKAGE_DIR}}
+        run: cp README.md ${{env.SOURCE_DIR}}
 
       - name: Install release packages
         run: pip install wheel gitchangelog pystache twine
 
       - name: Install dependencies
         run: pip install -e .
-        working-directory: ${{env.PACKAGE_DIR}}
+        working-directory: ${{env.SOURCE_DIR}}
 
       - name: Set variables
         run: |
           echo "OLD_VERSION=$(python scripts/extract_version.py)" >> $GITHUB_ENV
-          echo "NEW_VERSION=$(cat ${{env.PACKAGE_DIR}}/VERSION)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
 
       - name: Ensure clean dist/ and build/ folders
-        run: rm -rf ${{env.PACKAGE_DIR}}/dist ${{env.PACKAGE_DIR}}/build
+        run: rm -rf ${{env.SOURCE_DIR}}/dist ${{env.SOURCE_DIR}}/build
 
       - name: Build package
         run: python setup.py sdist bdist_wheel
-        working-directory: ${{env.PACKAGE_DIR}}
+        working-directory: ${{env.SOURCE_DIR}}
 
       - name: Pull tags from the repo
         run: git pull --tags
 
       - name: Run gitchangelog
-        run: gitchangelog ^${{env.OLD_VERSION}} HEAD
+        run: gitchangelog ${{env.OLD_VERSION}}..HEAD
 
       - name: Create version_changelog.md
-        run: gitchangelog ^${{env.OLD_VERSION}} HEAD | sed "s/## (unreleased)/${{env.NEW_VERSION}} ($(date +"%Y-%m-%d"))/" > version_changelog.md
+        run: gitchangelog ${{env.OLD_VERSION}}..HEAD | sed "s/## (unreleased)/${{env.NEW_VERSION}} ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
       - name: Read version_changelog.md
         run: cat version_changelog.md
 
       - name: TestPypi release
-        run: twine upload --repository testpypi ${{env.PACKAGE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+        run: twine upload --repository testpypi ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
 
       - name: Pypi release
-        run: twine upload ${{env.PACKAGE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+        run: twine upload ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
 
       - name:  Github release
         env:
@@ -146,13 +146,13 @@ jobs:
 
   #     - name: Install dependencies
   #       run: pip install -e .
-  #       working-directory: ${{env.PACKAGE_DIR}}
+  #       working-directory: ${{env.SOURCE_DIR}}
 
   #     - name: Set variables
-  #       run: echo "NEW_VERSION=$(cat ${{env.PACKAGE_DIR}}/VERSION)" >> $GITHUB_ENV
+  #       run: echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
 
   #     - name: Generate newest changelog
-  #       run: gitchangelog ${{env.NEW_VERSION}} > ${{env.PACKAGE_DIR}}/CHANGELOG.md
+  #       run: gitchangelog ${{env.NEW_VERSION}} > ${{env.SOURCE_DIR}}/CHANGELOG.md
 
   #     - name: Make commit for auto-generated changelog
   #       uses: EndBug/add-and-commit@v7
