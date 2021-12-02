@@ -1,11 +1,10 @@
 name: release
-on: push
-# on:
-#   push:
-#     branches:
-#       - master
-#     paths:
-#       - "adbnx_adapter/adbnx_adapter/**"
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "adbnx_adapter/adbnx_adapter/**"
 env:
   SOURCE_DIR: adbnx_adapter
   PACKAGE_DIR: adbnx_adapter
@@ -119,76 +118,76 @@ jobs:
         run: cat version_changelog.md
 
       - name: TestPypi release
-        run: echo "twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing"
+        run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
         working-directory: ${{env.SOURCE_DIR}}
 
       - name: Pypi release
-        run: echo "twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing"
+        run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
         working-directory: ${{env.SOURCE_DIR}}
 
       - name: Github release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "hub release create -a $wheel_name -a $tar_name -F version_changelog.md ${{env.NEW_VERSION}}"
+        run: hub release create -a $wheel_name -a $tar_name -F version_changelog.md ${{env.NEW_VERSION}}
 
-  # changelog:
-  #   needs: release
-  #   runs-on: ubuntu-latest
-  #   name: Update Changelog
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0
+  changelog:
+    needs: release
+    runs-on: ubuntu-latest
+    name: Update Changelog
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-  #     - name: Create new branch
-  #       run: git checkout -b actions/changelog
+      - name: Create new branch
+        run: git checkout -b actions/changelog
 
-  #     - name: Set branch upstream
-  #       run: git push -u origin actions/changelog
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set branch upstream
+        run: git push -u origin actions/changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Setup python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: "3.8"
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
 
-  #     - name: Install release packages
-  #       run: pip install wheel gitchangelog pystache
+      - name: Install release packages
+        run: pip install wheel gitchangelog pystache
 
-  #     - name: Install dependencies
-  #       run: pip install -e .
-  #       working-directory: ${{env.SOURCE_DIR}}
+      - name: Install dependencies
+        run: pip install -e .
+        working-directory: ${{env.SOURCE_DIR}}
 
-  #     - name: Set variables
-  #       run: echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+      - name: Set variables
+        run: echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
-  #     - name: Generate newest changelog
-  #       run: gitchangelog ${{env.NEW_VERSION}} > CHANGELOG.md
+      - name: Generate newest changelog
+        run: gitchangelog ${{env.NEW_VERSION}} > CHANGELOG.md
 
-  #     - name: Make commit for auto-generated changelog
-  #       uses: EndBug/add-and-commit@v7
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         add: "CHANGELOG.md"
-  #         branch: actions/changelog
-  #         message: "!gitchangelog"
+      - name: Make commit for auto-generated changelog
+        uses: EndBug/add-and-commit@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          add: "CHANGELOG.md"
+          branch: actions/changelog
+          message: "!gitchangelog"
 
-  #     - name: Create pull request for the auto generated changelog
-  #       run: |
-  #         echo "PR_URL=$(gh pr create \
-  #           --title "changelog: release ${{env.NEW_VERSION}}" \
-  #           --body "beep boop, i am a robot" \
-  #           --label documentation)" >> $GITHUB_ENV
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create pull request for the auto generated changelog
+        run: |
+          echo "PR_URL=$(gh pr create \
+            --title "changelog: release ${{env.NEW_VERSION}}" \
+            --body "beep boop, i am a robot" \
+            --label documentation)" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Set pull request to auto-merge as rebase
-  #       run: |
-  #         gh pr merge $PR_URL \
-  #           --auto \
-  #           --delete-branch \
-  #           --rebase
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set pull request to auto-merge as rebase
+        run: |
+          gh pr merge $PR_URL \
+            --auto \
+            --delete-branch \
+            --rebase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
