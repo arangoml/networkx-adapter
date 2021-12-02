@@ -1,13 +1,10 @@
 from setuptools import setup
 
-with open("VERSION") as f:
+with open("../VERSION") as f:
     version = f.read().strip()
 
-try:
-    with open("README.md", "r") as f:
-        long_description = f.read()
-except FileNotFoundError:
-    long_description = "(no README.md)"
+with open("../README.md", "r") as f:
+    long_description = f.read()
 
 setup(
     name="adbnx_adapter",

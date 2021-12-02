@@ -172,7 +172,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type edge_definitions: list[dict]
         :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
-        :param keyify_edges: If set to True, will create custom edge IDs based on the behavior of the ADBNX_Controller's _keyify_nx_edge() method. Otherwise, edge IDs will be randomly generated.
+        :param keyify_edges: If set to True, will create custom edge IDs based on the behavior of the ADBNX_Controller's _keyify_networkx_edge() method. Otherwise, edge IDs will be randomly generated.
         :type keyify_edges: bool
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
