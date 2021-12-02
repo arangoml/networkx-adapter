@@ -1,13 +1,13 @@
 name: release
+env:
+  PACKAGE_DIR: adbnx_adapter
 on: [push]
 # on:
 #   push:
 #     branches:
 #       - master
 #     paths:
-#       - 'adbnx_adapter/adbnx_adapter/**'
-env:
-  PACKAGE_DIR: adbnx_adapter
+#       - '${{env.PACKAGE_DIR}}/${{env.PACKAGE_DIR}}/**'
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -100,10 +100,10 @@ jobs:
         run: git pull --tags
 
       - name: Run gitchangelog
-        run: gitchangelog ${{env.OLD_VERSION}}..HEAD
+        run: gitchangelog ^${{env.OLD_VERSION}} HEAD
 
       - name: Create version_changelog.md
-        run: gitchangelog ${{env.OLD_VERSION}}..HEAD | sed "s/## (unreleased)/${{env.NEW_VERSION}} ($(date +"%Y-%m-%d"))/" > version_changelog.md
+        run: gitchangelog ^${{env.OLD_VERSION}} HEAD | sed "s/## (unreleased)/${{env.NEW_VERSION}} ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
       - name: Read version_changelog.md
         run: cat version_changelog.md
