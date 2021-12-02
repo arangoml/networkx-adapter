@@ -70,6 +70,9 @@ jobs:
       TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          # ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
       - name: Setup python
         uses: actions/setup-python@v2
         with:
