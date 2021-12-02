@@ -116,11 +116,11 @@ jobs:
         run: cat version_changelog.md
 
       - name: TestPypi release
-        run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+        run: twine upload --repository testpypi dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} #--skip-existing
         working-directory: ${{env.SOURCE_DIR}}
 
       - name: Pypi release
-        run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+        run: twine upload dist/* -p ${{ secrets.TWINE_PASSWORD }} #--skip-existing
         working-directory: ${{env.SOURCE_DIR}}
 
       - name: Github release
