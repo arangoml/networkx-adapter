@@ -1,13 +1,13 @@
 name: build
-env:
-  SOURCE_DIR: adbnx_adapter
-  PACKAGE_DIR: adbnx_adapter
-  TESTS_DIR: tests
 on:
   pull_request:
     paths:
       - 'adbnx_adapter/adbnx_adapter/**'
       - '${{env.SOURCE_DIR}}/${{env.TESTS_DIR}}/**'
+env:
+  SOURCE_DIR: adbnx_adapter
+  PACKAGE_DIR: adbnx_adapter
+  TESTS_DIR: tests
 jobs:
   build:
     runs-on: ubuntu-latest
