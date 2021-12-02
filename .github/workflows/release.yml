@@ -1,14 +1,13 @@
 name: release
-on: push
-# on:
-#   push:
-#     branches:
-#       - master
-#     paths:
-#       - 'adbnx_adapter/adbnx_adapter/**'
-# env:
-#   SOURCE_DIR: adbnx_adapter
-#   PACKAGE_DIR: adbnx_adapter
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'adbnx_adapter/adbnx_adapter/**'
+env:
+  SOURCE_DIR: adbnx_adapter
+  PACKAGE_DIR: adbnx_adapter
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -32,158 +31,158 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: core.setFailed("Cannot build & release - VERSION has not been manually incremented")
-  # build:
-  #   needs: version
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: ${{env.SOURCE_DIR}}
-  #   strategy:
-  #     matrix:
-  #       python: ['3.6', '3.7', '3.8', '3.9', '3.10']
-  #   name: Python ${{ matrix.python }}
-  #   env:
-  #     COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
-  #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python }}
-  #     - name: Lint with Black
-  #       uses: psf/black@stable
-  #       with:
-  #         options: "--check --verbose --diff --color"
-  #         src: ${{env.PACKAGE_DIR}}
-  #     - name: Install dependencies
-  #       run: pip install -e . pytest pytest-cov coveralls
-  #     - name: Run pytest
-  #       run: |
-  #         pytest --cov=${{env.PACKAGE_DIR}} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
-  #         coveralls
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{env.SOURCE_DIR}}
+    strategy:
+      matrix:
+        python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+    name: Python ${{ matrix.python }}
+    env:
+      COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Lint with Black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose --diff --color"
+          src: ${{env.PACKAGE_DIR}}
+      - name: Install dependencies
+        run: pip install -e . pytest pytest-cov coveralls
+      - name: Run pytest
+        run: |
+          pytest --cov=${{env.PACKAGE_DIR}} --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+          coveralls
 
-  # release:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   name: Release package
-  #   env:
-  #     TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0
-  #     - name: Setup python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: '3.8'
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Release package
+    env:
+      TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
 
-  #     - name: Copy README
-  #       run: cp README.md ${{env.SOURCE_DIR}}
+      - name: Copy README
+        run: cp README.md ${{env.SOURCE_DIR}}
 
-  #     - name: Install release packages
-  #       run: pip install wheel gitchangelog pystache twine
+      - name: Install release packages
+        run: pip install wheel gitchangelog pystache twine
 
-  #     - name: Install dependencies
-  #       run: pip install -e .
-  #       working-directory: ${{env.SOURCE_DIR}}
+      - name: Install dependencies
+        run: pip install -e .
+        working-directory: ${{env.SOURCE_DIR}}
 
-  #     - name: Set variables
-  #       run: |
-  #         echo "OLD_VERSION=$(python scripts/extract_version.py)" >> $GITHUB_ENV
-  #         echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
+      - name: Set variables
+        run: |
+          echo "OLD_VERSION=$(python scripts/extract_version.py)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
 
-  #     - name: Ensure clean dist/ and build/ folders
-  #       run: rm -rf ${{env.SOURCE_DIR}}/dist ${{env.SOURCE_DIR}}/build
+      - name: Ensure clean dist/ and build/ folders
+        run: rm -rf ${{env.SOURCE_DIR}}/dist ${{env.SOURCE_DIR}}/build
 
-  #     - name: Build package
-  #       run: python setup.py sdist bdist_wheel
-  #       working-directory: ${{env.SOURCE_DIR}}
+      - name: Build package
+        run: python setup.py sdist bdist_wheel
+        working-directory: ${{env.SOURCE_DIR}}
 
-  #     - name: Extract wheel artifact name
-  #       run: echo "wheel_name=$(echo ${{env.SOURCE_DIR}}/dist/*.whl)" >> $GITHUB_ENV
+      - name: Extract wheel artifact name
+        run: echo "wheel_name=$(echo ${{env.SOURCE_DIR}}/dist/*.whl)" >> $GITHUB_ENV
 
-  #     - name: Extract tar.gz artifact name
-  #       run: echo "tar_name=$(echo ${{env.SOURCE_DIR}}/dist/*.tar.gz)" >> $GITHUB_ENV
+      - name: Extract tar.gz artifact name
+        run: echo "tar_name=$(echo ${{env.SOURCE_DIR}}/dist/*.tar.gz)" >> $GITHUB_ENV
 
-  #     - name: Pull tags from the repo
-  #       run: git pull --tags
+      - name: Pull tags from the repo
+        run: git pull --tags
 
-  #     - name: Create version_changelog.md
-  #       run: gitchangelog ${{env.OLD_VERSION}}..HEAD | sed "s/## (unreleased)/${{env.NEW_VERSION}} ($(date +"%Y-%m-%d"))/" > version_changelog.md
+      - name: Create version_changelog.md
+        run: gitchangelog ${{env.OLD_VERSION}}..HEAD | sed "s/## (unreleased)/${{env.NEW_VERSION}} ($(date +"%Y-%m-%d"))/" > version_changelog.md
 
-  #     - name: Read version_changelog.md
-  #       run: cat version_changelog.md
+      - name: Read version_changelog.md
+        run: cat version_changelog.md
 
-  #     - name: TestPypi release
-  #       run: twine upload --repository testpypi ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
+      - name: TestPypi release
+        run: twine upload --repository testpypi ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD_TEST }} --skip-existing
 
-  #     - name: Pypi release
-  #       run: twine upload ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
+      - name: Pypi release
+        run: twine upload ${{env.SOURCE_DIR}}/dist/* -p ${{ secrets.TWINE_PASSWORD }} --skip-existing
 
-  #     - name:  Github release
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: hub release create -a $wheel_name -a $tar_name -F version_changelog.md ${{env.NEW_VERSION}}
+      - name:  Github release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: hub release create -a $wheel_name -a $tar_name -F version_changelog.md ${{env.NEW_VERSION}}
 
-  # changelog:
-  #   needs: release
-  #   runs-on: ubuntu-latest
-  #   name: Update Changelog
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0  # Needed for changelog generation
+  changelog:
+    needs: release
+    runs-on: ubuntu-latest
+    name: Update Changelog
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Needed for changelog generation
 
-  #     - name: Create new branch
-  #       run: git checkout -b actions/changelog
+      - name: Create new branch
+        run: git checkout -b actions/changelog
 
-  #     - name: Set branch upstream
-  #       run: git push -u origin actions/changelog
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set branch upstream
+        run: git push -u origin actions/changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Setup python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: '3.8'
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
 
-  #     - name: Install release packages
-  #       run: pip install wheel gitchangelog pystache
+      - name: Install release packages
+        run: pip install wheel gitchangelog pystache
 
-  #     - name: Install dependencies
-  #       run: pip install -e .
-  #       working-directory: ${{env.SOURCE_DIR}}
+      - name: Install dependencies
+        run: pip install -e .
+        working-directory: ${{env.SOURCE_DIR}}
 
-  #     - name: Set variables
-  #       run: echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
+      - name: Set variables
+        run: echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
 
-  #     - name: Generate newest changelog
-  #       run: gitchangelog ${{env.NEW_VERSION}} > ${{env.SOURCE_DIR}}/CHANGELOG.md
+      - name: Generate newest changelog
+        run: gitchangelog ${{env.NEW_VERSION}} > ${{env.SOURCE_DIR}}/CHANGELOG.md
 
-  #     - name: Make commit for auto-generated changelog
-  #       uses: EndBug/add-and-commit@v7
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         add: '${{env.SOURCE_DIR}}/CHANGELOG.md'
-  #         branch: actions/changelog
-  #         message: '!gitchangelog'
+      - name: Make commit for auto-generated changelog
+        uses: EndBug/add-and-commit@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          add: '${{env.SOURCE_DIR}}/CHANGELOG.md'
+          branch: actions/changelog
+          message: '!gitchangelog'
 
-  #     - name: Create pull request for the auto generated changelog
-  #       run: |
-  #         echo "PR_URL=$(gh pr create \
-  #           --title "changelog: release ${{env.NEW_VERSION}}" \
-  #           --body "beep boop, i am a robot" \
-  #           --label documentation)" >> $GITHUB_ENV
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create pull request for the auto generated changelog
+        run: |
+          echo "PR_URL=$(gh pr create \
+            --title "changelog: release ${{env.NEW_VERSION}}" \
+            --body "beep boop, i am a robot" \
+            --label documentation)" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Set pull request to auto-merge as rebase
-  #       run: |
-  #         gh pr merge $PR_URL \
-  #           --auto \
-  #           --delete-branch \
-  #           --rebase
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set pull request to auto-merge as rebase
+        run: |
+          gh pr merge $PR_URL \
+            --auto \
+            --delete-branch \
+            --rebase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
