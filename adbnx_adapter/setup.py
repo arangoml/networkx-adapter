@@ -1,13 +1,12 @@
 from setuptools import setup
 
+# VERSION is copied over during Release Action
 with open("VERSION") as f:
     version = f.read().strip()
 
-try:
-    with open("README.md", "r") as f:
-        long_description = f.read()
-except FileNotFoundError:
-    long_description = "(no README.md)"
+# README is copied over during Release Action
+with open("README.md", "r") as f:
+    long_description = f.read()
 
 setup(
     name="adbnx_adapter",

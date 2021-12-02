@@ -22,7 +22,7 @@ jobs:
       - name: Set variables
         run: |
           echo "OLD_VERSION=$(python scripts/extract_version.py)" >> $GITHUB_ENV
-          echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
       - name: Assert version increase
         id: verify
         run: echo "::set-output name=has_increased::$(python scripts/assert_version.py ${{env.OLD_VERSION}} ${{env.NEW_VERSION}})"
@@ -79,6 +79,9 @@ jobs:
       - name: Copy README
         run: cp README.md ${{env.SOURCE_DIR}}
 
+      - name: Copy VERSION
+        run: cp VERSION ${{env.SOURCE_DIR}}
+
       - name: Install release packages
         run: pip install wheel gitchangelog pystache twine
 
@@ -89,7 +92,7 @@ jobs:
       - name: Set variables
         run: |
           echo "OLD_VERSION=$(python scripts/extract_version.py)" >> $GITHUB_ENV
-          echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
       - name: Ensure clean dist/ and build/ folders
         run: rm -rf ${{env.SOURCE_DIR}}/dist ${{env.SOURCE_DIR}}/build
@@ -154,17 +157,17 @@ jobs:
         working-directory: ${{env.SOURCE_DIR}}
 
       - name: Set variables
-        run: echo "NEW_VERSION=$(cat ${{env.SOURCE_DIR}}/VERSION)" >> $GITHUB_ENV
+        run: echo "NEW_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
       - name: Generate newest changelog
-        run: gitchangelog ${{env.NEW_VERSION}} > ${{env.SOURCE_DIR}}/CHANGELOG.md
+        run: gitchangelog ${{env.NEW_VERSION}} > CHANGELOG.md
 
       - name: Make commit for auto-generated changelog
         uses: EndBug/add-and-commit@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          add: '${{env.SOURCE_DIR}}/CHANGELOG.md'
+          add: 'CHANGELOG.md'
           branch: actions/changelog
           message: '!gitchangelog'
 
