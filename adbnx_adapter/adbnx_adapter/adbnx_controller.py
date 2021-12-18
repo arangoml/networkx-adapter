@@ -16,10 +16,6 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     transitioning from ArangoDB to NetworkX, and vice-versa.
     """
 
-    def __init__(self):
-        self.nx_map = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
-        self.adb_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
-
     def _prepare_arangodb_vertex(self, vertex: dict, collection: str):
         """Prepare an ArangoDB vertex before it gets inserted into the NetworkX graph.
 

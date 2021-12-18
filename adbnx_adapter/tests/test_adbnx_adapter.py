@@ -12,6 +12,7 @@ from conftest import (
     football_adbnx_adapter,
     karate_adbnx_adapter,
     con,
+    db,
 )
 
 from arango.graph import Graph as ArangoGraph
@@ -65,15 +66,13 @@ def test_validate_controller_class():
                     "customer": {"Name", "Sex", "Ssn", "rank"},
                 },
                 "edgeCollections": {
-                    "accountHolder": {"_from", "_to"},
+                    "accountHolder": {},
                     "Relationship": {
-                        "_from",
-                        "_to",
                         "label",
                         "name",
                         "relationshipType",
                     },
-                    "transaction": {"_from", "_to"},
+                    "transaction": {},
                 },
             },
         ),
@@ -82,7 +81,7 @@ def test_validate_controller_class():
             "IMDBGraph",
             {
                 "vertexCollections": {"Users": {}, "Movies": {}},
-                "edgeCollections": {"Ratings": {"_from", "_to", "ratings"}},
+                "edgeCollections": {"Ratings": {"ratings"}},
             },
         ),
     ],
@@ -133,14 +132,14 @@ def test_adb_graph_to_nx(
 
     # Re-create the graph if defintions are provided
     if edge_definitions:
-        adapter.db.delete_graph(name, ignore_missing=True)
-        adapter.db.create_graph(name, edge_definitions=edge_definitions)
+        db.delete_graph(name, ignore_missing=True)
+        db.create_graph(name, edge_definitions=edge_definitions)
 
-    arango_graph = adapter.db.graph(name)
+    arango_graph = db.graph(name)
     v_cols = arango_graph.vertex_collections()
     e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
 
-    nx_g = adbnx_adapter.arangodb_graph_to_networkx(name)
+    nx_g = adapter.arangodb_graph_to_networkx(name)
     assert_networkx_data(nx_g, v_cols, e_cols)
 
 
@@ -204,7 +203,7 @@ def test_nx_to_adb(
 @pytest.mark.unit
 def test_full_cycle_from_arangodb_with_existing_collections():
     name = "fraud-detection"
-    original_fraud_adb_g = adbnx_adapter.db.graph(name)
+    original_fraud_adb_g = db.graph(name)
     edge_definitions = original_fraud_adb_g.edge_definitions()
 
     col: str
@@ -249,48 +248,48 @@ def test_full_cycle_from_arangodb_with_existing_collections():
 @pytest.mark.unit
 def test_full_cycle_from_arangodb_with_new_collections():
     name = "fraud-detection"
-    original_fraud_adb_g = adbnx_adapter.db.graph(name)
+    original_fraud_adb_g = db.graph(name)
     fraud_nx_g = adbnx_adapter.arangodb_graph_to_networkx(name)
 
     edge_definitions = [
         {
-            "edge_collection": "accountHolder_nx",
-            "from_vertex_collections": ["customer_nx"],
-            "to_vertex_collections": ["account_nx"],
+            "edge_collection": "accountHolder_new",
+            "from_vertex_collections": ["customer_new"],
+            "to_vertex_collections": ["account_new"],
         },
         {
-            "edge_collection": "transaction_nx",
-            "from_vertex_collections": ["account_nx"],
-            "to_vertex_collections": ["account_nx"],
+            "edge_collection": "transaction_new",
+            "from_vertex_collections": ["account_new"],
+            "to_vertex_collections": ["account_new"],
         },
     ]
 
     class Fraud_ADBNX_Controller(Base_ADBNX_Controller):
         def _identify_networkx_node(self, id, node: dict) -> str:
             adb_id: str = id
-            return adb_id.split("/")[0] + "_nx"
+            return adb_id.split("/")[0] + "_new"
 
         def _identify_networkx_edge(
             self, edge: dict, from_node: dict, to_node: dict
         ) -> str:
             edge_id: str = edge["_id"]
-            return edge_id.split("/")[0] + "_nx"
+            return edge_id.split("/")[0] + "_new"
 
     fraud_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Fraud_ADBNX_Controller)
 
     new_fraud_adb_g = fraud_adbnx_adapter.networkx_to_arangodb(
-        name + "-nx", fraud_nx_g, edge_definitions, keyify_edges=True
+        name + "_new", fraud_nx_g, edge_definitions, keyify_edges=True
     )
 
     col: str
     for col in original_fraud_adb_g.vertex_collections():
-        new_col = col + "_nx"
+        new_col = col + "_new"
         for vertex in original_fraud_adb_g.vertex_collection(col):
             assert new_fraud_adb_g.vertex_collection(new_col).has(vertex["_key"])
 
     e_cols = {col["edge_collection"] for col in original_fraud_adb_g.edge_definitions()}
     for col in e_cols:
-        new_col = col + "_nx"
+        new_col = col + "_new"
         for edge in original_fraud_adb_g.edge_collection(col):
             assert new_fraud_adb_g.edge_collection(new_col).has(edge["_key"])
 
@@ -298,8 +297,8 @@ def test_full_cycle_from_arangodb_with_new_collections():
 @pytest.mark.unit
 def test_full_cycle_from_networkx():
     name = "Grid"
-    if grid_adbnx_adapter.db.has_graph(name):
-        grid_adbnx_adapter.db.delete_graph(name, drop_collections=True)
+    if db.has_graph(name):
+        db.delete_graph(name, drop_collections=True)
 
     original_grid_nx_g = nx.grid_2d_graph(5, 5)
     grid_edge_definitions = [
@@ -325,36 +324,53 @@ def test_full_cycle_from_networkx():
 
 def assert_adapter_type(adapter: ArangoDB_Networkx_Adapter):
     assert type(adapter) is ArangoDB_Networkx_Adapter and issubclass(
-        type(adapter.cntrl), Base_ADBNX_Controller
+        type(adapter._ArangoDB_Networkx_Adapter__cntrl), Base_ADBNX_Controller
     )
 
 
 def assert_networkx_data(nx_g: NxGraph, v_cols, e_cols):
     for col in v_cols:
-        for vertex in adbnx_adapter.db.collection(col):
+        for vertex in db.collection(col):
             assert nx_g.has_node(vertex["_id"])
 
     for col in e_cols:
-        for edge in adbnx_adapter.db.collection(col):
+        for edge in db.collection(col):
             assert nx_g.has_edge(edge["_from"], edge["_to"])
 
 
 def assert_arangodb_data(
     adapter: ArangoDB_Networkx_Adapter, nx_g: NxGraph, adb_g: ArangoGraph
 ):
-    for id, node in nx_g.nodes(data=True):
-        col = adapter.cntrl._identify_networkx_node(id, node)
-        key = adapter.cntrl._keyify_networkx_node(id, node, col)
+    nx_map = dict()
+    cntrl: Base_ADBNX_Controller = adapter._ArangoDB_Networkx_Adapter__cntrl
+    for nx_id, node in nx_g.nodes(data=True):
+        col = cntrl._identify_networkx_node(nx_id, node)
+        key = cntrl._keyify_networkx_node(nx_id, node, col)
+
+        nx_map[nx_id] = {
+            "adb_id": node["_id"],
+            "col": col,
+            "key": key,
+        }
+
         assert adb_g.vertex_collection(col).has(key)
 
     for from_node_id, to_node_id, edge in nx_g.edges(data=True):
-        from_node = {"id": from_node_id, **nx_g.nodes[from_node_id]}
-        to_node = {"id": to_node_id, **nx_g.nodes[to_node_id]}
+        from_node = {
+            "nx_id": from_node_id,
+            "col": nx_map[from_node_id]["col"],
+            **nx_g.nodes[from_node_id],
+        }
+        to_node = {
+            "nx_id": to_node_id,
+            "col": nx_map[from_node_id]["col"],
+            **nx_g.nodes[to_node_id],
+        }
 
-        col = adapter.cntrl._identify_networkx_edge(edge, from_node, to_node)
+        col = cntrl._identify_networkx_edge(edge, from_node, to_node)
         assert adb_g.edge_collection(col).find(
             {
-                "_from": adapter.cntrl.adb_map.get(from_node["id"])["_id"],
-                "_to": adapter.cntrl.adb_map.get(to_node["id"])["_id"],
+                "_from": nx_map.get(from_node_id)["adb_id"],
+                "_to": nx_map.get(to_node_id)["adb_id"],
             }
         )

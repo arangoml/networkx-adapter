@@ -9,6 +9,8 @@ from pathlib import Path
 import urllib.request as urllib
 
 import networkx as nx
+from arango import ArangoClient
+
 from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
 from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
 
@@ -28,22 +30,29 @@ def pytest_sessionstart():
     football_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Football_ADBNX_Controller)
     karate_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Karate_ADBNX_Controller)
 
+    global db
+    url = "https://" + con["hostname"] + ":" + str(con["port"])
+    client = ArangoClient(hosts=url)
+    db = client.db(con["dbName"], con["username"], con["password"], verify=True)
+
     arango_restore("examples/data/fraud_dump")
     arango_restore("examples/data/imdb_dump")
 
-    edge_definitions = [
-        {
-            "edge_collection": "accountHolder",
-            "from_vertex_collections": ["customer"],
-            "to_vertex_collections": ["account"],
-        },
-        {
-            "edge_collection": "transaction",
-            "from_vertex_collections": ["account"],
-            "to_vertex_collections": ["account"],
-        },
-    ]
-    adbnx_adapter.db.create_graph("fraud-detection", edge_definitions=edge_definitions)
+    db.create_graph(
+        "fraud-detection",
+        edge_definitions=[
+            {
+                "edge_collection": "accountHolder",
+                "from_vertex_collections": ["customer"],
+                "to_vertex_collections": ["account"],
+            },
+            {
+                "edge_collection": "transaction",
+                "from_vertex_collections": ["account"],
+                "to_vertex_collections": ["account"],
+            },
+        ],
+    )
 
 
 def get_oasis_crendetials() -> dict:
@@ -99,8 +108,8 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
     def _identify_networkx_edge(
         self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
-        from_collection = self.adb_map.get(from_node["id"])["collection"]
-        to_collection = self.adb_map.get(to_node["id"])["collection"]
+        from_collection = from_node["col"]
+        to_collection = to_node["col"]
 
         if from_collection == to_collection == "Grid_Node":
             return "to"
@@ -122,8 +131,8 @@ class Football_ADBNX_Controller(Base_ADBNX_Controller):
     def _identify_networkx_edge(
         self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
-        from_collection = self.adb_map.get(from_node["id"])["collection"]
-        to_collection = self.adb_map.get(to_node["id"])["collection"]
+        from_collection = from_node["col"]
+        to_collection = to_node["col"]
 
         if from_collection == to_collection == "Football_Team":
             return "played"
@@ -149,8 +158,8 @@ class Karate_ADBNX_Controller(Base_ADBNX_Controller):
     def _identify_networkx_edge(
         self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
-        from_collection = self.adb_map.get(from_node["id"])["collection"]
-        to_collection = self.adb_map.get(to_node["id"])["collection"]
+        from_collection = from_node["col"]
+        to_collection = to_node["col"]
 
         if from_collection == to_collection == "Karate_Student":
             return "knows"
