@@ -200,15 +200,23 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
                 "Edge Definitions", set(e_d), self.EDGE_DEFINITION_ATRIBS
             )
 
+        adb_v_cols = set()
+        adb_e_cols = set()
         for e_d in edge_definitions:
             e_col = e_d["edge_collection"]
+            adb_e_cols.add(e_col)
 
             if self.__db.has_collection(e_col) is False:
                 self.__db.create_collection(e_col, edge=True)
 
             for v_col in e_d["from_vertex_collections"] + e_d["to_vertex_collections"]:
+                adb_v_cols.add(v_col)
                 if self.__db.has_collection(v_col) is False:
                     self.__db.create_collection(v_col)
+
+        is_homogeneous = len(adb_v_cols | adb_e_cols) == 2
+        adb_v_col = adb_v_cols.pop() if is_homogeneous else None
+        adb_e_col = adb_e_cols.pop() if is_homogeneous else None
 
         self.__db.delete_graph(name, ignore_missing=True)
         adb_graph: ArangoDBGraph = self.__db.create_graph(name, edge_definitions)
@@ -216,7 +224,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         nx_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
 
         for nx_id, node in nx_graph.nodes(data=True):
-            col = self.__cntrl._identify_networkx_node(nx_id, node)
+            col = adb_v_col or self.__cntrl._identify_networkx_node(nx_id, node)
             key = self.__cntrl._keyify_networkx_node(nx_id, node, col)
             node["_id"] = col + "/" + key
 
@@ -240,7 +248,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
                 **nx_graph.nodes[to_node_id],
             }
 
-            col = self.__cntrl._identify_networkx_edge(edge, from_n, to_n)
+            col = adb_e_col or self.__cntrl._identify_networkx_edge(edge, from_n, to_n)
             if keyify_edges:
                 key = self.__cntrl._keyify_networkx_edge(edge, from_n, to_n, col)
                 edge["_id"] = col + "/" + key
