@@ -10,7 +10,6 @@ from conftest import (
     imdb_adbnx_adapter,
     grid_adbnx_adapter,
     football_adbnx_adapter,
-    karate_adbnx_adapter,
     con,
     db,
 )
@@ -157,20 +156,49 @@ def test_adb_graph_to_nx(
 
 @pytest.mark.unit
 @pytest.mark.parametrize(
-    "adapter, name, nx_g, edge_definitions, batch_size",
+    "adapter, name, nx_g, edge_definitions, batch_size, keyify_nodes",
     [
+        (
+            adbnx_adapter,
+            "Grid",
+            get_grid_graph(),
+            [
+                {
+                    "edge_collection": "to_v1",
+                    "from_vertex_collections": ["Grid_Node_v1"],
+                    "to_vertex_collections": ["Grid_Node_v1"],
+                }
+            ],
+            5,
+            False,
+        ),
         (
             grid_adbnx_adapter,
             "Grid",
             get_grid_graph(),
             [
                 {
-                    "edge_collection": "to",
-                    "from_vertex_collections": ["Grid_Node"],
-                    "to_vertex_collections": ["Grid_Node"],
+                    "edge_collection": "to_v2",
+                    "from_vertex_collections": ["Grid_Node_v2"],
+                    "to_vertex_collections": ["Grid_Node_v2"],
                 }
             ],
             5,
+            True,
+        ),
+        (
+            adbnx_adapter,
+            "Karate",
+            get_karate_graph(),
+            [
+                {
+                    "edge_collection": "knows",
+                    "from_vertex_collections": ["Karate_Student"],
+                    "to_vertex_collections": ["Karate_Student"],
+                }
+            ],
+            1000,
+            False,
         ),
         (
             football_adbnx_adapter,
@@ -183,20 +211,8 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Football_Team"],
                 }
             ],
-            200,
-        ),
-        (
-            karate_adbnx_adapter,
-            "Karate",
-            get_karate_graph(),
-            [
-                {
-                    "edge_collection": "knows",
-                    "from_vertex_collections": ["Karate_Student"],
-                    "to_vertex_collections": ["Karate_Student"],
-                }
-            ],
             1000,
+            True,
         ),
     ],
 )
@@ -206,10 +222,13 @@ def test_nx_to_adb(
     nx_g: NxGraph,
     edge_definitions: list,
     batch_size: int,
+    keyify_nodes: bool,
 ):
     assert_adapter_type(adapter)
-    adb_g = adapter.networkx_to_arangodb(name, nx_g, edge_definitions, batch_size)
-    assert_arangodb_data(adapter, nx_g, adb_g)
+    adb_g = adapter.networkx_to_arangodb(
+        name, nx_g, edge_definitions, batch_size, keyify_nodes
+    )
+    assert_arangodb_data(adapter, nx_g, adb_g, keyify_nodes)
 
 
 @pytest.mark.unit
@@ -240,6 +259,7 @@ def test_full_cycle_from_arangodb_with_existing_collections():
         fraud_nx_g,
         edge_definitions,
         batch_size=50,
+        keyify_nodes=True,
         keyify_edges=True,
     )
 
@@ -290,7 +310,11 @@ def test_full_cycle_from_arangodb_with_new_collections():
     fraud_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Fraud_ADBNX_Controller)
 
     new_fraud_adb_g = fraud_adbnx_adapter.networkx_to_arangodb(
-        name + "_new", fraud_nx_g, edge_definitions, keyify_edges=True
+        name + "_new",
+        fraud_nx_g,
+        edge_definitions,
+        keyify_nodes=True,
+        keyify_edges=True,
     )
 
     col: str
@@ -322,7 +346,7 @@ def test_full_cycle_from_networkx():
     ]
 
     grid_adbnx_adapter.networkx_to_arangodb(
-        name, original_grid_nx_g, grid_edge_definitions
+        name, original_grid_nx_g, grid_edge_definitions, keyify_nodes=True
     )
 
     new_grid_nx_g = grid_adbnx_adapter.arangodb_graph_to_networkx(name)
@@ -380,15 +404,28 @@ def assert_networkx_data(nx_g: NxGraph, metagraph: dict, is_keep=False):
 
 
 def assert_arangodb_data(
-    adapter: ArangoDB_Networkx_Adapter, nx_g: NxGraph, adb_g: ArangoGraph
+    adapter: ArangoDB_Networkx_Adapter,
+    nx_g: NxGraph,
+    adb_g: ArangoGraph,
+    keyify_nodes: bool,
 ):
     nx_map = dict()
     cntrl: Base_ADBNX_Controller = adapter._ArangoDB_Networkx_Adapter__cntrl
 
+    edge_definitions = adb_g.edge_definitions()
+    is_homogeneous = len(edge_definitions) == 1
+    adb_v_col = (
+        edge_definitions[0]["from_vertex_collections"][0] if is_homogeneous else None
+    )
+    adb_e_col = edge_definitions[0]["edge_collection"] if is_homogeneous else None
+
     nx_node: dict
-    for nx_id, nx_node in nx_g.nodes(data=True):
-        col = cntrl._identify_networkx_node(nx_id, nx_node)
-        key = cntrl._keyify_networkx_node(nx_id, nx_node, col)
+    for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True)):
+        col = adb_v_col or cntrl._identify_networkx_node(nx_id, nx_node)
+        key = (
+            cntrl._keyify_networkx_node(nx_id, nx_node, col) if keyify_nodes else str(i)
+        )
+        nx_node["_id"] = col + "/" + key
 
         nx_map[nx_id] = {
             "adb_id": nx_node["_id"],
@@ -413,7 +450,7 @@ def assert_arangodb_data(
             **nx_g.nodes[to_node_id],
         }
 
-        col = cntrl._identify_networkx_edge(nx_edge, from_node, to_node)
+        col = adb_e_col or cntrl._identify_networkx_edge(nx_edge, from_node, to_node)
         adb_edges = adb_g.edge_collection(col).find(
             {
                 "_from": nx_map.get(from_node_id)["adb_id"],

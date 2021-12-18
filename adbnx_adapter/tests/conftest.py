@@ -20,15 +20,22 @@ PROJECT_DIR = Path(__file__).parent.parent.parent
 def pytest_sessionstart():
     global con
     con = get_oasis_crendetials()
+    # con = {
+    #     "username": "root",
+    #     "password": "openSesame",
+    #     "hostname": "localhost",
+    #     "port": 8529,
+    #     "protocol": "http",
+    #     "dbName": "_system",
+    # }
     print_connection_details(con)
     time.sleep(5)  # Enough for the oasis instance to be ready.
 
-    global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter, karate_adbnx_adapter
+    global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
     adbnx_adapter = ArangoDB_Networkx_Adapter(con)
     imdb_adbnx_adapter = ArangoDB_Networkx_Adapter(con, IMDB_ADBNX_Controller)
     grid_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Grid_ADBNX_Controller)
     football_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Football_ADBNX_Controller)
-    karate_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Karate_ADBNX_Controller)
 
     global db
     url = "https://" + con["hostname"] + ":" + str(con["port"])
@@ -83,6 +90,29 @@ def print_connection_details(con):
     print("----------------------------------------")
 
 
+def get_grid_graph():
+    return nx.grid_2d_graph(5, 5)
+
+
+def get_football_graph():
+    url = "http://www-personal.umich.edu/~mejn/netdata/football.zip"
+    sock = urllib.urlopen(url)
+    s = io.BytesIO(sock.read())
+    sock.close()
+    zf = zipfile.ZipFile(s)
+    gml = zf.read("football.gml").decode()
+    gml = gml.split("\n")[1:]
+    return nx.parse_gml(gml)
+
+
+def get_karate_graph():
+    karate_nx_g = nx.karate_club_graph()
+    for id, node in karate_nx_g.nodes(data=True):
+        node["degree"] = karate_nx_g.degree(id)
+
+    return karate_nx_g
+
+
 class IMDB_ADBNX_Controller(Base_ADBNX_Controller):
     def _prepare_arangodb_vertex(self, vertex: dict, collection: str):
         vertex["bipartite"] = 0 if collection == "Users" else 1
@@ -99,68 +129,10 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
         )
         return nx_id
 
-    # NOTE: This is completely optional, since the Grid graph is Homogeneous
-    def _identify_networkx_node(self, id: tuple, node: dict) -> str:
-        return "Grid_Node"  # Only one node collection in this dataset
-
     def _keyify_networkx_node(self, id: tuple, node: dict, collection: str) -> str:
         return self._tuple_to_arangodb_key_helper(id)
-
-    # NOTE: This is completely optional, since the Grid graph is Homogeneous
-    def _identify_networkx_edge(
-        self, edge: dict, from_node: dict, to_node: dict
-    ) -> str:
-        from_collection = from_node["col"]
-        to_collection = to_node["col"]
-
-        if from_collection == to_collection == "Grid_Node":
-            return "to"
-
-        return "Unknown_Edge"
-
-
-def get_grid_graph():
-    return nx.grid_2d_graph(5, 5)
 
 
 class Football_ADBNX_Controller(Base_ADBNX_Controller):
     def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
         return self._string_to_arangodb_key_helper(id)
-
-
-def get_football_graph():
-    url = "http://www-personal.umich.edu/~mejn/netdata/football.zip"
-    sock = urllib.urlopen(url)
-    s = io.BytesIO(sock.read())
-    sock.close()
-    zf = zipfile.ZipFile(s)
-    gml = zf.read("football.gml").decode()
-    gml = gml.split("\n")[1:]
-    return nx.parse_gml(gml)
-
-
-class Karate_ADBNX_Controller(Base_ADBNX_Controller):
-    def _identify_networkx_node(self, id, node: dict) -> str:
-        return "Karate_Student"
-
-    def _identify_networkx_edge(
-        self, edge: dict, from_node: dict, to_node: dict
-    ) -> str:
-        from_collection = from_node["col"]
-        to_collection = to_node["col"]
-
-        if from_collection == to_collection == "Karate_Student":
-            return "knows"
-
-        return "Unknown_Edge"
-
-    def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
-        return str(id)  # In this case the id is an integer
-
-
-def get_karate_graph():
-    karate_nx_g = nx.karate_club_graph()
-    for id, node in karate_nx_g.nodes(data=True):
-        node["degree"] = karate_nx_g.degree(id)
-
-    return karate_nx_g
