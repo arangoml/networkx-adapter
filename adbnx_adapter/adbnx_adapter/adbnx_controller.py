@@ -51,8 +51,8 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     def _identify_networkx_node(self, id, node: dict) -> str:
         """Given a NetworkX node, identify what ArangoDB collection it should belong to.
 
-        NOTE: If your NetworkX graph is NOT Homogeneous, or does NOT comply to ArangoDB standards
-        (i.e a node's ID is not "collection/key"), then you must override this function.
+         NOTE: You must override this function if your NetworkX graph is NOT Homogeneous
+        or does NOT comply to ArangoDB standards (i.e the node IDs are not formatted like "{collection}/{key}").
 
         :param id: The NetworkX ID of the node.
         :type id: Any
@@ -70,8 +70,8 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     ) -> str:
         """Given a NetworkX edge, and its pair of nodes, identify what ArangoDB collection should it belong to.
 
-        NOTE: If your NetworkX graph is NOT Homogeneous, or does NOT comply to ArangoDB standards
-        (i.e a node's ID is not "collection/key"), then you must override this function.
+        NOTE: You must override this function if your NetworkX graph is NOT Homogeneous
+        or does NOT comply to ArangoDB standards (i.e the edge IDs are not formatted like "{collection}/{key}").
 
         :param edge: The NetworkX edge object.
         :type edge: dict
@@ -89,8 +89,9 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
         """Given a NetworkX node, derive its valid ArangoDB key.
 
-        NOTE: If your NetworkX graph does NOT comply to ArangoDB standards
-        (i.e a node's ID is not "collection/key"), then you must override this function.
+        NOTE: You must override this function if you want to create custom ArangoDB _key values for your NetworkX nodes
+        and your NetworkX graph does NOT comply to ArangoDB standards (i.e the node IDs are not formatted like "{collection}/{key}").
+        For more info, see the **keyify_nodes** parameter of ArangoDB_Networkx_Adapter.networkx_to_arangodb()
 
         :param node: The NetworkX node object.
         :type node: dict
@@ -112,8 +113,9 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     ):
         """Given a NetworkX edge, its collection, and its pair of nodes, derive its valid ArangoDB key.
 
-        NOTE: If your NetworkX graph does NOT comply to ArangoDB standards
-        (i.e a node's ID is not "collection/key"), then you must override this function.
+        NOTE: You must override this function if you want to create custom ArangoDB _key values for your NetworkX edges
+        and your NetworkX graph does NOT comply to ArangoDB standards (i.e the edge IDs are not formatted like "{collection}/{key}").
+        For more info, see the **keyify_edges** parameter of ArangoDB_Networkx_Adapter.networkx_to_arangodb()
 
         :param edge: The NetworkX edge object.
         :type edge: dict

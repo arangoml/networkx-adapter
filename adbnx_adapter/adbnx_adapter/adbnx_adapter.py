@@ -80,16 +80,16 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
                 "customer": {"Name", "Sex", "Ssn", "rank"},
             },
             "edgeCollections": {
-                "accountHolder": {"_from", "_to"},
-                "transaction": {"_from", "_to"},
+                "accountHolder": {},
+                "transaction": {"transaction_amt", "receiver_bank_id", "sender_bank_id"},
             },
         }
         """
         self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
-        nx_graph = nx.MultiDiGraph(name=name)
         adb_map = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
 
+        nx_graph = nx.MultiDiGraph(name=name)
         nx_nodes: list = []
         nx_edges: list = []
 
@@ -207,6 +207,8 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
                 "Edge Definitions", set(e_d), self.EDGE_DEFINITION_ATRIBS
             )
 
+        nx_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
+
         adb_v_cols = set()
         adb_e_cols = set()
         for e_d in edge_definitions:
@@ -228,7 +230,6 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         self.__db.delete_graph(name, ignore_missing=True)
         adb_graph: ArangoDBGraph = self.__db.create_graph(name, edge_definitions)
         adb_documents = defaultdict(list)
-        nx_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
 
         node: dict
         for i, (nx_id, node) in enumerate(nx_graph.nodes(data=True)):
