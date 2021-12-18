@@ -121,7 +121,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         :type from_node: dict
         :param to_node: The NetworkX node object representing the edge destination.
         :type to_node: dict
-        :param collection: The ArangoDB collection the node belongs to.
+        :param collection: The ArangoDB collection the edge belongs to.
         :type collection: str
         :return: The ArangoDB collection name
         :rtype: str

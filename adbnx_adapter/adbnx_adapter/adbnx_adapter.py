@@ -93,19 +93,23 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         nx_nodes: list = []
         nx_edges: list = []
 
+        v: dict
         for col, atribs in metagraph["vertexCollections"].items():
             for v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
                 adb_id = v["_id"]
                 nx_id = self.__cntrl._prepare_arangodb_vertex(v, col)
                 adb_map[adb_id] = {"nx_id": nx_id, "collection": col}
-                nx_nodes.append((nx_id, v))
 
+                v.pop("_rev", None)  # Remove system attribute
+                nx_nodes.append((nx_id, v))
+        e: dict
         for col, atribs in metagraph["edgeCollections"].items():
             for e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
                 from_node_id = adb_map.get(e["_from"])["nx_id"]
                 to_node_id = adb_map.get(e["_to"])["nx_id"]
-
                 self.__cntrl._prepare_arangodb_edge(e, col)
+
+                e.pop("_rev", None)  # Remove system attribute
                 nx_edges.append((from_node_id, to_node_id, e))
 
         nx_graph.add_nodes_from(nx_nodes)
