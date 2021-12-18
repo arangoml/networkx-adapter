@@ -171,6 +171,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         nx_graph: NetworkXGraph,
         edge_definitions: list,
         batch_size: int = 1000,
+        keyify_nodes: bool = False,
         keyify_edges: bool = False,
     ):
         """Create an ArangoDB graph from a NetworkX graph, and a set of edge definitions.
@@ -183,7 +184,9 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         :type edge_definitions: list[dict]
         :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
-        :param keyify_edges: If set to True, will create custom edge IDs based on the behavior of the ADBNX_Controller's _keyify_networkx_edge() method. Otherwise, edge IDs will be randomly generated.
+        :param keyify_nodes: If set to True, will create custom node keys based on the behavior of the ADBNX_Controller's _keyify_networkx_node() method. Otherwise, ArangoDB _key values for vertices will range from 0 to N-1, where N is the number of NetworkX nodes.
+        :type keyify_nodes: bool
+        :param keyify_edges: If set to True, will create custom edge keys based on the behavior of the ADBNX_Controller's _keyify_networkx_edge() method. Otherwise, ArangoDB _key values for edges will range from 0 to E-1, where E is the number of NetworkX edges.
         :type keyify_edges: bool
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
@@ -227,20 +230,22 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
         adb_documents = defaultdict(list)
         nx_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
 
-        for nx_id, node in nx_graph.nodes(data=True):
+        node: dict
+        for i, (nx_id, node) in enumerate(nx_graph.nodes(data=True)):
             col = adb_v_col or self.__cntrl._identify_networkx_node(nx_id, node)
-            key = self.__cntrl._keyify_networkx_node(nx_id, node, col)
-            node["_id"] = col + "/" + key
+            key = (
+                self.__cntrl._keyify_networkx_node(nx_id, node, col)
+                if keyify_nodes
+                else str(i)
+            )
 
-            nx_map[nx_id] = {
-                "adb_id": node["_id"],
-                "col": col,
-                "key": key,
-            }
+            node["_id"] = col + "/" + key
+            nx_map[nx_id] = {"adb_id": node["_id"], "col": col, "key": key}
 
             self.__insert_adb_docs(col, adb_documents[col], node, batch_size)
 
-        for from_node_id, to_node_id, edge in nx_graph.edges(data=True):
+        edge: dict
+        for i, (from_node_id, to_node_id, edge) in enumerate(nx_graph.edges(data=True)):
             from_n = {
                 "nx_id": from_node_id,
                 "col": nx_map[from_node_id]["col"],
@@ -253,10 +258,13 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
             }
 
             col = adb_e_col or self.__cntrl._identify_networkx_edge(edge, from_n, to_n)
-            if keyify_edges:
-                key = self.__cntrl._keyify_networkx_edge(edge, from_n, to_n, col)
-                edge["_id"] = col + "/" + key
+            key = (
+                self.__cntrl._keyify_networkx_edge(edge, from_n, to_n, col)
+                if keyify_edges
+                else str(i)
+            )
 
+            edge["_id"] = col + "/" + key
             edge["_from"] = nx_map[from_node_id]["adb_id"]
             edge["_to"] = nx_map[to_node_id]["adb_id"]
 
