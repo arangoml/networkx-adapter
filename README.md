@@ -65,23 +65,7 @@ grid_edge_definitions = [
         "to_vertex_collections": ["Grid_Node"],
     }
 ]
-
-class Grid_ADBNX_Controller(Base_ADBNX_Controller):
-    """ArangoDB-NetworkX controller.
-
-    Responsible for controlling how nodes & edges are handled when
-    transitioning from ArangoDB to NetworkX, and vice-versa.
-    """
-    def _keyify_networkx_node(self, id: tuple, node: dict, collection: str) -> str:
-        """Given a NetworkX node, derive its valid ArangoDB key.
-
-        NOTE: If your NetworkX graph does not comply to ArangoDB standards
-        (i.e a node's ID is not "collection/key"), then you must override this function.
-        """
-        return self._tuple_to_arangodb_key_helper(id) # NX Grid Nodes are formatted as tuples
-
-grid_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Grid_ADBNX_Controller)
-adb_g = grid_adbnx_adapter.networkx_to_arangodb("Grid", grid_nx_g, grid_edge_definitions)
+adb_g = adbnx_adapter.networkx_to_arangodb("Grid", grid_nx_g, grid_edge_definitions)
 ```
 
 ##  Development & Testing
