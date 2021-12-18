@@ -99,12 +99,14 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
         )
         return nx_id
 
+    # NOTE: This is completely optional, since the Grid graph is Homogeneous
     def _identify_networkx_node(self, id: tuple, node: dict) -> str:
         return "Grid_Node"  # Only one node collection in this dataset
 
     def _keyify_networkx_node(self, id: tuple, node: dict, collection: str) -> str:
         return self._tuple_to_arangodb_key_helper(id)
 
+    # NOTE: This is completely optional, since the Grid graph is Homogeneous
     def _identify_networkx_edge(
         self, edge: dict, from_node: dict, to_node: dict
     ) -> str:
@@ -122,22 +124,8 @@ def get_grid_graph():
 
 
 class Football_ADBNX_Controller(Base_ADBNX_Controller):
-    def _identify_networkx_node(self, id, node: dict) -> str:
-        return "Football_Team"  # Only one node collection in this dataset=
-
     def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
         return self._string_to_arangodb_key_helper(id)
-
-    def _identify_networkx_edge(
-        self, edge: dict, from_node: dict, to_node: dict
-    ) -> str:
-        from_collection = from_node["col"]
-        to_collection = to_node["col"]
-
-        if from_collection == to_collection == "Football_Team":
-            return "played"
-
-        return "Unknown_Edge"
 
 
 def get_football_graph():
