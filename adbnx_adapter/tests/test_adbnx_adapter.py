@@ -376,7 +376,6 @@ def assert_networkx_data(nx_g: NxGraph, metagraph: dict, is_keep=False):
                     if atrib in adb_vertex:
                         assert adb_vertex[atrib] == nx_node[atrib]
             else:
-                adb_vertex.pop("_rev", None)
                 assert adb_vertex == nx_node
 
     adb_edge: dict
@@ -394,7 +393,6 @@ def assert_networkx_data(nx_g: NxGraph, metagraph: dict, is_keep=False):
                     if has_edge_match:
                         break
             else:
-                adb_edge.pop("_rev", None)
                 for nx_edge in nx_edges.values():
                     has_edge_match = adb_edge == nx_edge
                     if has_edge_match:
