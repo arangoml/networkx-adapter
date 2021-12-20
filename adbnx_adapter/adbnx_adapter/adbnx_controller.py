@@ -51,7 +51,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
     def _identify_networkx_node(self, id, node: dict) -> str:
         """Given a NetworkX node, identify what ArangoDB collection it should belong to.
 
-         NOTE: You must override this function if your NetworkX graph is NOT Homogeneous
+        NOTE: You must override this function if your NetworkX graph is NOT Homogeneous
         or does NOT comply to ArangoDB standards (i.e the node IDs are not formatted like "{collection}/{key}").
 
         :param id: The NetworkX ID of the node.

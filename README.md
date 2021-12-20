@@ -36,6 +36,7 @@ import networkx as nx
 from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
 from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
 
+# (Assume ArangoDB fraud-detection data dump is imported to this endpoint)
 con = {
     "hostname": "localhost",
     "protocol": "http",
@@ -47,25 +48,39 @@ con = {
 
 adbnx_adapter = ArangoDB_Networkx_Adapter(con)
 
-# (Assume ArangoDB fraud-detection data dump is imported)
+# ArangoDB to NetworkX via Graph
+nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
 
-fraud_nx_g = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
-fraud_nx_g_2 = adbnx_adapter.arangodb_collections_to_networkx(
+# ArangoDB to NetworkX via Collections
+nx_fraud_graph_2 = adbnx_adapter.arangodb_collections_to_networkx(
         "fraud-detection", 
         {"account", "bank", "branch", "Class", "customer"},
         {"accountHolder", "Relationship", "transaction"}
 )
 
+# ArangoDB to NetworkX via Metagraph
+metagraph = {
+    "vertexCollections": {
+        "account": {"Balance", "account_type", "customer_id", "rank"},
+        "customer": {"Name", "rank"},
+    },
+    "edgeCollections": {
+        "transaction": {"transaction_amt", "sender_bank_id", "receiver_bank_id"},
+        "accountHolder": {},
+    },
+}
+nx_fraud_graph_3 = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
 
-grid_nx_g = nx.grid_2d_graph(5, 5)
-grid_edge_definitions = [
+# NetworkX to ArangoDB
+nx_grid_graph = nx.grid_2d_graph(5, 5)
+adb_grid_edge_definitions = [
     {
         "edge_collection": "to",
         "from_vertex_collections": ["Grid_Node"],
         "to_vertex_collections": ["Grid_Node"],
     }
 ]
-adb_g = adbnx_adapter.networkx_to_arangodb("Grid", grid_nx_g, grid_edge_definitions)
+adb_grid_graph = adbnx_adapter.networkx_to_arangodb("Grid", nx_grid_graph, adb_grid_edge_definitions)
 ```
 
 ##  Development & Testing
