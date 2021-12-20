@@ -30,59 +30,6 @@ Networkx is a commonly used tool for analysis of network-data. If your analytics
 
 Get Started on Colab: <a href="https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-
-```py
-import networkx as nx
-from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
-from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
-
-# (Assume ArangoDB fraud-detection data dump is imported to this endpoint)
-con = {
-    "hostname": "localhost",
-    "protocol": "http",
-    "port": 8529,
-    "username": "root",
-    "password": "rootpassword",
-    "dbName": "_system",
-}
-
-adbnx_adapter = ArangoDB_Networkx_Adapter(con)
-
-# ArangoDB to NetworkX via Graph
-nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
-
-# ArangoDB to NetworkX via Collections
-nx_fraud_graph_2 = adbnx_adapter.arangodb_collections_to_networkx(
-        "fraud-detection", 
-        {"account", "bank", "branch", "Class", "customer"},
-        {"accountHolder", "Relationship", "transaction"}
-)
-
-# ArangoDB to NetworkX via Metagraph
-metagraph = {
-    "vertexCollections": {
-        "account": {"Balance", "account_type", "customer_id", "rank"},
-        "customer": {"Name", "rank"},
-    },
-    "edgeCollections": {
-        "transaction": {"transaction_amt", "sender_bank_id", "receiver_bank_id"},
-        "accountHolder": {},
-    },
-}
-nx_fraud_graph_3 = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
-
-# NetworkX to ArangoDB
-nx_grid_graph = nx.grid_2d_graph(5, 5)
-adb_grid_edge_definitions = [
-    {
-        "edge_collection": "to",
-        "from_vertex_collections": ["Grid_Node"],
-        "to_vertex_collections": ["Grid_Node"],
-    }
-]
-adb_grid_graph = adbnx_adapter.networkx_to_arangodb("Grid", nx_grid_graph, adb_grid_edge_definitions)
-```
-
 ##  Development & Testing
 
 Prerequisite: `arangorestore` must be installed
