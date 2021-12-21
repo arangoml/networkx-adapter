@@ -114,25 +114,25 @@ def get_karate_graph():
 
 
 class IMDB_ADBNX_Controller(Base_ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, vertex: dict, collection: str):
-        vertex["bipartite"] = 0 if collection == "Users" else 1
-        return vertex["_id"]
+    def _prepare_arangodb_vertex(self, adb_vertex: dict, col: str):
+        adb_vertex["bipartite"] = 0 if col == "Users" else 1
+        return super()._prepare_arangodb_vertex(adb_vertex, col)
 
 
 class Grid_ADBNX_Controller(Base_ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, vertex: dict, collection: str):
-        nx_id = tuple(
+    def _prepare_arangodb_vertex(self, adb_vertex: dict, col: str):
+        nx_node_id = tuple(
             int(n)
             for n in tuple(
-                vertex["_key"],
+                adb_vertex["_key"],
             )
         )
-        return nx_id
+        return nx_node_id
 
-    def _keyify_networkx_node(self, id: tuple, node: dict, collection: str) -> str:
-        return self._tuple_to_arangodb_key_helper(id)
+    def _keyify_networkx_node(self, nx_node_id, nx_node: dict, col: str) -> str:
+        return self._tuple_to_arangodb_key_helper(nx_node_id)
 
 
 class Football_ADBNX_Controller(Base_ADBNX_Controller):
-    def _keyify_networkx_node(self, id, node: dict, collection: str) -> str:
-        return self._string_to_arangodb_key_helper(id)
+    def _keyify_networkx_node(self, nx_node_id, nx_node: dict, col: str) -> str:
+        return self._string_to_arangodb_key_helper(nx_node_id)

@@ -297,15 +297,15 @@ def test_full_cycle_from_arangodb_with_new_collections():
     ]
 
     class Fraud_ADBNX_Controller(Base_ADBNX_Controller):
-        def _identify_networkx_node(self, id, node: dict) -> str:
-            adb_id: str = id
-            return adb_id.split("/")[0] + "_new"
+        def _identify_networkx_node(self, nx_node_id, nx_node: dict) -> str:
+            adb_vertex_id: str = nx_node_id
+            return adb_vertex_id.split("/")[0] + "_new"
 
         def _identify_networkx_edge(
-            self, edge: dict, from_node: dict, to_node: dict
+            self, nx_edge: dict, from_nx_node: dict, to_nx_node: dict
         ) -> str:
-            edge_id: str = edge["_id"]
-            return edge_id.split("/")[0] + "_new"
+            adb_vertex_id: str = nx_edge["_id"]
+            return adb_vertex_id.split("/")[0] + "_new"
 
     fraud_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Fraud_ADBNX_Controller)
 
