@@ -130,9 +130,7 @@ def test_adb_collections_to_nx(
     "adapter, name, edge_definitions",
     [(adbnx_adapter, "fraud-detection", None)],
 )
-def test_adb_graph_to_nx(
-    adapter: ADBNX_Adapter, name: str, edge_definitions
-):
+def test_adb_graph_to_nx(adapter: ADBNX_Adapter, name: str, edge_definitions):
     assert_adapter_type(adapter)
 
     # Re-create the graph if defintions are provided

@@ -72,9 +72,7 @@ def get_oasis_crendetials() -> dict:
 
 
 def arango_restore(path_to_data):
-    restore_prefix = (
-        "./assets/" if os.getenv("GITHUB_ACTIONS") else ""
-    ) 
+    restore_prefix = "./assets/" if os.getenv("GITHUB_ACTIONS") else ""
 
     subprocess.check_call(
         f'chmod -R 755 ./assets/arangorestore && {restore_prefix}arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
