@@ -33,16 +33,7 @@ class ADBNX_Adapter(ABC):
     def __fetch_adb_docs(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def __insert_adb_vertex(self):
-        raise NotImplementedError()  # pragma: no cover
-
-    def __insert_adb_edge(self):
-        raise NotImplementedError()  # pragma: no cover
-
-    def __insert_nx_node(self):
-        raise NotImplementedError()  # pragma: no cover
-
-    def __insert_nx_edge(self):
+    def __insert_adb_docs(self):
         raise NotImplementedError()  # pragma: no cover
 
     @property
@@ -50,7 +41,7 @@ class ADBNX_Adapter(ABC):
         return {"hostname", "username", "password", "dbName"}
 
     @property
-    def GRAPH_ATRIBS(self):
+    def METAGRAPH_ATRIBS(self):
         return {"vertexCollections", "edgeCollections"}
 
     @property
@@ -59,9 +50,6 @@ class ADBNX_Adapter(ABC):
 
 
 class ADBNX_Controller(ABC):
-    def __init__(self):
-        raise NotImplementedError()  # pragma: no cover
-
     def _prepare_arangodb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 

@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.6",
     license="Apache Software License",
-    install_requires=["python-arango==7.2.0", "networkx>=2.5.1,<=2.6.3"],
+    install_requires=["python-arango==7.3.0", "networkx>=2.5.1,<=2.6.3"],
     tests_require=["pytest", "pytest-cov"],
     classifiers=[
         "Intended Audience :: Developers",

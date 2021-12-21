@@ -6,4 +6,4 @@ if __name__ == "__main__":
         "https://api.github.com/repos/arangoml/networkx-adapter/releases/latest"
     )
     response.raise_for_status()
-    print(response.json().get("tag_name"))
+    print(response.json().get("tag_name", "0.0.0"))

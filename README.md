@@ -28,44 +28,7 @@ Networkx is a commonly used tool for analysis of network-data. If your analytics
 
 ##  Quickstart
 
-Get Started on Colab: <a href="https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkxAdapter.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
-
-
-```py
-import networkx as nx
-from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
-
-con = {
-    "hostname": "localhost",
-    "protocol": "http",
-    "port": 8529,
-    "username": "root",
-    "password": "rootpassword",
-    "dbName": "_system",
-}
-
-adbnx_adapter = ArangoDB_Networkx_Adapter(con)
-
-# (Assume ArangoDB fraud-detection data dump is imported)
-
-fraud_nx_g = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
-fraud_nx_g_2 = adbnx_adapter.arangodb_collections_to_networkx(
-        "fraud-detection", 
-        {"account", "bank", "branch", "Class", "customer"},
-        {"accountHolder", "Relationship", "transaction"}
-)
-
-
-grid_nx_g = nx.grid_2d_graph(5, 5)
-grid_edge_definitions = [
-    {
-        "edge_collection": "to",
-        "from_vertex_collections": ["Grid_Node"],
-        "to_vertex_collections": ["Grid_Node"],
-    }
-]
-adb_g = adbnx_adapter.networkx_to_arangodb("Grid", grid_nx_g, grid_edge_definitions)
-```
+Get Started on Colab: <a href="https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 ##  Development & Testing
 
