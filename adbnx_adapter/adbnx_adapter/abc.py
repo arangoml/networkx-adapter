@@ -11,7 +11,7 @@ Created on Thu Mar 26 11:38:31 2020
 from abc import ABC
 
 
-class ADBNX_Adapter(ABC):
+class Abstract_ADBNX_Adapter(ABC):
     def __init__(self):
         raise NotImplementedError()  # pragma: no cover
 
@@ -49,7 +49,7 @@ class ADBNX_Adapter(ABC):
         return {"edge_collection", "from_vertex_collections", "to_vertex_collections"}
 
 
-class ADBNX_Controller(ABC):
+class Abstract_ADBNX_Controller(ABC):
     def _prepare_arangodb_vertex(self):
         raise NotImplementedError()  # pragma: no cover
 

@@ -1,8 +1,8 @@
 import pytest
 from conftest import (
     nx,
-    ArangoDB_Networkx_Adapter,
-    Base_ADBNX_Controller,
+    ADBNX_Adapter,
+    ADBNX_Controller,
     get_grid_graph,
     get_football_graph,
     get_karate_graph,
@@ -30,7 +30,7 @@ def test_validate_attributes():
     }
 
     with pytest.raises(ValueError):
-        ArangoDB_Networkx_Adapter(bad_connection)
+        ADBNX_Adapter(bad_connection)
 
 
 @pytest.mark.unit
@@ -39,7 +39,7 @@ def test_validate_controller_class():
         pass
 
     with pytest.raises(TypeError):
-        ArangoDB_Networkx_Adapter(con, Bad_ADBNX_Controller)
+        ADBNX_Adapter(con, Bad_ADBNX_Controller)
 
 
 @pytest.mark.unit
@@ -89,7 +89,7 @@ def test_validate_controller_class():
         ),
     ],
 )
-def test_adb_to_nx(adapter: ArangoDB_Networkx_Adapter, name: str, metagraph: dict):
+def test_adb_to_nx(adapter: ADBNX_Adapter, name: str, metagraph: dict):
     assert_adapter_type(adapter)
     nx_g = adapter.arangodb_to_networkx(name, metagraph)
     assert_networkx_data(nx_g, metagraph, True)
@@ -108,7 +108,7 @@ def test_adb_to_nx(adapter: ArangoDB_Networkx_Adapter, name: str, metagraph: dic
     ],
 )
 def test_adb_collections_to_nx(
-    adapter: ArangoDB_Networkx_Adapter, name: str, v_cols: set, e_cols: set
+    adapter: ADBNX_Adapter, name: str, v_cols: set, e_cols: set
 ):
     assert_adapter_type(adapter)
     nx_g = adapter.arangodb_collections_to_networkx(
@@ -130,9 +130,7 @@ def test_adb_collections_to_nx(
     "adapter, name, edge_definitions",
     [(adbnx_adapter, "fraud-detection", None)],
 )
-def test_adb_graph_to_nx(
-    adapter: ArangoDB_Networkx_Adapter, name: str, edge_definitions
-):
+def test_adb_graph_to_nx(adapter: ADBNX_Adapter, name: str, edge_definitions):
     assert_adapter_type(adapter)
 
     # Re-create the graph if defintions are provided
@@ -217,7 +215,7 @@ def test_adb_graph_to_nx(
     ],
 )
 def test_nx_to_adb(
-    adapter: ArangoDB_Networkx_Adapter,
+    adapter: ADBNX_Adapter,
     name: str,
     nx_g: NxGraph,
     edge_definitions: list,
@@ -296,7 +294,7 @@ def test_full_cycle_from_arangodb_with_new_collections():
         },
     ]
 
-    class Fraud_ADBNX_Controller(Base_ADBNX_Controller):
+    class Fraud_ADBNX_Controller(ADBNX_Controller):
         def _identify_networkx_node(self, nx_node_id, nx_node: dict) -> str:
             adb_vertex_id: str = nx_node_id
             return adb_vertex_id.split("/")[0] + "_new"
@@ -307,7 +305,7 @@ def test_full_cycle_from_arangodb_with_new_collections():
             adb_vertex_id: str = nx_edge["_id"]
             return adb_vertex_id.split("/")[0] + "_new"
 
-    fraud_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Fraud_ADBNX_Controller)
+    fraud_adbnx_adapter = ADBNX_Adapter(con, Fraud_ADBNX_Controller)
 
     new_fraud_adb_g = fraud_adbnx_adapter.networkx_to_arangodb(
         name + "_new",
@@ -358,9 +356,9 @@ def test_full_cycle_from_networkx():
         assert new_grid_nx_g.has_edge(from_node, to_node)
 
 
-def assert_adapter_type(adapter: ArangoDB_Networkx_Adapter):
-    assert type(adapter) is ArangoDB_Networkx_Adapter and issubclass(
-        type(adapter._ArangoDB_Networkx_Adapter__cntrl), Base_ADBNX_Controller
+def assert_adapter_type(adapter: ADBNX_Adapter):
+    assert type(adapter) is ADBNX_Adapter and issubclass(
+        type(adapter._ADBNX_Adapter__cntrl), ADBNX_Controller
     )
 
 
@@ -402,13 +400,13 @@ def assert_networkx_data(nx_g: NxGraph, metagraph: dict, is_keep=False):
 
 
 def assert_arangodb_data(
-    adapter: ArangoDB_Networkx_Adapter,
+    adapter: ADBNX_Adapter,
     nx_g: NxGraph,
     adb_g: ArangoGraph,
     keyify_nodes: bool,
 ):
     nx_map = dict()
-    cntrl: Base_ADBNX_Controller = adapter._ArangoDB_Networkx_Adapter__cntrl
+    cntrl: ADBNX_Controller = adapter._ADBNX_Adapter__cntrl
 
     edge_definitions = adb_g.edge_definitions()
     is_homogeneous = len(edge_definitions) == 1
