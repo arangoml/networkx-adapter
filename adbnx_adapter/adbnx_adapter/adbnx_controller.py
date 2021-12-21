@@ -104,7 +104,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
         :rtype: str
         """
         # In this case, nx_node_id is already a valid ArangoDB _id
-        adb_vertex_id: str = id
+        adb_vertex_id: str = nx_node_id
         return adb_vertex_id.split("/")[1]
 
     def _keyify_networkx_edge(
