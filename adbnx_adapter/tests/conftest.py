@@ -11,8 +11,8 @@ import urllib.request as urllib
 import networkx as nx
 from arango import ArangoClient
 
-from adbnx_adapter.adbnx_controller import Base_ADBNX_Controller
-from adbnx_adapter.adbnx_adapter import ArangoDB_Networkx_Adapter
+from adbnx_adapter.adapter import ADBNX_Adapter
+from adbnx_adapter.controller import ADBNX_Controller
 
 PROJECT_DIR = Path(__file__).parent.parent.parent
 
@@ -32,10 +32,10 @@ def pytest_sessionstart():
     time.sleep(5)  # Enough for the oasis instance to be ready.
 
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
-    adbnx_adapter = ArangoDB_Networkx_Adapter(con)
-    imdb_adbnx_adapter = ArangoDB_Networkx_Adapter(con, IMDB_ADBNX_Controller)
-    grid_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Grid_ADBNX_Controller)
-    football_adbnx_adapter = ArangoDB_Networkx_Adapter(con, Football_ADBNX_Controller)
+    adbnx_adapter = ADBNX_Adapter(con)
+    imdb_adbnx_adapter = ADBNX_Adapter(con, IMDB_ADBNX_Controller)
+    grid_adbnx_adapter = ADBNX_Adapter(con, Grid_ADBNX_Controller)
+    football_adbnx_adapter = ADBNX_Adapter(con, Football_ADBNX_Controller)
 
     global db
     url = "https://" + con["hostname"] + ":" + str(con["port"])
@@ -72,10 +72,12 @@ def get_oasis_crendetials() -> dict:
 
 
 def arango_restore(path_to_data):
-    restore_prefix = "./" if os.getenv("GITHUB_ACTIONS") else ""  # temporary hack
+    restore_prefix = (
+        "./assets/" if os.getenv("GITHUB_ACTIONS") else ""
+    ) 
 
     subprocess.check_call(
-        f'chmod -R 755 ./arangorestore && {restore_prefix}arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
+        f'chmod -R 755 ./assets/arangorestore && {restore_prefix}arangorestore -c none --server.endpoint http+ssl://{con["hostname"]}:{con["port"]} --server.username {con["username"]} --server.database {con["dbName"]} --server.password {con["password"]} --default-replication-factor 3  --input-directory "{PROJECT_DIR}/{path_to_data}"',
         cwd=f"{PROJECT_DIR}/adbnx_adapter/tests",
         shell=True,
     )
@@ -113,13 +115,13 @@ def get_karate_graph():
     return karate_nx_g
 
 
-class IMDB_ADBNX_Controller(Base_ADBNX_Controller):
+class IMDB_ADBNX_Controller(ADBNX_Controller):
     def _prepare_arangodb_vertex(self, adb_vertex: dict, col: str):
         adb_vertex["bipartite"] = 0 if col == "Users" else 1
         return super()._prepare_arangodb_vertex(adb_vertex, col)
 
 
-class Grid_ADBNX_Controller(Base_ADBNX_Controller):
+class Grid_ADBNX_Controller(ADBNX_Controller):
     def _prepare_arangodb_vertex(self, adb_vertex: dict, col: str):
         nx_node_id = tuple(
             int(n)
@@ -133,6 +135,6 @@ class Grid_ADBNX_Controller(Base_ADBNX_Controller):
         return self._tuple_to_arangodb_key_helper(nx_node_id)
 
 
-class Football_ADBNX_Controller(Base_ADBNX_Controller):
+class Football_ADBNX_Controller(ADBNX_Controller):
     def _keyify_networkx_node(self, nx_node_id, nx_node: dict, col: str) -> str:
         return self._string_to_arangodb_key_helper(nx_node_id)

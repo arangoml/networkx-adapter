@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from .abc import ADBNX_Controller
+from .abc import Abstract_ADBNX_Controller
 
 """
 Created on Tue Nov 9 2021
@@ -9,7 +9,7 @@ Created on Tue Nov 9 2021
 """
 
 
-class Base_ADBNX_Controller(ADBNX_Controller):
+class ADBNX_Controller(Abstract_ADBNX_Controller):
     """ArangoDB-NetworkX controller.
 
     Responsible for controlling how nodes & edges are handled when
@@ -94,7 +94,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
 
         NOTE: You must override this function if you want to create custom ArangoDB _key values for your NetworkX nodes
         or if your NetworkX graph does NOT comply to ArangoDB standards (i.e the node IDs are not formatted like "{collection}/{key}").
-        For more info, see the **keyify_nodes** parameter of ArangoDB_Networkx_Adapter.networkx_to_arangodb()
+        For more info, see the **keyify_nodes** parameter of ADBNX_Adapter.networkx_to_arangodb()
 
         :param nx_node: The NetworkX node object.
         :type nx_node: dict
@@ -118,7 +118,7 @@ class Base_ADBNX_Controller(ADBNX_Controller):
 
         NOTE: You must override this function if you want to create custom ArangoDB _key values for your NetworkX edges
         or if your NetworkX graph does NOT comply to ArangoDB standards (i.e the edge IDs are not formatted like "{collection}/{key}").
-        For more info, see the **keyify_edges** parameter of ArangoDB_Networkx_Adapter.networkx_to_arangodb()
+        For more info, see the **keyify_edges** parameter of ADBNX_Adapter.networkx_to_arangodb()
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: dict

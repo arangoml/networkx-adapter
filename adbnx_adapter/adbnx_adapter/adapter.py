@@ -8,8 +8,8 @@ Created on Thu Mar 26 09:51:47 2020
 @author: Anthony Mahanna
 """
 
-from .abc import ADBNX_Adapter
-from .adbnx_controller import Base_ADBNX_Controller
+from .abc import Abstract_ADBNX_Adapter
+from .controller import ADBNX_Controller
 
 import networkx as nx
 from arango import ArangoClient
@@ -19,24 +19,24 @@ from networkx.classes.graph import Graph as NetworkXGraph
 from arango.graph import Graph as ArangoDBGraph
 
 
-class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
+class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     """ArangoDB-NetworkX adapter.
 
     :param conn: Connection details to an ArangoDB instance.
     :type conn: dict
-    :param controller_class: The ArangoDB-NetworkX controller, used to identify, keyify and prepare nodes & edges before insertion, optionally re-defined by the user if needed (otherwise defaults to Base_ADBNX_Controller).
-    :type controller_class: Base_ADBNX_Controller
+    :param controller_class: The ArangoDB-NetworkX controller, used to identify, keyify and prepare nodes & edges before insertion, optionally re-defined by the user if needed (otherwise defaults to ADBNX_Controller).
+    :type controller_class: ADBNX_Controller
     :raise ValueError: If missing required keys in conn
     """
 
     def __init__(
         self,
         conn: dict,
-        controller_class: Base_ADBNX_Controller = Base_ADBNX_Controller,
+        controller_class: ADBNX_Controller = ADBNX_Controller,
     ):
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
-        if issubclass(controller_class, Base_ADBNX_Controller) is False:
-            msg = "controller_class must inherit from Base_ADBNX_Controller"
+        if issubclass(controller_class, ADBNX_Controller) is False:
+            msg = "controller_class must inherit from ADBNX_Controller"
             raise TypeError(msg)
 
         username = conn["username"]
@@ -51,7 +51,7 @@ class ArangoDB_Networkx_Adapter(ADBNX_Adapter):
 
         print(f"Connecting to {url}")
         self.__db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
-        self.__cntrl: Base_ADBNX_Controller = controller_class()
+        self.__cntrl: ADBNX_Controller = controller_class()
 
     def arangodb_to_networkx(
         self, name: str, metagraph: dict, is_keep=True, **query_options
