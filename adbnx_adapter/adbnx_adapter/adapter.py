@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Mar 26 09:51:47 2020
+"""Created on Thu Mar 26 09:51:47 2020.
 
 @author: Rajiv Sambasivan
 @author: Joerg Schad
 @author: Anthony Mahanna
 """
 
+from collections import defaultdict
+from typing import Any, Type
+
+from arango import ArangoClient
+from arango.cursor import Cursor
+from arango.graph import Graph as ArangoDBGraph
+from arango.result import Result
+from networkx import MultiDiGraph
+from networkx.classes.graph import Graph as NetworkXGraph
+from networkx.classes.multidigraph import MultiDiGraph as NetworkXMultiDiGraph
+
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
-
-import networkx as nx
-from arango import ArangoClient
-from collections import defaultdict
-
-from networkx.classes.graph import Graph as NetworkXGraph
-from arango.graph import Graph as ArangoDBGraph
 
 
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):
@@ -24,27 +27,28 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
     :param conn: Connection details to an ArangoDB instance.
     :type conn: dict
-    :param controller_class: The ArangoDB-NetworkX controller, used to identify, keyify and prepare nodes & edges before insertion, optionally re-defined by the user if needed (otherwise defaults to ADBNX_Controller).
+    :param controller_class: The ArangoDB-NetworkX controller, used to identify, keyify
+        and prepare nodes & edges before insertion, optionally re-defined by the user
+        if needed (otherwise defaults to ADBNX_Controller).
     :type controller_class: ADBNX_Controller
     :raise ValueError: If missing required keys in conn
     """
 
     def __init__(
         self,
-        conn: dict,
-        controller_class: ADBNX_Controller = ADBNX_Controller,
+        conn: dict[str, Any],
+        controller_class: Type[ADBNX_Controller] = ADBNX_Controller,
     ):
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
         if issubclass(controller_class, ADBNX_Controller) is False:
             msg = "controller_class must inherit from ADBNX_Controller"
             raise TypeError(msg)
 
-        username = conn["username"]
-        password = conn["password"]
-        db_name = conn["dbName"]
-
-        protocol = conn.get("protocol", "https")
-        host = conn["hostname"]
+        username: str = conn["username"]
+        password: str = conn["password"]
+        db_name: str = conn["dbName"]
+        host: str = conn["hostname"]
+        protocol: str = conn.get("protocol", "https")
         port = str(conn.get("port", 8529))
 
         url = protocol + "://" + host + ":" + port
@@ -54,17 +58,25 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__cntrl: ADBNX_Controller = controller_class()
 
     def arangodb_to_networkx(
-        self, name: str, metagraph: dict, is_keep=True, **query_options
-    ):
+        self,
+        name: str,
+        metagraph: dict[str, dict[str, set[str]]],
+        is_keep: bool = True,
+        **query_options: Any,
+    ) -> NetworkXMultiDiGraph:
         """Create a NetworkX graph from graph attributes.
 
         :param name: The NetworkX graph name.
         :type name: str
-        :param metagraph: An object defining vertex & edge collections to import to NetworkX, along with their associated attributes to keep.
+        :param metagraph: An object defining vertex & edge collections to import to
+            NetworkX, along with their associated attributes to keep.
         :type metagraph: dict
-        :param is_keep: Only keep the document attributes specified in **metagraph** when importing to NetworkX (is True by default). Otherwise, all document attributes are included.
+        :param is_keep: Only keep the document attributes specified in **metagraph**
+            when importing to NetworkX (is True by default). Otherwise, all document
+            attributes are included.
         :type is_keep: bool
-        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
+        :param query_options: Keyword arguments to specify AQL query options when
+            fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
@@ -81,31 +93,36 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             },
             "edgeCollections": {
                 "accountHolder": {},
-                "transaction": {"transaction_amt", "receiver_bank_id", "sender_bank_id"},
+                "transaction": {
+                    "transaction_amt", "receiver_bank_id", "sender_bank_id"
+                },
             },
         }
         """
         self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
-        adb_map = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
+        adb_map: dict[
+            str, Any
+        ] = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
 
-        nx_graph = nx.MultiDiGraph(name=name)
-        nx_nodes: list = []
-        nx_edges: list = []
+        nx_graph = MultiDiGraph(name=name)
+        nx_nodes: list[tuple[Any, dict[str, Any]]] = []
+        nx_edges: list[tuple[Any, Any, dict[str, Any]]] = []
 
-        v: dict
+        v: dict[str, Any]
         for col, atribs in metagraph["vertexCollections"].items():
             for v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                adb_id = v["_id"]
+                adb_id: str = v["_id"]
                 nx_id = self.__cntrl._prepare_arangodb_vertex(v, col)
                 adb_map[adb_id] = {"nx_id": nx_id, "collection": col}
 
                 nx_nodes.append((nx_id, v))
-        e: dict
+
+        e: dict[str, Any]
         for col, atribs in metagraph["edgeCollections"].items():
             for e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                from_node_id = adb_map.get(e["_from"])["nx_id"]
-                to_node_id = adb_map.get(e["_to"])["nx_id"]
+                from_node_id: str = adb_map[e["_from"]]["nx_id"]
+                to_node_id: str = adb_map[e["_to"]]["nx_id"]
                 self.__cntrl._prepare_arangodb_edge(e, col)
 
                 nx_edges.append((from_node_id, to_node_id, e))
@@ -119,38 +136,42 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def arangodb_collections_to_networkx(
         self,
         name: str,
-        vertex_collections: set,
-        edge_collections: set,
-        **query_options,
-    ):
+        v_cols: set[str],
+        e_cols: set[str],
+        **query_options: Any,
+    ) -> NetworkXMultiDiGraph:
         """Create a NetworkX graph from ArangoDB collections.
 
         :param name: The NetworkX graph name.
         :type name: str
-        :param vertex_collections: A set of ArangoDB vertex collections to import to NetworkX.
-        :type vertex_collections: set
-        :param edge_collections: A set of ArangoDB edge collections to import to NetworkX.
-        :type edge_collections: set
-        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
+        :param v_cols: A set of vertex collections to import to NetworkX.
+        :type v_cols: set
+        :param e_cols: A set of edge collections to import to NetworkX.
+        :type e_cols: set
+        :param query_options: Keyword arguments to specify AQL query options when
+            fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
-        metagraph = {
-            "vertexCollections": {col: {} for col in vertex_collections},
-            "edgeCollections": {col: {} for col in edge_collections},
+        metagraph: dict[str, dict[str, set[str]]] = {
+            "vertexCollections": {col: set() for col in v_cols},
+            "edgeCollections": {col: set() for col in e_cols},
         }
 
         return self.arangodb_to_networkx(
             name, metagraph, is_keep=False, **query_options
         )
 
-    def arangodb_graph_to_networkx(self, name: str, **query_options):
+    def arangodb_graph_to_networkx(
+        self, name: str, **query_options: Any
+    ) -> NetworkXMultiDiGraph:
         """Create a NetworkX graph from an ArangoDB graph.
 
         :param name: The ArangoDB graph name.
         :type name: str
-        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
+        :param query_options: Keyword arguments to specify AQL query options when
+            fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
@@ -167,24 +188,34 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self,
         name: str,
         nx_graph: NetworkXGraph,
-        edge_definitions: list,
+        edge_definitions: list[dict[str, Any]],
         batch_size: int = 1000,
         keyify_nodes: bool = False,
         keyify_edges: bool = False,
-    ):
-        """Create an ArangoDB graph from a NetworkX graph, and a set of edge definitions.
+    ) -> ArangoDBGraph:
+        """Create an ArangoDB graph from a NetworkX graph, and a set of edge
+        definitions.
 
         :param name: The ArangoDB graph name.
         :type name: str
         :param nx_graph: The existing NetworkX graph.
         :type nx_graph: networkx.classes.graph.Graph
-        :param edge_definitions: List of edge definitions, where each edge definition entry is a dictionary with fields "edge_collection", "from_vertex_collections" and "to_vertex_collections" (see below for example).
+        :param edge_definitions: List of edge definitions, where each edge definition
+            entry is a dictionary with fields "edge_collection",
+            "from_vertex_collections" and "to_vertex_collections"
+            (see below for example).
         :type edge_definitions: list[dict]
         :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
-        :param keyify_nodes: If set to True, will create custom node keys based on the behavior of the ADBNX_Controller's _keyify_networkx_node() method. Otherwise, ArangoDB _key values for vertices will range from 0 to N-1, where N is the number of NetworkX nodes.
+        :param keyify_nodes: If set to True, will create custom node keys based on the
+            behavior of the ADBNX_Controller's _keyify_networkx_node() method.
+            Otherwise, ArangoDB _key values for vertices will range from 0 to N-1,
+            where N is the number of NetworkX nodes.
         :type keyify_nodes: bool
-        :param keyify_edges: If set to True, will create custom edge keys based on the behavior of the ADBNX_Controller's _keyify_networkx_edge() method. Otherwise, ArangoDB _key values for edges will range from 0 to E-1, where E is the number of NetworkX edges.
+        :param keyify_edges: If set to True, will create custom edge keys based on
+            the behavior of the ADBNX_Controller's _keyify_networkx_edge() method.
+            Otherwise, ArangoDB _key values for edges will range from 0 to E-1,
+            where E is the number of NetworkX edges.
         :type keyify_edges: bool
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
@@ -210,12 +241,13 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         adb_v_cols = set()
         adb_e_cols = set()
         for e_d in edge_definitions:
-            e_col = e_d["edge_collection"]
+            e_col: str = e_d["edge_collection"]
             adb_e_cols.add(e_col)
 
             if self.__db.has_collection(e_col) is False:
                 self.__db.create_collection(e_col, edge=True)
 
+            v_col: str
             for v_col in e_d["from_vertex_collections"] + e_d["to_vertex_collections"]:
                 adb_v_cols.add(v_col)
                 if self.__db.has_collection(v_col) is False:
@@ -227,9 +259,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         self.__db.delete_graph(name, ignore_missing=True)
         adb_graph: ArangoDBGraph = self.__db.create_graph(name, edge_definitions)
-        adb_documents = defaultdict(list)
+        adb_documents: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
 
-        node: dict
+        node: dict[Any, Any]
         for i, (nx_id, node) in enumerate(nx_graph.nodes(data=True)):
             col = adb_v_col or self.__cntrl._identify_networkx_node(nx_id, node)
             key = (
@@ -243,7 +275,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             self.__insert_adb_docs(col, adb_documents[col], node, batch_size)
 
-        edge: dict
+        edge: dict[Any, Any]
         for i, (from_node_id, to_node_id, edge) in enumerate(nx_graph.edges(data=True)):
             from_n = {
                 "nx_id": from_node_id,
@@ -275,10 +307,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         print(f"ArangoDB: {name} created")
         return adb_graph
 
-    def __validate_attributes(self, type: str, attributes: set, valid_attributes: set):
-        """Validates that a set of attributes includes the required valid attributes.
+    def __validate_attributes(
+        self, type: str, attributes: set[str], valid_attributes: set[str]
+    ) -> None:
+        """Validates that a set of attributes includes the required valid
+        attributes.
 
-        :param type: The context of the attribute validation (e.g connection attributes, graph attributes, etc).
+        :param type: The context of the attribute validation
+            (e.g connection attributes, graph attributes, etc).
         :type type: str
         :param attributes: The provided attributes, possibly invalid.
         :type attributes: set
@@ -291,36 +327,45 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
     def __fetch_adb_docs(
-        self, col: str, attributes: set, is_keep: bool, query_options: dict
-    ):
+        self, col: str, attributes: set[str], is_keep: bool, query_options: Any
+    ) -> Result[Cursor]:
         """Fetches ArangoDB documents within a collection.
 
         :param col: The ArangoDB collection.
         :type col: str
         :param attributes: The set of document attributes.
         :type attributes: set
-        :param is_keep: Only keep the document attributes specified in **attributes** when returning the document. Otherwise, all document attributes are included.
+        :param is_keep: Only keep the attributes specified in **attributes** when
+            returning the document. Otherwise, all document attributes are included.
         :type is_keep: bool
-        :param query_options: Keyword arguments to specify AQL query options when fetching documents from the ArangoDB instance.
+        :param query_options: Keyword arguments to specify AQL query options when
+            fetching documents from the ArangoDB instance.
         :type query_options: **kwargs
         :return: Result cursor.
         :rtype: arango.cursor.Cursor
         """
         aql = f"""
             FOR doc IN {col}
-                RETURN {is_keep} ? 
+                RETURN {is_keep} ?
                     MERGE(
-                        KEEP(doc, {list(attributes)}), 
-                        {{"_id": doc._id}}, 
+                        KEEP(doc, {list(attributes)}),
+                        {{"_id": doc._id}},
                         doc._from ? {{"_from": doc._from, "_to": doc._to}}: {{}}
-                    ) 
+                    )
                 : doc
         """
 
         return self.__db.aql.execute(aql, **query_options)
 
-    def __insert_adb_docs(self, col: str, col_docs: list, doc: dict, batch_size: int):
-        """Insert an ArangoDB document into a list. If the list exceeds batch_size documents, insert into the ArangoDB collection.
+    def __insert_adb_docs(
+        self,
+        col: str,
+        col_docs: list[dict[str, Any]],
+        doc: dict[str, Any],
+        batch_size: int,
+    ) -> None:
+        """Insert an ArangoDB document into a list. If the list exceeds
+        batch_size documents, insert into the ArangoDB collection.
 
         :param col: The collection name
         :type col: str
