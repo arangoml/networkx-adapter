@@ -15,7 +15,6 @@ from .conftest import (
     football_adbnx_adapter,
     get_football_graph,
     get_grid_graph,
-    get_karate_graph,
     grid_adbnx_adapter,
     imdb_adbnx_adapter,
 )
@@ -186,20 +185,6 @@ def test_adb_graph_to_nx(
             ],
             5,
             True,
-        ),
-        (
-            adbnx_adapter,
-            "Karate",
-            get_karate_graph(),
-            [
-                {
-                    "edge_collection": "knows",
-                    "from_vertex_collections": ["Karate_Student"],
-                    "to_vertex_collections": ["Karate_Student"],
-                }
-            ],
-            1000,
-            False,
         ),
         (
             football_adbnx_adapter,

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from arango import ArangoClient
 from arango.database import StandardDatabase
-from networkx import grid_2d_graph, karate_club_graph, parse_gml
+from networkx import grid_2d_graph, parse_gml
 from networkx.classes import Graph as NetworkXGraph
 from requests import post
 
@@ -118,14 +118,6 @@ def get_football_graph() -> NetworkXGraph:
     gml = zf.read("football.gml").decode()
     gml_list = gml.split("\n")[1:]
     return parse_gml(gml_list)
-
-
-def get_karate_graph() -> NetworkXGraph:
-    karate_nx_g = karate_club_graph()
-    for id, node in karate_nx_g.nodes(data=True):
-        node["degree"] = karate_nx_g.degree(id)
-
-    return karate_nx_g
 
 
 class IMDB_ADBNX_Controller(ADBNX_Controller):
