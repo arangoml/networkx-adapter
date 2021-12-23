@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "adbnx_adapter/**"
+      - "adbnx_adapter/**/*"
 env:
   SOURCE_DIR: adbnx_adapter
   PACKAGE_DIR: adbnx_adapter
