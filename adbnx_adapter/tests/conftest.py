@@ -6,7 +6,6 @@ import time
 import urllib.request as urllib
 import zipfile
 from pathlib import Path
-from typing import Any
 
 from arango import ArangoClient
 from arango.database import StandardDatabase
@@ -16,10 +15,11 @@ from requests import post
 
 from adbnx_adapter.adapter import ADBNX_Adapter
 from adbnx_adapter.controller import ADBNX_Controller
+from adbnx_adapter.typings import Json, NxData, NxId
 
 PROJECT_DIR = Path(__file__).parent.parent.parent
 
-con: dict[str, str]
+con: Json
 adbnx_adapter: ADBNX_Adapter
 imdb_adbnx_adapter: ADBNX_Adapter
 grid_adbnx_adapter: ADBNX_Adapter
@@ -72,17 +72,17 @@ def pytest_sessionstart() -> None:
     )
 
 
-def get_oasis_crendetials() -> dict[str, str]:
+def get_oasis_crendetials() -> Json:
     url = "https://tutorials.arangodb.cloud:8529/_db/_system/tutorialDB/tutorialDB"
     request = post(url, data=json.dumps("{}"))
     if request.status_code != 200:
         raise Exception("Error retrieving login data.")
 
-    creds: dict[str, str] = json.loads(request.text)
+    creds: Json = json.loads(request.text)
     return creds
 
 
-def arango_restore(con: dict[str, str], path_to_data: str) -> None:
+def arango_restore(con: Json, path_to_data: str) -> None:
     restore_prefix = "./assets/" if os.getenv("GITHUB_ACTIONS") else ""
 
     subprocess.check_call(
@@ -96,7 +96,7 @@ def arango_restore(con: dict[str, str], path_to_data: str) -> None:
     )
 
 
-def print_connection_details(con: dict[str, str]) -> None:
+def print_connection_details(con: Json) -> None:
     print("----------------------------------------")
     print("https://{}:{}".format(con["hostname"], con["port"]))
     print("Username: " + con["username"])
@@ -129,13 +129,13 @@ def get_karate_graph() -> NetworkXGraph:
 
 
 class IMDB_ADBNX_Controller(ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, adb_vertex: dict[str, Any], col: str) -> Any:
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
         adb_vertex["bipartite"] = 0 if col == "Users" else 1
         return super()._prepare_arangodb_vertex(adb_vertex, col)
 
 
 class Grid_ADBNX_Controller(ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, adb_vertex: dict[str, Any], col: str) -> Any:
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
         nx_node_id = tuple(
             int(n)
             for n in tuple(
@@ -144,16 +144,12 @@ class Grid_ADBNX_Controller(ADBNX_Controller):
         )
         return nx_node_id
 
-    def _keyify_networkx_node(
-        self, nx_node_id: Any, nx_node: dict[str, Any], col: str
-    ) -> str:
-        adb_vertex_key: str = self._tuple_to_arangodb_key_helper(nx_node_id)
-        return adb_vertex_key
+    def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
+        adb_v_key: str = self._tuple_to_arangodb_key_helper(nx_node_id)  # type: ignore
+        return adb_v_key
 
 
 class Football_ADBNX_Controller(ADBNX_Controller):
-    def _keyify_networkx_node(
-        self, nx_node_id: str, nx_node: dict[str, Any], col: str
-    ) -> str:
-        adb_vertex_key: str = self._string_to_arangodb_key_helper(nx_node_id)
-        return adb_vertex_key
+    def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
+        adb_v_key: str = self._string_to_arangodb_key_helper(str(nx_node_id))
+        return adb_v_key

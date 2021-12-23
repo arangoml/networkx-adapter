@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from typing import Any, Union
+from typing import Any, Tuple
 
 from .abc import Abstract_ADBNX_Controller
+from .typings import Json, NxData, NxId
 
 """
 Created on Tue Nov 9 2021
@@ -21,7 +22,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
     necessary for Homogeneous graphs.
     """
 
-    def _prepare_arangodb_vertex(self, adb_vertex: dict[str, Any], col: str) -> str:
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
         """Prepare an ArangoDB vertex before it gets inserted into the NetworkX
         graph.
 
@@ -39,7 +40,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         adb_vertex_id: str = adb_vertex["_id"]
         return adb_vertex_id
 
-    def _prepare_arangodb_edge(self, adb_edge: dict[str, Any], col: str) -> str:
+    def _prepare_arangodb_edge(self, adb_edge: Json, col: str) -> NxId:
         """Prepare an ArangoDB edge before it gets inserted into the NetworkX
         graph.
 
@@ -57,7 +58,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         adb_edge_id: str = adb_edge["_id"]
         return adb_edge_id
 
-    def _identify_networkx_node(self, nx_node_id: Any, nx_node: dict[str, Any]) -> str:
+    def _identify_networkx_node(self, nx_node_id: NxId, nx_node: NxData) -> str:
         """Given a NetworkX node, identify what ArangoDB collection it should
         belong to.
 
@@ -73,14 +74,14 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :rtype: str
         """
         # In this case, nx_node_id is already a valid ArangoDB _id
-        adb_vertex_id: str = nx_node_id
+        adb_vertex_id: str = str(nx_node_id)
         return adb_vertex_id.split("/")[0]
 
     def _identify_networkx_edge(
         self,
-        nx_edge: dict[str, Any],
-        from_nx_node: dict[str, Any],
-        to_nx_node: dict[str, Any],
+        nx_edge: NxData,
+        from_nx_node: NxData,
+        to_nx_node: NxData,
     ) -> str:
         """Given a NetworkX edge, and its pair of nodes, identify what ArangoDB
         collection should it belong to.
@@ -102,9 +103,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         adb_edge_id: str = nx_edge["_id"]
         return adb_edge_id.split("/")[0]
 
-    def _keyify_networkx_node(
-        self, nx_node_id: Any, nx_node: dict[str, Any], col: str
-    ) -> str:
+    def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
         """Given a NetworkX node, derive its valid ArangoDB key.
 
         NOTE: You must override this function if you want to create custom ArangoDB _key
@@ -121,14 +120,14 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :rtype: str
         """
         # In this case, nx_node_id is already a valid ArangoDB _id
-        adb_vertex_id: str = nx_node_id
+        adb_vertex_id: str = str(nx_node_id)
         return adb_vertex_id.split("/")[1]
 
     def _keyify_networkx_edge(
         self,
-        nx_edge: dict[str, Any],
-        from_nx_node: dict[str, Any],
-        to_nx_node: dict[str, Any],
+        nx_edge: NxData,
+        from_nx_node: NxData,
+        to_nx_node: NxData,
         col: str,
     ) -> str:
         """Given a NetworkX edge, its collection, and its pair of nodes, derive
@@ -170,7 +169,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
 
         return res
 
-    def _tuple_to_arangodb_key_helper(self, tup: tuple[Union[str, int]]) -> str:
+    def _tuple_to_arangodb_key_helper(self, tup: Tuple[Any, ...]) -> str:
         """Given a tuple, derive a valid ArangoDB _key string.
 
         :param tup: A tuple with non-None values.

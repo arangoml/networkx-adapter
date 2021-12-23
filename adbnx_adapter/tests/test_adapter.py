@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import List
 
 import pytest
 from arango.graph import Graph as ArangoGraph
@@ -6,6 +6,7 @@ from networkx.classes.graph import Graph as NxGraph
 
 from adbnx_adapter.adapter import ADBNX_Adapter
 from adbnx_adapter.controller import ADBNX_Controller
+from adbnx_adapter.typings import ArangoMetagraph, Json, NxData, NxId
 
 from .conftest import (
     adbnx_adapter,
@@ -92,7 +93,7 @@ def test_validate_controller_class() -> None:
     ],
 )
 def test_adb_to_nx(
-    adapter: ADBNX_Adapter, name: str, metagraph: dict[str, dict[str, set[str]]]
+    adapter: ADBNX_Adapter, name: str, metagraph: ArangoMetagraph
 ) -> None:
     nx_g = adapter.arangodb_to_networkx(name, metagraph)
     assert_networkx_data(nx_g, metagraph, True)
@@ -133,7 +134,7 @@ def test_adb_collections_to_nx(
     [(adbnx_adapter, "fraud-detection", None)],
 )
 def test_adb_graph_to_nx(
-    adapter: ADBNX_Adapter, name: str, edge_definitions: list[Union[str, list[str]]]
+    adapter: ADBNX_Adapter, name: str, edge_definitions: List[Json]
 ) -> None:
     # Re-create the graph if defintions are provided
     if edge_definitions:
@@ -220,7 +221,7 @@ def test_nx_to_adb(
     adapter: ADBNX_Adapter,
     name: str,
     nx_g: NxGraph,
-    edge_definitions: list[dict[str, Any]],
+    edge_definitions: List[Json],
     batch_size: int,
     keyify_nodes: bool,
 ) -> None:
@@ -296,19 +297,14 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
     ]
 
     class Fraud_ADBNX_Controller(ADBNX_Controller):
-        def _identify_networkx_node(
-            self, nx_node_id: Any, nx_node: dict[str, Any]
-        ) -> str:
-            adb_vertex_id: str = nx_node_id
+        def _identify_networkx_node(self, nx_node_id: NxId, nx_node: NxData) -> str:
+            adb_vertex_id: str = str(nx_node_id)
             return adb_vertex_id.split("/")[0] + "_new"
 
         def _identify_networkx_edge(
-            self,
-            nx_edge: dict[str, Any],
-            from_nx_node: dict[str, Any],
-            to_nx_node: dict[str, Any],
+            self, nx_edge: NxData, from_nx_node: NxData, to_nx_node: NxData
         ) -> str:
-            adb_vertex_id: str = nx_edge["_id"]
+            adb_vertex_id: str = str(nx_edge["_id"])
             return adb_vertex_id.split("/")[0] + "_new"
 
     fraud_adbnx_adapter = ADBNX_Adapter(con, Fraud_ADBNX_Controller)
@@ -363,13 +359,13 @@ def test_full_cycle_from_networkx() -> None:
 
 
 def assert_networkx_data(
-    nx_g: NxGraph, metagraph: dict[str, dict[str, set[str]]], is_keep: bool = False
+    nx_g: NxGraph, metagraph: ArangoMetagraph, is_keep: bool = False
 ) -> None:
-    adb_vertex: dict[str, Any]
+    adb_vertex: Json
     for col, atribs in metagraph["vertexCollections"].items():
         for adb_vertex in db.collection(col):
             adb_id: str = adb_vertex["_id"]
-            nx_node: dict[Any, Any] = nx_g.nodes[adb_id]
+            nx_node: NxData = nx_g.nodes[adb_id]
 
             if is_keep:
                 for atrib in atribs:
@@ -378,12 +374,10 @@ def assert_networkx_data(
             else:
                 assert adb_vertex == nx_node
 
-    adb_edge: dict[str, Any]
+    adb_edge: Json
     for col, atribs in metagraph["edgeCollections"].items():
         for adb_edge in db.collection(col):
-            nx_edges: dict[Any, Any] = nx_g.get_edge_data(
-                adb_edge["_from"], adb_edge["_to"]
-            )
+            nx_edges: NxData = nx_g.get_edge_data(adb_edge["_from"], adb_edge["_to"])
 
             # (there can be multiple edges with the same _from & _to values)
             has_edge_match: bool = False
@@ -419,7 +413,6 @@ def assert_arangodb_data(
     )
     adb_e_col = edge_definitions[0]["edge_collection"] if is_homogeneous else None
 
-    nx_node: dict[Any, Any]
     for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True)):
         col = adb_v_col or cntrl._identify_networkx_node(nx_id, nx_node)
         key = (
@@ -437,7 +430,6 @@ def assert_arangodb_data(
         for key, val in nx_node.items():
             assert val == adb_vertex[key]
 
-    nx_edge: dict[Any, Any]
     for from_node_id, to_node_id, nx_edge in nx_g.edges(data=True):
         from_node = {
             "nx_id": from_node_id,

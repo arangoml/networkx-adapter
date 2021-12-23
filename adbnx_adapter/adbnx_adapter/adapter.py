@@ -8,7 +8,7 @@
 """
 
 from collections import defaultdict
-from typing import Any, Type
+from typing import Any, List, Set, Tuple, Type
 
 from arango import ArangoClient
 from arango.cursor import Cursor
@@ -20,6 +20,7 @@ from networkx.classes.multidigraph import MultiDiGraph as NetworkXMultiDiGraph
 
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
+from .typings import ArangoMetagraph, Json, NxData, NxId
 
 
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):
@@ -36,7 +37,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
     def __init__(
         self,
-        conn: dict[str, Any],
+        conn: Json,
         controller_class: Type[ADBNX_Controller] = ADBNX_Controller,
     ):
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
@@ -60,7 +61,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def arangodb_to_networkx(
         self,
         name: str,
-        metagraph: dict[str, dict[str, set[str]]],
+        metagraph: ArangoMetagraph,
         is_keep: bool = True,
         **query_options: Any,
     ) -> NetworkXMultiDiGraph:
@@ -101,31 +102,29 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """
         self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
-        adb_map: dict[
-            str, Any
-        ] = dict()  # Maps ArangoDB vertex IDs to NetworkX node IDs
-
+        # Maps ArangoDB vertex IDs to NetworkX node IDs
+        adb_map: Json = dict()
         nx_graph = MultiDiGraph(name=name)
-        nx_nodes: list[tuple[Any, dict[str, Any]]] = []
-        nx_edges: list[tuple[Any, Any, dict[str, Any]]] = []
+        nx_nodes: List[Tuple[NxId, NxData]] = []
+        nx_edges: List[Tuple[NxId, NxId, NxData]] = []
 
-        v: dict[str, Any]
+        adb_v: Json
         for col, atribs in metagraph["vertexCollections"].items():
-            for v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                adb_id: str = v["_id"]
-                nx_id = self.__cntrl._prepare_arangodb_vertex(v, col)
+            for adb_v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+                adb_id: str = adb_v["_id"]
+                nx_id = self.__cntrl._prepare_arangodb_vertex(adb_v, col)
                 adb_map[adb_id] = {"nx_id": nx_id, "collection": col}
 
-                nx_nodes.append((nx_id, v))
+                nx_nodes.append((nx_id, adb_v))
 
-        e: dict[str, Any]
+        adb_e: Json
         for col, atribs in metagraph["edgeCollections"].items():
-            for e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                from_node_id: str = adb_map[e["_from"]]["nx_id"]
-                to_node_id: str = adb_map[e["_to"]]["nx_id"]
-                self.__cntrl._prepare_arangodb_edge(e, col)
+            for adb_e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+                from_node_id: NxId = adb_map[adb_e["_from"]]["nx_id"]
+                to_node_id: NxId = adb_map[adb_e["_to"]]["nx_id"]
+                self.__cntrl._prepare_arangodb_edge(adb_e, col)
 
-                nx_edges.append((from_node_id, to_node_id, e))
+                nx_edges.append((from_node_id, to_node_id, adb_e))
 
         nx_graph.add_nodes_from(nx_nodes)
         nx_graph.add_edges_from(nx_edges)
@@ -136,8 +135,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def arangodb_collections_to_networkx(
         self,
         name: str,
-        v_cols: set[str],
-        e_cols: set[str],
+        v_cols: Set[str],
+        e_cols: Set[str],
         **query_options: Any,
     ) -> NetworkXMultiDiGraph:
         """Create a NetworkX graph from ArangoDB collections.
@@ -154,7 +153,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
-        metagraph: dict[str, dict[str, set[str]]] = {
+        metagraph: ArangoMetagraph = {
             "vertexCollections": {col: set() for col in v_cols},
             "edgeCollections": {col: set() for col in e_cols},
         }
@@ -188,7 +187,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self,
         name: str,
         nx_graph: NetworkXGraph,
-        edge_definitions: list[dict[str, Any]],
+        edge_definitions: List[Json],
         batch_size: int = 1000,
         keyify_nodes: bool = False,
         keyify_edges: bool = False,
@@ -241,14 +240,16 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         adb_v_cols = set()
         adb_e_cols = set()
         for e_d in edge_definitions:
-            e_col: str = e_d["edge_collection"]
+            e_col: str = str(e_d["edge_collection"])
             adb_e_cols.add(e_col)
 
             if self.__db.has_collection(e_col) is False:
                 self.__db.create_collection(e_col, edge=True)
 
             v_col: str
-            for v_col in e_d["from_vertex_collections"] + e_d["to_vertex_collections"]:
+            for v_col in list(e_d["from_vertex_collections"]) + list(
+                e_d["to_vertex_collections"]
+            ):
                 adb_v_cols.add(v_col)
                 if self.__db.has_collection(v_col) is False:
                     self.__db.create_collection(v_col)
@@ -259,24 +260,29 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         self.__db.delete_graph(name, ignore_missing=True)
         adb_graph: ArangoDBGraph = self.__db.create_graph(name, edge_definitions)
-        adb_documents: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
+        adb_documents: defaultdict[str, List[Json]] = defaultdict(list)
 
-        node: dict[Any, Any]
-        for i, (nx_id, node) in enumerate(nx_graph.nodes(data=True)):
-            col = adb_v_col or self.__cntrl._identify_networkx_node(nx_id, node)
+        nx_id: NxId
+        nx_node: NxData
+        for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True)):
+            col = adb_v_col or self.__cntrl._identify_networkx_node(nx_id, nx_node)
             key = (
-                self.__cntrl._keyify_networkx_node(nx_id, node, col)
+                self.__cntrl._keyify_networkx_node(nx_id, nx_node, col)
                 if keyify_nodes
                 else str(i)
             )
 
-            node["_id"] = col + "/" + key
-            nx_map[nx_id] = {"adb_id": node["_id"], "col": col, "key": key}
+            nx_node["_id"] = col + "/" + key
+            nx_map[nx_id] = {"adb_id": nx_node["_id"], "col": col, "key": key}
 
-            self.__insert_adb_docs(col, adb_documents[col], node, batch_size)
+            self.__insert_adb_docs(col, adb_documents[col], nx_node, batch_size)
 
-        edge: dict[Any, Any]
-        for i, (from_node_id, to_node_id, edge) in enumerate(nx_graph.edges(data=True)):
+        from_node_id: NxId
+        to_node_id: NxId
+        nx_edge: NxData
+        for i, (from_node_id, to_node_id, nx_edge) in enumerate(
+            nx_graph.edges(data=True)
+        ):
             from_n = {
                 "nx_id": from_node_id,
                 "col": nx_map[from_node_id]["col"],
@@ -288,18 +294,20 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 **nx_graph.nodes[to_node_id],
             }
 
-            col = adb_e_col or self.__cntrl._identify_networkx_edge(edge, from_n, to_n)
+            col = adb_e_col or self.__cntrl._identify_networkx_edge(
+                nx_edge, from_n, to_n
+            )
             key = (
-                self.__cntrl._keyify_networkx_edge(edge, from_n, to_n, col)
+                self.__cntrl._keyify_networkx_edge(nx_edge, from_n, to_n, col)
                 if keyify_edges
                 else str(i)
             )
 
-            edge["_id"] = col + "/" + key
-            edge["_from"] = nx_map[from_node_id]["adb_id"]
-            edge["_to"] = nx_map[to_node_id]["adb_id"]
+            nx_edge["_id"] = col + "/" + key
+            nx_edge["_from"] = nx_map[from_node_id]["adb_id"]
+            nx_edge["_to"] = nx_map[to_node_id]["adb_id"]
 
-            self.__insert_adb_docs(col, adb_documents[col], edge, batch_size)
+            self.__insert_adb_docs(col, adb_documents[col], nx_edge, batch_size)
 
         for col, doc_list in adb_documents.items():  # insert remaining documents
             self.__db.collection(col).import_bulk(doc_list, on_duplicate="replace")
@@ -308,7 +316,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         return adb_graph
 
     def __validate_attributes(
-        self, type: str, attributes: set[str], valid_attributes: set[str]
+        self, type: str, attributes: Set[str], valid_attributes: Set[str]
     ) -> None:
         """Validates that a set of attributes includes the required valid
         attributes.
@@ -327,7 +335,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
     def __fetch_adb_docs(
-        self, col: str, attributes: set[str], is_keep: bool, query_options: Any
+        self, col: str, attributes: Set[str], is_keep: bool, query_options: Any
     ) -> Result[Cursor]:
         """Fetches ArangoDB documents within a collection.
 
@@ -360,8 +368,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def __insert_adb_docs(
         self,
         col: str,
-        col_docs: list[dict[str, Any]],
-        doc: dict[str, Any],
+        col_docs: List[Json],
+        doc: Json,
         batch_size: int,
     ) -> None:
         """Insert an ArangoDB document into a list. If the list exceeds
