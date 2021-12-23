@@ -41,9 +41,9 @@ jobs:
         run: ls -la
       - name: Publish to coveralls.io
         if: matrix.python == '3.8'
-        run: coveralls --service=github
-        with:
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls --service=github
       # - name: Publish to coveralls.io
       #   if: matrix.python == '3.8'
       #   uses: coverallsapp/github-action@1.1.3
