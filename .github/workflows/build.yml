@@ -1,18 +1,16 @@
 name: build
 on:
   workflow_dispatch:
+  push:
+    branches: [ master ]
   pull_request:
-    paths:
-      - "adbnx_adapter/**/*"
+    branches: [ master ]
 env:
-  SOURCE_DIR: adbnx_adapter
   PACKAGE_DIR: adbnx_adapter
+  TESTS_DIR: tests
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{env.SOURCE_DIR}}
     strategy:
       matrix:
         python: ["3.6", "3.7", "3.8", "3.9", "3.10"]
@@ -30,11 +28,11 @@ jobs:
       - name: Run black
         run: black --check --verbose --diff --color .
       - name: Run flake8
-        run: flake8 .
+        run: flake8 ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
       - name: Run isort
         run: isort --check --profile=black .
       - name: Run mypy
-        run: mypy ${{env.PACKAGE_DIR}} tests
+        run: mypy ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
       - name: Run pytest
         run: py.test --cov=${{env.PACKAGE_DIR}} --cov-report xml -v --color=yes --no-cov-on-fail --code-highlight=yes
       - name: Publish to coveralls.io

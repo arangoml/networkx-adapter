@@ -17,7 +17,7 @@ from adbnx_adapter.adapter import ADBNX_Adapter
 from adbnx_adapter.controller import ADBNX_Controller
 from adbnx_adapter.typings import Json, NxData, NxId
 
-PROJECT_DIR = Path(__file__).parent.parent.parent
+PROJECT_DIR = Path(__file__).parent.parent
 
 con: Json
 adbnx_adapter: ADBNX_Adapter
@@ -91,7 +91,7 @@ def arango_restore(con: Json, path_to_data: str) -> None:
                 --server.username {con["username"]} --server.database {con["dbName"]} \
                     --server.password {con["password"]} \
                         --input-directory "{PROJECT_DIR}/{path_to_data}"',
-        cwd=f"{PROJECT_DIR}/adbnx_adapter/tests",
+        cwd=f"{PROJECT_DIR}/tests",
         shell=True,
     )
 

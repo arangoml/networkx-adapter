@@ -12,25 +12,15 @@
 name: analyze
 on:
   push:
-    branches: [master]
-    paths:
-      - "adbnx_adapter/**"
+    branches: [ master ]
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [master]
-    paths:
-      - "adbnx_adapter/**"
+    branches: [ master ]
   schedule:
     - cron: "00 9 * * 1"
-env:
-  SOURCE_DIR: adbnx_adapter
 jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{env.SOURCE_DIR}}
     permissions:
       actions: read
       contents: read
