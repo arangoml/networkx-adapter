@@ -292,7 +292,7 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             adb_vertex_id: str = str(nx_edge["_id"])
             return adb_vertex_id.split("/")[0] + "_new"
 
-    fraud_adbnx_adapter = ADBNX_Adapter(con, Fraud_ADBNX_Controller)
+    fraud_adbnx_adapter = ADBNX_Adapter(con, Fraud_ADBNX_Controller())
 
     new_fraud_adb_g = fraud_adbnx_adapter.networkx_to_arangodb(
         name + "_new",
