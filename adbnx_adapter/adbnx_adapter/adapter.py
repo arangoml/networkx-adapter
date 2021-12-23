@@ -8,7 +8,7 @@
 """
 
 from collections import defaultdict
-from typing import Any, DefaultDict, List, Set, Tuple, Type
+from typing import Any, DefaultDict, List, Set, Tuple
 
 from arango import ArangoClient
 from arango.cursor import Cursor
@@ -38,10 +38,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def __init__(
         self,
         conn: Json,
-        controller_class: Type[ADBNX_Controller] = ADBNX_Controller,
+        controller_class: ADBNX_Controller = ADBNX_Controller(),
     ):
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
-        if issubclass(controller_class, ADBNX_Controller) is False:
+        if issubclass(type(controller_class), ADBNX_Controller) is False:
             msg = "controller_class must inherit from ADBNX_Controller"
             raise TypeError(msg)
 
@@ -56,7 +56,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         print(f"Connecting to {url}")
         self.__db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
-        self.__cntrl: ADBNX_Controller = controller_class()
+        self.__cntrl: ADBNX_Controller = controller_class
 
     def arangodb_to_networkx(
         self,

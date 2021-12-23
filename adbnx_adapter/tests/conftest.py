@@ -43,9 +43,9 @@ def pytest_sessionstart() -> None:
 
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
     adbnx_adapter = ADBNX_Adapter(con)
-    imdb_adbnx_adapter = ADBNX_Adapter(con, IMDB_ADBNX_Controller)
-    grid_adbnx_adapter = ADBNX_Adapter(con, Grid_ADBNX_Controller)
-    football_adbnx_adapter = ADBNX_Adapter(con, Football_ADBNX_Controller)
+    imdb_adbnx_adapter = ADBNX_Adapter(con, IMDB_ADBNX_Controller())
+    grid_adbnx_adapter = ADBNX_Adapter(con, Grid_ADBNX_Controller())
+    football_adbnx_adapter = ADBNX_Adapter(con, Football_ADBNX_Controller())
 
     global db
     url = "https://" + con["hostname"] + ":" + str(con["port"])
