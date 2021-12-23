@@ -56,10 +56,10 @@ class Abstract_ADBNX_Adapter(ABC):
     def __validate_attributes(self) -> None:
         raise NotImplementedError  # pragma: no cover
 
-    def __fetch_Jsons(self) -> None:
+    def __fetch_adb_docs(self) -> None:
         raise NotImplementedError  # pragma: no cover
 
-    def __insert_Jsons(self) -> None:
+    def __insert_adb_docs(self) -> None:
         raise NotImplementedError  # pragma: no cover
 
     @property
