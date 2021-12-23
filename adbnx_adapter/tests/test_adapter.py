@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 import pytest
 from arango.graph import Graph as ArangoGraph
@@ -112,7 +112,7 @@ def test_adb_to_nx(
     ],
 )
 def test_adb_collections_to_nx(
-    adapter: ADBNX_Adapter, name: str, v_cols: set[str], e_cols: set[str]
+    adapter: ADBNX_Adapter, name: str, v_cols: Set[str], e_cols: Set[str]
 ) -> None:
     nx_g = adapter.arangodb_collections_to_networkx(
         name,

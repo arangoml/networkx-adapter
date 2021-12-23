@@ -8,7 +8,7 @@
 """
 
 from collections import defaultdict
-from typing import Any, List, Set, Tuple, Type
+from typing import Any, DefaultDict, List, Set, Tuple, Type
 
 from arango import ArangoClient
 from arango.cursor import Cursor
@@ -260,7 +260,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         self.__db.delete_graph(name, ignore_missing=True)
         adb_graph: ArangoDBGraph = self.__db.create_graph(name, edge_definitions)
-        adb_documents: defaultdict[str, List[Json]] = defaultdict(list)
+        adb_documents: DefaultDict[str, List[Json]] = defaultdict(list)
 
         nx_id: NxId
         nx_node: NxData
