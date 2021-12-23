@@ -183,7 +183,7 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Grid_Node_v2"],
                 }
             ],
-            5,
+            1000,
             True,
         ),
         (
