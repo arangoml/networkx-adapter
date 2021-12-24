@@ -16,7 +16,6 @@ omit = [
 profile = "black"
 
 [tool.pytest.ini_options]
-addopts = "-s -vv -p no:warnings"
 minversion = "6.0"
 testpaths = ["tests"]
 

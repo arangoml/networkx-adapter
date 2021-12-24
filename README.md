@@ -40,4 +40,3 @@ Prerequisite: `arangorestore` must be installed
 4. `source .venv/bin/activate` (MacOS) or `.venv/scripts/activate` (Windows)
 5. `pip install -e .[dev]`
 6. `pytest`
-    * If you encounter `ModuleNotFoundError`, try closing & relaunching your virtual environment by running `deactivate` in your terminal & restarting from Step 4.

@@ -8,7 +8,7 @@
 """
 
 from collections import defaultdict
-from typing import Any, DefaultDict, List, Set, Tuple
+from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
 
 from arango import ArangoClient
 from arango.cursor import Cursor
@@ -103,7 +103,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
         # Maps ArangoDB vertex IDs to NetworkX node IDs
-        adb_map: Json = dict()
+        adb_map: Dict[str, Dict[str, Union[NxId, str]]] = dict()
+
         nx_graph = MultiDiGraph(name=name)
         nx_nodes: List[Tuple[NxId, NxData]] = []
         nx_edges: List[Tuple[NxId, NxId, NxData]] = []

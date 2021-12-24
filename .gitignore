@@ -114,6 +114,5 @@ localdata/
 
 # setuptools_scm
 adbnx_adapter/version.py
-main.py
 
 .vscode

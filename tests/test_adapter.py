@@ -41,7 +41,7 @@ def test_validate_controller_class() -> None:
         pass
 
     with pytest.raises(TypeError):
-        ADBNX_Adapter(con, Bad_ADBNX_Controller)  # type: ignore
+        ADBNX_Adapter(con, Bad_ADBNX_Controller())  # type: ignore
 
 
 @pytest.mark.unit
