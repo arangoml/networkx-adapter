@@ -36,7 +36,7 @@ def test_validate_attributes() -> None:
 
 
 @pytest.mark.unit
-def test_validate_controller_class() -> None:
+def test_validate_controller() -> None:
     class Bad_ADBNX_Controller:
         pass
 
