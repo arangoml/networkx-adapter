@@ -160,7 +160,7 @@ def test_adb_graph_to_nx(
     [
         (
             adbnx_adapter,
-            "Grid",
+            "Grid_v1",
             get_grid_graph(),
             [
                 {
@@ -174,7 +174,7 @@ def test_adb_graph_to_nx(
         ),
         (
             grid_adbnx_adapter,
-            "Grid",
+            "Grid_v2",
             get_grid_graph(),
             [
                 {
@@ -317,16 +317,16 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
 
 @pytest.mark.unit
 def test_full_cycle_from_networkx() -> None:
-    name = "Grid"
+    name = "Grid_v3"
     if db.has_graph(name):
         db.delete_graph(name, drop_collections=True)
 
     original_grid_nx_g = get_grid_graph()
     grid_edge_definitions = [
         {
-            "edge_collection": "to",
-            "from_vertex_collections": ["Grid_Node"],
-            "to_vertex_collections": ["Grid_Node"],
+            "edge_collection": "to_v3",
+            "from_vertex_collections": ["Grid_Node_v3"],
+            "to_vertex_collections": ["Grid_Node_v3"],
         }
     ]
 
