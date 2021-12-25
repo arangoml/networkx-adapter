@@ -19,8 +19,25 @@ setup(
     include_package_data=True,
     python_requires=">=3.6",
     license="Apache Software License",
-    install_requires=["python-arango==7.3.0", "networkx>=2.5.1,<=2.6.3"],
-    tests_require=["pytest", "pytest-cov"],
+    install_requires=[
+        "python-arango==7.3.0",
+        "networkx>=2.5.1",
+        "setuptools>=42",
+        "setuptools_scm[toml]>=3.4",
+    ],
+    extras_require={
+        "dev": [
+            "black",
+            "flake8>=3.8.0",
+            "isort>=5.0.0",
+            "mypy>=0.790",
+            "pytest>=6.0.0",
+            "pytest-cov>=2.0.0",
+            "coveralls>=3.3.1",
+            "types-setuptools",
+            "types-requests",
+        ],
+    },
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
