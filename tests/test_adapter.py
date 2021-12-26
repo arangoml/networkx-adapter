@@ -20,7 +20,6 @@ from .conftest import (
 )
 
 
-@pytest.mark.unit
 def test_validate_attributes() -> None:
     bad_connection = {
         "dbName": "_system",
@@ -35,7 +34,6 @@ def test_validate_attributes() -> None:
         ADBNX_Adapter(bad_connection)
 
 
-@pytest.mark.unit
 def test_validate_controller() -> None:
     class Bad_ADBNX_Controller:
         pass
@@ -44,7 +42,6 @@ def test_validate_controller() -> None:
         ADBNX_Adapter(con, Bad_ADBNX_Controller())  # type: ignore
 
 
-@pytest.mark.unit
 @pytest.mark.parametrize(
     "adapter, name, metagraph",
     [
@@ -98,7 +95,6 @@ def test_adb_to_nx(
     assert_networkx_data(nx_g, metagraph, True)
 
 
-@pytest.mark.unit
 @pytest.mark.parametrize(
     "adapter, name, v_cols, e_cols",
     [
@@ -127,7 +123,6 @@ def test_adb_collections_to_nx(
     )
 
 
-@pytest.mark.unit
 @pytest.mark.parametrize(
     "adapter, name, edge_definitions",
     [(adbnx_adapter, "fraud-detection", None)],
@@ -154,7 +149,6 @@ def test_adb_graph_to_nx(
     )
 
 
-@pytest.mark.unit
 @pytest.mark.parametrize(
     "adapter, name, nx_g, edge_definitions, batch_size, keyify_nodes",
     [
@@ -216,7 +210,6 @@ def test_nx_to_adb(
     assert_arangodb_data(adapter, nx_g, adb_g, keyify_nodes)
 
 
-@pytest.mark.unit
 def test_full_cycle_from_arangodb_with_existing_collections() -> None:
     name = "fraud-detection"
     original_fraud_adb_g = db.graph(name)
@@ -262,7 +255,6 @@ def test_full_cycle_from_arangodb_with_existing_collections() -> None:
             assert "new_edge_data" in edge
 
 
-@pytest.mark.unit
 def test_full_cycle_from_arangodb_with_new_collections() -> None:
     name = "fraud-detection"
     original_fraud_adb_g = db.graph(name)
@@ -315,7 +307,6 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             assert new_fraud_adb_g.edge_collection(new_col).has(edge["_key"])
 
 
-@pytest.mark.unit
 def test_full_cycle_from_networkx() -> None:
     name = "Grid_v3"
     if db.has_graph(name):
