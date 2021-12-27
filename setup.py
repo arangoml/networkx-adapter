@@ -12,7 +12,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/arangoml/networkx-adapter",
     keywords=["arangodb", "networkx", "adapter"],
-    packages=find_packages(exclude=["tests"]),
+    packages=find_packages(exclude=["tests", "examples"]),
     include_package_data=True,
     use_scm_version=True,
     setup_requires=["setuptools_scm"],
