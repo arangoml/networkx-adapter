@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 from typing import Any, Tuple
 
 from .abc import Abstract_ADBNX_Controller
 from .typings import Json, NxData, NxId
-
-"""
-Created on Tue Nov 9 2021
-
-@author: Anthony Mahanna
-"""
 
 
 class ADBNX_Controller(Abstract_ADBNX_Controller):

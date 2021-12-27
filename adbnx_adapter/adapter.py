@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Thu Mar 26 09:51:47 2020.
-
-@author: Rajiv Sambasivan
-@author: Joerg Schad
-@author: Anthony Mahanna
-"""
 
 from collections import defaultdict
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
