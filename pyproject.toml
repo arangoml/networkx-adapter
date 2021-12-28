@@ -1,0 +1,23 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "setuptools_scm[toml]>=3.4",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+omit = [
+    "adbnx_adapter/version.py",
+    "setup.py",
+]
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+
+[tool.setuptools_scm]
+write_to = "adbnx_adapter/version.py"

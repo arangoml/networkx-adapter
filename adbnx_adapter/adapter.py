@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Created on Thu Mar 26 09:51:47 2020.
-
-@author: Rajiv Sambasivan
-@author: Joerg Schad
-@author: Anthony Mahanna
-"""
 
 from collections import defaultdict
-from typing import Any, DefaultDict, List, Set, Tuple
+from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
 
 from arango import ArangoClient
 from arango.cursor import Cursor
@@ -28,21 +22,21 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
     :param conn: Connection details to an ArangoDB instance.
     :type conn: dict
-    :param controller_class: The ArangoDB-NetworkX controller, used to identify, keyify
+    :param controller: The ArangoDB-NetworkX controller, used to identify, keyify
         and prepare nodes & edges before insertion, optionally re-defined by the user
         if needed (otherwise defaults to ADBNX_Controller).
-    :type controller_class: ADBNX_Controller
+    :type controller: ADBNX_Controller
     :raise ValueError: If missing required keys in conn
     """
 
     def __init__(
         self,
         conn: Json,
-        controller_class: ADBNX_Controller = ADBNX_Controller(),
+        controller: ADBNX_Controller = ADBNX_Controller(),
     ):
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
-        if issubclass(type(controller_class), ADBNX_Controller) is False:
-            msg = "controller_class must inherit from ADBNX_Controller"
+        if issubclass(type(controller), ADBNX_Controller) is False:
+            msg = "controller must inherit from ADBNX_Controller"
             raise TypeError(msg)
 
         username: str = conn["username"]
@@ -56,7 +50,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         print(f"Connecting to {url}")
         self.__db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
-        self.__cntrl: ADBNX_Controller = controller_class
+        self.__cntrl: ADBNX_Controller = controller
 
     def arangodb_to_networkx(
         self,
@@ -103,7 +97,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
         # Maps ArangoDB vertex IDs to NetworkX node IDs
-        adb_map: Json = dict()
+        adb_map: Dict[str, Dict[str, Union[NxId, str]]] = dict()
+
         nx_graph = MultiDiGraph(name=name)
         nx_nodes: List[Tuple[NxId, NxData]] = []
         nx_edges: List[Tuple[NxId, NxId, NxData]] = []
