@@ -1,3 +1,32 @@
+## 3.0.0 (2021-12-28)
+
+### New
+
+* Update documentation (#55) [Anthony Mahanna]
+
+* Release automation rework (#52) [Anthony Mahanna]
+
+* File & class name restructure (#50) [Anthony Mahanna]
+
+* General Adapter Improvements (#45) [Anthony Mahanna]
+
+### Changes
+
+* Disable twine skip-existing flag (#44) [Anthony Mahanna]
+
+### Fix
+
+* Release. [aMahanna]
+
+* Release.yml. [aMahanna]
+
+### Other
+
+* Update release.yml. [aMahanna]
+
+* Build workflow improvements (#51) [Anthony Mahanna]
+
+
 ## 2.0.0 (2021-12-02)
 
 ### New
