@@ -11,9 +11,9 @@
 [![Code style: black](https://img.shields.io/static/v1?style=for-the-badge&label=code%20style&message=black&color=black)](https://github.com/psf/black)
 [![Downloads](https://img.shields.io/badge/dynamic/json?style=for-the-badge&color=282661&label=Downloads&query=total_downloads&url=https://api.pepy.tech/api/projects/adbnx-adapter)](https://pepy.tech/project/adbnx-adapter)
 
-![](https://raw.githubusercontent.com/arangoml/networkx-adapter/1.0.0/examples/assets/logos/ArangoDB_logo.png)
+<a href="https://www.arangodb.com/" rel="arangodb.com">![](https://raw.githubusercontent.com/arangoml/networkx-adapter/1.0.0/examples/assets/logos/ArangoDB_logo.png)</a>
 
-![](https://raw.githubusercontent.com/arangoml/networkx-adapter/1.0.0/examples/assets/logos/networkx_logo.svg)
+<a href="https://networkx.org/" rel="networkx.org">![](https://raw.githubusercontent.com/arangoml/networkx-adapter/1.0.0/examples/assets/logos/networkx_logo.svg)</a>
 
 The ArangoDB-Networkx Adapter exports Graphs from ArangoDB, a multi-model Graph Database, into NetworkX, the swiss army knife for graph analysis with python, and vice-versa.
 
@@ -29,6 +29,62 @@ Networkx is a commonly used tool for analysis of network-data. If your analytics
 ##  Quickstart
 
 Get Started on Colab: <a href="https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+```py
+# Import the ArangoDB-NetworkX Adapter
+from adbnx_adapter.adapter import ADBNX_Adapter
+
+# Import a sample graph from NetworkX
+from networkx import grid_2d_graph
+
+# This is the connection information for your ArangoDB instance
+# (Let's assume that the ArangoDB fraud-detection data dump is imported to this endpoint)
+con = {
+    "hostname": "localhost",
+    "protocol": "http",
+    "port": 8529,
+    "username": "root",
+    "password": "rootpassword",
+    "dbName": "_system",
+}
+
+# This instantiates your ADBNX Adapter with your connection credentials
+adbnx_adapter = ADBNX_Adapter(con)
+
+# ArangoDB to NetworkX via Graph
+nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
+
+# ArangoDB to NetworkX via Collections
+nx_fraud_graph_2 = adbnx_adapter.arangodb_collections_to_networkx(
+        "fraud-detection", 
+        {"account", "bank", "branch", "Class", "customer"}, # Specify vertex collections
+        {"accountHolder", "Relationship", "transaction"} # Specify edge collections
+)
+
+# ArangoDB to NetworkX via Metagraph
+metagraph = {
+    "vertexCollections": {
+        "account": {"Balance", "account_type", "customer_id", "rank"},
+        "customer": {"Name", "rank"},
+    },
+    "edgeCollections": {
+        "transaction": {"transaction_amt", "sender_bank_id", "receiver_bank_id"},
+        "accountHolder": {},
+    },
+}
+nx_fraud_graph_3 = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
+
+# NetworkX to ArangoDB
+nx_grid_graph = grid_2d_graph(5, 5)
+adb_grid_edge_definitions = [
+    {
+        "edge_collection": "to",
+        "from_vertex_collections": ["Grid_Node"],
+        "to_vertex_collections": ["Grid_Node"],
+    }
+]
+adb_grid_graph = adbnx_adapter.networkx_to_arangodb("Grid", nx_grid_graph, adb_grid_edge_definitions)
+```
 
 ##  Development & Testing
 

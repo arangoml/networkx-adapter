@@ -21,7 +21,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     """ArangoDB-NetworkX adapter.
 
     :param conn: Connection details to an ArangoDB instance.
-    :type conn: dict
+    :type conn: adbnx_adapter.typings.Json
     :param controller: The ArangoDB-NetworkX controller, used to identify, keyify
         and prepare nodes & edges before insertion, optionally re-defined by the user
         if needed (otherwise defaults to ADBNX_Controller).
@@ -65,14 +65,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type name: str
         :param metagraph: An object defining vertex & edge collections to import to
             NetworkX, along with their associated attributes to keep.
-        :type metagraph: dict
+        :type metagraph: adbnx_adapter.typings.ArangoMetagraph
         :param is_keep: Only keep the document attributes specified in **metagraph**
             when importing to NetworkX (is True by default). Otherwise, all document
             attributes are included.
         :type is_keep: bool
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance.
-        :type query_options: **kwargs
+        :type query_options: Any
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         :raise ValueError: If missing required keys in metagraph
@@ -139,12 +139,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param name: The NetworkX graph name.
         :type name: str
         :param v_cols: A set of vertex collections to import to NetworkX.
-        :type v_cols: set
+        :type v_cols: Set[str]
         :param e_cols: A set of edge collections to import to NetworkX.
-        :type e_cols: set
+        :type e_cols: Set[str]
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance.
-        :type query_options: **kwargs
+        :type query_options: Any
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
@@ -166,7 +166,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type name: str
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance.
-        :type query_options: **kwargs
+        :type query_options: Any
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
@@ -198,7 +198,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             entry is a dictionary with fields "edge_collection",
             "from_vertex_collections" and "to_vertex_collections"
             (see below for example).
-        :type edge_definitions: list[dict]
+        :type edge_definitions: List[adbnx_adapter.typings.Json]
         :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
         :param keyify_nodes: If set to True, will create custom node keys based on the
@@ -320,9 +320,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             (e.g connection attributes, graph attributes, etc).
         :type type: str
         :param attributes: The provided attributes, possibly invalid.
-        :type attributes: set
+        :type attributes: Set[str]
         :param valid_attributes: The valid attributes.
-        :type valid_attributes: set
+        :type valid_attributes: Set[str]
         :raise ValueError: If **valid_attributes** is not a subset of **attributes**
         """
         if valid_attributes.issubset(attributes) is False:
@@ -337,13 +337,13 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param col: The ArangoDB collection.
         :type col: str
         :param attributes: The set of document attributes.
-        :type attributes: set
+        :type attributes: Set[str]
         :param is_keep: Only keep the attributes specified in **attributes** when
             returning the document. Otherwise, all document attributes are included.
         :type is_keep: bool
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance.
-        :type query_options: **kwargs
+        :type query_options: Any
         :return: Result cursor.
         :rtype: arango.cursor.Cursor
         """
@@ -373,9 +373,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param col: The collection name
         :type col: str
         :param col_docs: The existing documents data belonging to the collection.
-        :type col_docs: list
+        :type col_docs: List[adbnx_adapter.typings.Json]
         :param doc: The current document to insert.
-        :type doc: dict
+        :type doc: adbnx_adapter.typings.Json
         :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
         """
