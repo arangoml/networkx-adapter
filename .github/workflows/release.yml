@@ -55,13 +55,13 @@ jobs:
           python-version: "3.8"
 
       - name: Install release packages
-        run: pip install setuptools wheel twine setuptools-scm[toml] build
+        run: pip install setuptools wheel twine setuptools-scm[toml]
 
       - name: Install dependencies
         run: pip install .[dev]
 
       - name: Build distribution
-        run: python -m build
+        run: python setup.py sdist bdist_wheel
 
       - name: Publish to PyPI Test
         env:
