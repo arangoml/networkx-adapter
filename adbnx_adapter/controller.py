@@ -25,8 +25,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         into the NetworkX graph, and/or derive a custom node id for networkx to use.
         In most cases, it is only required to return the ArangoDB _id of the vertex.
 
-        :param vertex: The ArangoDB vertex object to (optionally) modify.
-        :type vertex: dict
+        :param adb_vertex: The ArangoDB vertex object to (optionally) modify.
+        :type adb_vertex: adbnx_adapter.typings.Json
         :param col: The ArangoDB collection the vertex belongs to.
         :type col: str
         :return: The ArangoDB _id attribute of the vertex.
@@ -43,8 +43,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         into the NetworkX graph. In most cases, it is only required to
         return the ArangoDB _id of the edge.
 
-        :param edge: The ArangoDB edge object to (optionally) modify.
-        :type edge: dict
+        :param adb_edge: The ArangoDB edge object to (optionally) modify.
+        :type adb_edge: adbnx_adapter.typings.Json
         :param col: The ArangoDB collection the edge belongs to.
         :type col: str
         :return: The ArangoDB _id attribute of the edge.
@@ -62,9 +62,9 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         like "{collection}/{key}").
 
         :param nx_node_id: The NetworkX ID of the node.
-        :type nx_node_id: Any
+        :type nx_node_id: adbnx_adapter.typings.NxId
         :param nx_node: The NetworkX node object.
-        :type nx_node: dict
+        :type nx_node: adbnx_adapter.typings.NxData
         :return: The ArangoDB collection name
         :rtype: str
         """
@@ -86,11 +86,11 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         (i.e the edge IDs are not formatted like "{collection}/{key}").
 
         :param nx_edge: The NetworkX edge object.
-        :type nx_edge: dict
+        :type nx_edge: adbnx_adapter.typings.NxData
         :param from_nx_node: The NetworkX node object representing the edge source.
-        :type from_nx_node: dict
+        :type from_nx_node: adbnx_adapter.typings.NxData
         :param to_nx_node: The NetworkX node object representing the edge destination.
-        :type to_nx_node: dict
+        :type to_nx_node: adbnx_adapter.typings.NxData
         :return: The ArangoDB collection name
         :rtype: str
         """
@@ -107,8 +107,10 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         like "{collection}/{key}"). For more  info, see the **keyify_nodes**
         parameter of ADBNX_Adapter.networkx_to_arangodb()
 
+        :param nx_node_id: The NetworkX node id.
+        :type nx_node_id: adbnx_adapter.typings.NxId
         :param nx_node: The NetworkX node object.
-        :type nx_node: dict
+        :type nx_node: adbnx_adapter.typings.NxData
         :param col: The ArangoDB collection the node belongs to.
         :type col: str
         :return: A valid ArangoDB _key value.
@@ -135,11 +137,11 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         parameter of ADBNX_Adapter.networkx_to_arangodb()
 
         :param nx_edge: The NetworkX edge object.
-        :type nx_edge: dict
+        :type nx_edge: adbnx_adapter.typings.NxData
         :param from_nx_node: The NetworkX node object representing the edge source.
-        :type from_nx_node: dict
+        :type from_nx_node: adbnx_adapter.typings.NxData
         :param to_nx_node: The NetworkX node object representing the edge destination.
-        :type to_nx_node: dict
+        :type to_nx_node: adbnx_adapter.typings.NxData
         :param col: The ArangoDB collection the edge belongs to.
         :type col: str
         :return: A valid ArangoDB _key value.
@@ -168,7 +170,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         """Given a tuple, derive a valid ArangoDB _key string.
 
         :param tup: A tuple with non-None values.
-        :type tup: tuple
+        :type tup: Tuple[Any, ...]
         :return: A valid ArangoDB _key value.
         :rtype: str
         """
