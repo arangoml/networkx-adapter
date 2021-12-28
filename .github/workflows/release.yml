@@ -129,7 +129,7 @@ jobs:
       - name: Set pull request to auto-merge as rebase
         run: |
           gh pr merge $PR_URL \
-            --auto \
+            --admin \
             --delete-branch \
             --rebase
         env:
