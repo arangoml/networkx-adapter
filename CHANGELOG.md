@@ -1,3 +1,30 @@
+## 3.0.1 (2021-12-31)
+
+### New
+
+* Blog post preparation (#58) [Anthony Mahanna]
+
+### Fix
+
+* Logo links. [aMahanna]
+
+* Gh pr merge. [aMahanna]
+
+* Release. [aMahanna]
+
+### Other
+
+* Revert "trying white networkx logo" [aMahanna]
+
+  This reverts commit f93bf99398bf66a31a1886a61761cf88dc88e7b6.
+
+* Trying white networkx logo. [aMahanna]
+
+* Replace auto merge with echo. [aMahanna]
+
+* Update: restrict build & analyze triggers. [aMahanna]
+
+
 ## 3.0.0 (2021-12-28)
 
 ### New
