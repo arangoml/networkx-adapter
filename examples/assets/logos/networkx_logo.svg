@@ -9,8 +9,8 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="452.54614"
-   height="101.18925"
+   width="480.62738"
+   height="124"
    id="svg2"
    version="1.1"
    inkscape:version="0.92.4 (unknown)"
@@ -22,20 +22,20 @@
      id="defs4" />
   <sodipodi:namedview
      id="base"
-     pagecolor="#ffffff"
+     pagecolor="#00ffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="277.17945"
-     inkscape:cy="172.07512"
+     inkscape:zoom="1.979899"
+     inkscape:cx="179.9654"
+     inkscape:cy="123.76303"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="960"
+     inkscape:window-width="1920"
      inkscape:window-height="1061"
-     inkscape:window-x="960"
+     inkscape:window-x="0"
      inkscape:window-y="19"
      inkscape:window-maximized="0"
      fit-margin-top="0"
@@ -58,7 +58,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-51.778411,-373.41071)">
+     transform="translate(-37.697178,-359.71164)">
     <circle
        cy="455.39188"
        cx="101.29218"
@@ -67,14 +67,15 @@
        r="0" />
     <g
        id="g996-1"
-       transform="translate(2.3611014,357.77383)">
+       transform="translate(16.361101,350.44641)"
+       style="fill:#ffffff">
       <text
          id="text3150-8"
          y="83.149475"
          x="163.22154"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#4d4d4d;fill-opacity:1;stroke:none"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:70px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans'"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:70px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';fill:#ffffff"
            y="83.149475"
            x="163.22154"
            id="tspan3152-3"
@@ -83,17 +84,25 @@
          id="text3154-4"
          y="111.43372"
          x="167.75905"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#4d4d4d;fill-opacity:1;stroke:none"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:24.66666603px;line-height:1;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans'"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:24.66666603px;line-height:1;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';fill:#ffffff"
            y="111.43372"
            x="167.75905"
            id="tspan3156-2"
            sodipodi:role="line">Network Analysis in Python</tspan></text>
     </g>
+    <rect
+       style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.20263696;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:10.9228344;stroke-opacity:1"
+       id="rect849"
+       width="124"
+       height="124"
+       x="37.697178"
+       y="359.71164"
+       ry="23.913101" />
     <g
        id="g4938-1"
-       transform="rotate(-20,1138.2886,207.72441)">
+       transform="rotate(-20,1136.5903,212.48627)">
       <circle
          style="opacity:1;fill:#ff7f0e;fill-opacity:1;stroke:none;stroke-width:4.04473829;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="path4144-3-5-3"
