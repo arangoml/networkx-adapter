@@ -81,9 +81,13 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         """Given a NetworkX edge, and its pair of nodes, identify what ArangoDB
         collection should it belong to.
 
-        NOTE: You must override this function if your NetworkX graph is NOT Homogeneous
-        or does NOT comply to ArangoDB standards
+        NOTE #1: You must override this function if your NetworkX graph is NOT
+        Homogeneous or does NOT comply to ArangoDB standards
         (i.e the edge IDs are not formatted like "{collection}/{key}").
+
+        NOTE #2: You can accesss the ID & Collection belonging to the
+        **from_nx_node** & **to_nx_node** parameters via their "nx_id" & "col"
+        attribute keys. E.g `from_collection = from_nx_node["col"]`
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
@@ -130,11 +134,15 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         """Given a NetworkX edge, its collection, and its pair of nodes, derive
         its valid ArangoDB key.
 
-        NOTE: You must override this function if you want to create custom ArangoDB _key
-        values for your NetworkX edges or if your NetworkX graph does NOT comply
+        NOTE #1: You must override this function if you want to create custom ArangoDB
+        _key values for your NetworkX edges or if your NetworkX graph does NOT comply
         to ArangoDB standards (i.e the edge IDs are not formatted
         like "{collection}/{key}"). For more info, see the **keyify_edges**
         parameter of ADBNX_Adapter.networkx_to_arangodb()
+
+        NOTE #2: You can accesss the ID & Collection belonging to the
+        **from_nx_node** & **to_nx_node** parameters via their "nx_id" & "col"
+        attribute keys. E.g `from_collection = from_nx_node["col"]`
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
