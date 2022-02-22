@@ -5,9 +5,9 @@ from abc import ABC
 from typing import Any, List, Set
 
 from arango.graph import Graph as ArangoDBGraph
+from cugraph import MultiDiGraph as cuGraphMultiDiGraph
 from networkx.classes.graph import Graph as NetworkXGraph
 from networkx.classes.multidigraph import MultiDiGraph
-from cugraph import MultiDiGraph as cuGraphMultiDiGraph
 
 from .typings import ArangoMetagraph, Json, NxData, NxId
 

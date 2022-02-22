@@ -8,11 +8,11 @@ from arango import ArangoClient
 from arango.cursor import Cursor
 from arango.graph import Graph as ArangoDBGraph
 from arango.result import Result
+from cudf import DataFrame
+from cugraph import MultiDiGraph as cuGraphMultiDiGraph
 from networkx import MultiDiGraph
 from networkx.classes.graph import Graph as NetworkXGraph
 from networkx.classes.multidigraph import MultiDiGraph as NetworkXMultiDiGraph
-from cudf import DataFrame
-from cugraph import MultiDiGraph as cuGraphMultiDiGraph
 
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
