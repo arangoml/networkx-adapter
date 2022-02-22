@@ -32,7 +32,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     """
 
     def __init__(
-        self, conn: Json, controller: ADBNX_Controller = ADBNX_Controller(),
+        self,
+        conn: Json,
+        controller: ADBNX_Controller = ADBNX_Controller(),
     ):
         self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
         if issubclass(type(controller), ADBNX_Controller) is False:
@@ -198,7 +200,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         return cg_graph
 
     def arangodb_collections_to_networkx(
-        self, name: str, v_cols: Set[str], e_cols: Set[str], **query_options: Any,
+        self,
+        name: str,
+        v_cols: Set[str],
+        e_cols: Set[str],
+        **query_options: Any,
     ) -> NetworkXMultiDiGraph:
         """Create a NetworkX graph from ArangoDB collections.
 
@@ -224,7 +230,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         )
 
     def arangodb_collections_to_cugraph(
-        self, name: str, v_cols: Set[str], e_cols: Set[str], **query_options: Any,
+        self,
+        name: str,
+        v_cols: Set[str],
+        e_cols: Set[str],
+        **query_options: Any,
     ) -> cuGraphMultiDiGraph:
         """Create a cuGraph graph from ArangoDB collections.
 
@@ -472,7 +482,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         return self.__db.aql.execute(aql, **query_options)
 
     def __insert_adb_docs(
-        self, col: str, col_docs: List[Json], doc: Json, batch_size: int,
+        self,
+        col: str,
+        col_docs: List[Json],
+        doc: Json,
+        batch_size: int,
     ) -> None:
         """Insert an ArangoDB document into a list. If the list exceeds
         batch_size documents, insert into the ArangoDB collection.

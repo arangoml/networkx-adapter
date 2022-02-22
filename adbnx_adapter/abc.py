@@ -35,12 +35,20 @@ class Abstract_ADBNX_Adapter(ABC):
         raise NotImplementedError  # pragma: no cover
 
     def arangodb_collections_to_networkx(
-        self, name: str, v_cols: Set[str], e_cols: Set[str], **query_options: Any,
+        self,
+        name: str,
+        v_cols: Set[str],
+        e_cols: Set[str],
+        **query_options: Any,
     ) -> MultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
     def arangodb_collections_to_cugraph(
-        self, name: str, v_cols: Set[str], e_cols: Set[str], **query_options: Any,
+        self,
+        name: str,
+        v_cols: Set[str],
+        e_cols: Set[str],
+        **query_options: Any,
     ) -> cuGraphMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -98,7 +106,10 @@ class Abstract_ADBNX_Controller(ABC):
         raise NotImplementedError  # pragma: no cover
 
     def _identify_networkx_edge(
-        self, nx_edge: NxData, from_nx_node: NxData, to_nx_node: NxData,
+        self,
+        nx_edge: NxData,
+        from_nx_node: NxData,
+        to_nx_node: NxData,
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
@@ -106,7 +117,11 @@ class Abstract_ADBNX_Controller(ABC):
         raise NotImplementedError  # pragma: no cover
 
     def _keyify_networkx_edge(
-        self, nx_edge: NxData, from_nx_node: NxData, to_nx_node: NxData, col: str,
+        self,
+        nx_edge: NxData,
+        from_nx_node: NxData,
+        to_nx_node: NxData,
+        col: str,
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
