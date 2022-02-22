@@ -62,6 +62,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         **query_options: Any,
     ) -> NetworkXMultiDiGraph:
         """Create a NetworkX graph from graph attributes.
+
         :param name: The NetworkX graph name.
         :type name: str
         :param metagraph: An object defining vertex & edge collections to import to
@@ -77,7 +78,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         :raise ValueError: If missing required keys in metagraph
+
         Here is an example entry for parameter **metagraph**:
+
         .. code-block:: python
         {
             "vertexCollections": {
