@@ -7,6 +7,7 @@ from typing import Any, List, Set
 from arango.graph import Graph as ArangoDBGraph
 from networkx.classes.graph import Graph as NetworkXGraph
 from networkx.classes.multidigraph import MultiDiGraph
+from cugraph import MultiDiGraph as cuGraphMultiDiGraph
 
 from .typings import ArangoMetagraph, Json, NxData, NxId
 
@@ -24,6 +25,15 @@ class Abstract_ADBNX_Adapter(ABC):
     ) -> MultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
+    def arangodb_to_cugraph(
+        self,
+        name: str,
+        metagraph: ArangoMetagraph,
+        is_keep: bool = True,
+        **query_options: Any,
+    ) -> cuGraphMultiDiGraph:
+        raise NotImplementedError  # pragma: no cover
+
     def arangodb_collections_to_networkx(
         self,
         name: str,
@@ -33,9 +43,23 @@ class Abstract_ADBNX_Adapter(ABC):
     ) -> MultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
+    def arangodb_collections_to_cugraph(
+        self,
+        name: str,
+        v_cols: Set[str],
+        e_cols: Set[str],
+        **query_options: Any,
+    ) -> cuGraphMultiDiGraph:
+        raise NotImplementedError  # pragma: no cover
+
     def arangodb_graph_to_networkx(
         self, name: str, **query_options: Any
     ) -> MultiDiGraph:
+        raise NotImplementedError  # pragma: no cover
+
+    def arangodb_graph_to_cugraph(
+        self, name: str, **query_options: Any
+    ) -> cuGraphMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
     def networkx_to_arangodb(
