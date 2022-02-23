@@ -39,6 +39,13 @@ jobs:
         run: python -m pip install --upgrade pip setuptools wheel
       - name: Install packages
         run: pip install .[dev]
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v2.1.1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: |
+          conda info
+          conda list
       - name: Run black
         run: black --check --verbose --diff --color ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
       - name: Run flake8
