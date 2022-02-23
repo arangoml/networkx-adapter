@@ -44,6 +44,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: |
+          conda install -c rapidsai cudf
+          conda install -c rapidsai cugraph
           conda info
           conda list
       - name: Run black
