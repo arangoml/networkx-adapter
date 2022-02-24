@@ -34,6 +34,10 @@ jobs:
     name: Python ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v2
+      - name: Install nvidia driver
+        run: |
+          sudo apt-get update
+          sudo apt install nvidia-cuda-toolkit
       - name: Setup Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
