@@ -24,7 +24,7 @@ env:
   TESTS_DIR: tests
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     defaults:
       run:
         shell: bash -l {0}
@@ -34,10 +34,6 @@ jobs:
     name: Python ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install nvidia driver
-        run: |
-          sudo apt-get update
-          sudo apt install nvidia-cuda-toolkit
       - name: Setup Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
