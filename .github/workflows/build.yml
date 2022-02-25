@@ -37,6 +37,10 @@ jobs:
         with:
           python-version: "3.8"
 
+      - name: Init conda
+        run: |
+          conda init bash
+
       - name: Run conda
         run: |
           conda activate cugraph
