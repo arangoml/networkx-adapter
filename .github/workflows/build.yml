@@ -24,7 +24,7 @@ env:
   TESTS_DIR: tests
 jobs:
   sdist:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: sdist
     steps:
       - uses: actions/checkout@v2
