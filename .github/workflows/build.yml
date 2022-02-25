@@ -34,6 +34,10 @@ jobs:
         with:
           python-version: "3.8"
 
+      - name: Run conda
+      - run: |
+          conda info
+
       - name: Install dependencies
         run: pip install .[dev]
 
