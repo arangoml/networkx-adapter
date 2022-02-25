@@ -23,6 +23,23 @@ env:
   PACKAGE_DIR: adbnx_adapter
   TESTS_DIR: tests
 jobs:
+  sdist:
+    runs-on: ubuntu-latest
+    name: sdist
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install dependencies
+        run: pip install .[dev]
+
+      - name: Build distribution
+        run: python setup.py sdist
+
   build:
     runs-on: ubuntu-18.04
     defaults:
