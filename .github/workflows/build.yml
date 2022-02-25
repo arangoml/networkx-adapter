@@ -25,6 +25,9 @@ env:
 jobs:
   sdist:
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash -l {0}
     name: sdist
     steps:
       - uses: actions/checkout@v2
