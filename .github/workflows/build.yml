@@ -36,6 +36,7 @@ jobs:
 
       - name: Run conda
         run: |
+          conda activate cugraph
           conda info
 
       - name: Install dependencies
