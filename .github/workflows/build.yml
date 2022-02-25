@@ -39,7 +39,7 @@ jobs:
 
       - name: Init conda
         run: |
-          conda init bash
+          conda env list
 
       - name: Run conda
         run: |
