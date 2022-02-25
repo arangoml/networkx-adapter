@@ -35,7 +35,7 @@ jobs:
           python-version: "3.8"
 
       - name: Run conda
-      - run: |
+        run: |
           conda info
 
       - name: Install dependencies
