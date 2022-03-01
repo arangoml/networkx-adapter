@@ -1,3 +1,78 @@
+## 3.1.0 (2022-03-01)
+
+### Other
+
+* Extend adapter with the functionality to export into cuGraph (#60) [maxkernbach]
+
+  * add cuGraph code
+
+  * fix formatting
+
+  * add rapids logo
+
+  * README.md: add cuGraph
+
+  * format with black
+
+  * rerun black with recent version
+
+  * fix imports with isort
+
+  * add conda-incubator/setup-miniconda
+
+  * add conda packages
+
+  * cudatoolkit installation
+
+  * change setup order
+
+  * add default shell
+
+  * run pytest in conda env
+
+  * add driver
+
+  * run on ubuntu-18.04
+
+  * test sdist build
+
+  * test self-hosted
+
+  * run conda
+
+  * fix typo
+
+  * activate cugraph conda env
+
+  * <xx
+
+  * init conda
+
+  * test conda env
+
+  * test gpu build
+
+  * fix conda env name
+
+  * init conda
+
+  * run in same step
+
+  * run pytest in conda env
+
+  * use python version matrix
+
+  * remove duplicate step
+
+  * run on different conda envs
+
+  * pip setup in conda env
+
+  * remove old build job
+
+  * replace build job to run on self-hosted runner
+
+
 ## 3.0.1 (2021-12-31)
 
 ### New
