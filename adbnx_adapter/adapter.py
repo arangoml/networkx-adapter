@@ -339,7 +339,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             metagraph: ArangoMetagraph,
             is_keep: bool = True,
             **query_options: Any,
-        ) -> cuGraphMultiGraph(directed=True): # type: ignore
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
             """Create a cuGraph graph from graph attributes.
 
             :param name: The cuGraph graph name.
@@ -411,7 +411,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             v_cols: Set[str],
             e_cols: Set[str],
             **query_options: Any,
-        ) -> cuGraphMultiGraph(directed=True): # type: ignore
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
             """Create a cuGraph graph from ArangoDB collections.
             :param name: The cuGraph graph name.
             :type name: str
@@ -436,7 +436,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         def arangodb_graph_to_cugraph(
             self, name: str, **query_options: Any
-        ) -> cuGraphMultiGraph(directed=True): # type: ignore
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
             """Create a cuGraph graph from an ArangoDB graph.
             :param name: The ArangoDB graph name.
             :type name: str

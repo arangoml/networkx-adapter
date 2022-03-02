@@ -50,7 +50,7 @@ class Abstract_ADBNX_Adapter(ABC):
             metagraph: ArangoMetagraph,
             is_keep: bool = True,
             **query_options: Any,
-        ) -> cuGraphMultiGraph(directed=True): # type: ignore
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
             raise NotImplementedError  # pragma: no cover
 
         def arangodb_collections_to_cugraph(
@@ -59,12 +59,12 @@ class Abstract_ADBNX_Adapter(ABC):
             v_cols: Set[str],
             e_cols: Set[str],
             **query_options: Any,
-        ) -> cuGraphMultiGraph(directed=True): # type: ignore
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
             raise NotImplementedError  # pragma: no cover
 
         def arangodb_graph_to_cugraph(
             self, name: str, **query_options: Any
-        ) -> cuGraphMultiGraph(directed=True): # type: ignore
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
             raise NotImplementedError  # pragma: no cover
 
     def arangodb_graph_to_networkx(
