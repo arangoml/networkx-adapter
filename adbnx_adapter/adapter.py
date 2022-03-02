@@ -17,7 +17,7 @@ except ImportError as e:
     print(e)
     cudf = False
 try:
-    from cugraph import MultiDiGraph as cuGraphMultiDiGraph
+    from cugraph import MultiGraph as cuGraphMultiGraph
 
     cugraph = True
 except ImportError as e:
@@ -339,7 +339,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             metagraph: ArangoMetagraph,
             is_keep: bool = True,
             **query_options: Any,
-        ) -> cuGraphMultiDiGraph:
+        ) -> cuGraphMultiGraph(directed=True): # type: ignore
             """Create a cuGraph graph from graph attributes.
 
             :param name: The cuGraph graph name.
@@ -397,7 +397,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             srcs = [s for (s, _) in cg_edges]
             dsts = [d for (_, d) in cg_edges]
-            cg_graph = cuGraphMultiDiGraph()
+            cg_graph = cuGraphMultiGraph(directed=True)
             cg_graph.from_cudf_edgelist(
                 DataFrame({"source": srcs, "destination": dsts})
             )
@@ -411,7 +411,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             v_cols: Set[str],
             e_cols: Set[str],
             **query_options: Any,
-        ) -> cuGraphMultiDiGraph:
+        ) -> cuGraphMultiGraph(directed=True): # type: ignore
             """Create a cuGraph graph from ArangoDB collections.
             :param name: The cuGraph graph name.
             :type name: str
@@ -436,7 +436,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         def arangodb_graph_to_cugraph(
             self, name: str, **query_options: Any
-        ) -> cuGraphMultiDiGraph:
+        ) -> cuGraphMultiGraph(directed=True): # type: ignore
             """Create a cuGraph graph from an ArangoDB graph.
             :param name: The ArangoDB graph name.
             :type name: str

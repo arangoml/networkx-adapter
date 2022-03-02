@@ -7,7 +7,7 @@ from typing import Any, List, Set
 from arango.graph import Graph as ArangoDBGraph
 
 try:
-    from cugraph import MultiDiGraph as cuGraphMultiDiGraph
+    from cugraph import MultiGraph as cuGraphMultiGraph
 
     cugraph = True
 except ImportError:
@@ -50,7 +50,7 @@ class Abstract_ADBNX_Adapter(ABC):
             metagraph: ArangoMetagraph,
             is_keep: bool = True,
             **query_options: Any,
-        ) -> cuGraphMultiDiGraph:
+        ) -> cuGraphMultiGraph(directed=True): # type: ignore
             raise NotImplementedError  # pragma: no cover
 
         def arangodb_collections_to_cugraph(
@@ -59,12 +59,12 @@ class Abstract_ADBNX_Adapter(ABC):
             v_cols: Set[str],
             e_cols: Set[str],
             **query_options: Any,
-        ) -> cuGraphMultiDiGraph:
+        ) -> cuGraphMultiGraph(directed=True): # type: ignore
             raise NotImplementedError  # pragma: no cover
 
         def arangodb_graph_to_cugraph(
             self, name: str, **query_options: Any
-        ) -> cuGraphMultiDiGraph:
+        ) -> cuGraphMultiGraph(directed=True): # type: ignore
             raise NotImplementedError  # pragma: no cover
 
     def arangodb_graph_to_networkx(
