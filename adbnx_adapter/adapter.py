@@ -8,8 +8,21 @@ from arango import ArangoClient
 from arango.cursor import Cursor
 from arango.graph import Graph as ArangoDBGraph
 from arango.result import Result
-from cudf import DataFrame
-from cugraph import MultiDiGraph as cuGraphMultiDiGraph
+
+try:
+    from cudf import DataFrame
+
+    cudf = True
+except ImportError as e:
+    print(e)
+    cudf = False
+try:
+    from cugraph import MultiDiGraph as cuGraphMultiDiGraph
+
+    cugraph = True
+except ImportError as e:
+    print(e)
+    cugraph = False
 from networkx import MultiDiGraph
 from networkx.classes.graph import Graph as NetworkXGraph
 from networkx.classes.multidigraph import MultiDiGraph as NetworkXMultiDiGraph
@@ -129,76 +142,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         print(f"NetworkX: {name} created")
         return nx_graph
 
-    def arangodb_to_cugraph(
-        self,
-        name: str,
-        metagraph: ArangoMetagraph,
-        is_keep: bool = True,
-        **query_options: Any,
-    ) -> cuGraphMultiDiGraph:
-        """Create a cuGraph graph from graph attributes.
-
-        :param name: The cuGraph graph name.
-        :type name: str
-        :param metagraph: An object defining vertex & edge collections to import to
-            cuGraph, along with their associated attributes to keep.
-        :type metagraph: adbnx_adapter.typings.ArangoMetagraph
-        :param is_keep: Only keep the document attributes specified in **metagraph**
-            when importing to cuGraph (is True by default).
-        :type is_keep: bool
-        :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance.
-        :type query_options: Any
-        :return: A Multi-Directed cuGraph Graph.
-        :rtype: cugraph.structure.graph_classes.MultiDiGraph
-        :raise ValueError: If missing required keys in metagraph
-
-        Here is an example entry for parameter **metagraph**:
-
-        .. code-block:: python
-        {
-            "vertexCollections": {
-                "account": {"Balance", "account_type", "customer_id", "rank"},
-                "bank": {"Country", "Id", "bank_id", "bank_name"},
-                "customer": {"Name", "Sex", "Ssn", "rank"},
-            },
-            "edgeCollections": {
-                "accountHolder": {},
-                "transaction": {
-                    "transaction_amt", "receiver_bank_id", "sender_bank_id"
-                },
-            },
-        }
-        """
-        self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
-
-        # Maps ArangoDB vertex IDs to cuGraph node IDs
-        adb_map: Dict[str, Dict[str, Union[NxId, str]]] = dict()
-        cg_edges: List[Tuple[NxId, NxId]] = []
-
-        adb_v: Json
-        for col, atribs in metagraph["vertexCollections"].items():
-            for adb_v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                adb_id: str = adb_v["_id"]
-                nx_id = self.__cntrl._prepare_arangodb_vertex(adb_v, col)
-                adb_map[adb_id] = {"nx_id": nx_id, "collection": col}
-
-        adb_e: Json
-        for col, atribs in metagraph["edgeCollections"].items():
-            for adb_e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
-                from_node_id: NxId = adb_map[adb_e["_from"]]["nx_id"]
-                to_node_id: NxId = adb_map[adb_e["_to"]]["nx_id"]
-                self.__cntrl._prepare_arangodb_edge(adb_e, col)
-                cg_edges.append((from_node_id, to_node_id))
-
-        srcs = [s for (s, _) in cg_edges]
-        dsts = [d for (_, d) in cg_edges]
-        cg_graph = cuGraphMultiDiGraph()
-        cg_graph.from_cudf_edgelist(DataFrame({"source": srcs, "destination": dsts}))
-
-        print(f"cuGraph: {name} created")
-        return cg_graph
-
     def arangodb_collections_to_networkx(
         self,
         name: str,
@@ -229,34 +172,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             name, metagraph, is_keep=False, **query_options
         )
 
-    def arangodb_collections_to_cugraph(
-        self,
-        name: str,
-        v_cols: Set[str],
-        e_cols: Set[str],
-        **query_options: Any,
-    ) -> cuGraphMultiDiGraph:
-        """Create a cuGraph graph from ArangoDB collections.
-
-        :param name: The cuGraph graph name.
-        :type name: str
-        :param v_cols: A set of vertex collections to import to cuGraph.
-        :type v_cols: Set[str]
-        :param e_cols: A set of edge collections to import to cuGraph.
-        :type e_cols: Set[str]
-        :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance.
-        :type query_options: Any
-        :return: A Multi-Directed cuGraph Graph.
-        :rtype: cugraph.structure.graph_classes.MultiDiGraph
-        """
-        metagraph: ArangoMetagraph = {
-            "vertexCollections": {col: set() for col in v_cols},
-            "edgeCollections": {col: set() for col in e_cols},
-        }
-
-        return self.arangodb_to_cugraph(name, metagraph, is_keep=True, **query_options)
-
     def arangodb_graph_to_networkx(
         self, name: str, **query_options: Any
     ) -> NetworkXMultiDiGraph:
@@ -275,27 +190,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         e_cols = {col["edge_collection"] for col in graph.edge_definitions()}
 
         return self.arangodb_collections_to_networkx(
-            name, v_cols, e_cols, **query_options
-        )
-
-    def arangodb_graph_to_cugraph(
-        self, name: str, **query_options: Any
-    ) -> cuGraphMultiDiGraph:
-        """Create a cuGraph graph from an ArangoDB graph.
-
-        :param name: The ArangoDB graph name.
-        :type name: str
-        :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance.
-        :type query_options: Any
-        :return: A Multi-Directed cuGraph Graph.
-        :rtype: cugraph.structure.graph_classes.MultiDiGraph
-        """
-        graph = self.__db.graph(name)
-        v_cols = graph.vertex_collections()
-        e_cols = {col["edge_collection"] for col in graph.edge_definitions()}
-
-        return self.arangodb_collections_to_cugraph(
             name, v_cols, e_cols, **query_options
         )
 
@@ -430,6 +324,135 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         print(f"ArangoDB: {name} created")
         return adb_graph
+
+    if cugraph is False or cudf is False:
+        print(
+            "You are currently solely using the NetworkX export functionality.",
+            "Please note that modules 'cudf' and 'cugraph' are required to perform",
+            "exports into cuGraph. ",
+        )
+    else:
+
+        def arangodb_to_cugraph(
+            self,
+            name: str,
+            metagraph: ArangoMetagraph,
+            is_keep: bool = True,
+            **query_options: Any,
+        ) -> cuGraphMultiDiGraph:
+            """Create a cuGraph graph from graph attributes.
+
+            :param name: The cuGraph graph name.
+            :type name: str
+            :param metagraph: An object defining vertex & edge collections to import to
+                cuGraph, along with their associated attributes to keep.
+            :type metagraph: adbnx_adapter.typings.ArangoMetagraph
+            :param is_keep: Only keep the document attributes specified in **metagraph**
+                when importing to cuGraph (is True by default).
+            :type is_keep: bool
+            :param query_options: Keyword arguments to specify AQL query options when
+                fetching documents from the ArangoDB instance.
+            :type query_options: Any
+            :return: A Multi-Directed cuGraph Graph.
+            :rtype: cugraph.structure.graph_classes.MultiDiGraph
+            :raise ValueError: If missing required keys in metagraph
+
+            Here is an example entry for parameter **metagraph**:
+
+            .. code-block:: python
+            {
+                "vertexCollections": {
+                    "account": {"Balance", "account_type", "customer_id", "rank"},
+                    "bank": {"Country", "Id", "bank_id", "bank_name"},
+                    "customer": {"Name", "Sex", "Ssn", "rank"},
+                },
+                "edgeCollections": {
+                    "accountHolder": {},
+                    "transaction": {
+                        "transaction_amt", "receiver_bank_id", "sender_bank_id"
+                    },
+                },
+            }
+            """
+            self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
+
+            # Maps ArangoDB vertex IDs to cuGraph node IDs
+            adb_map: Dict[str, Dict[str, Union[NxId, str]]] = dict()
+            cg_edges: List[Tuple[NxId, NxId]] = []
+
+            adb_v: Json
+            for col, atribs in metagraph["vertexCollections"].items():
+                for adb_v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+                    adb_id: str = adb_v["_id"]
+                    nx_id = self.__cntrl._prepare_arangodb_vertex(adb_v, col)
+                    adb_map[adb_id] = {"nx_id": nx_id, "collection": col}
+
+            adb_e: Json
+            for col, atribs in metagraph["edgeCollections"].items():
+                for adb_e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+                    from_node_id: NxId = adb_map[adb_e["_from"]]["nx_id"]
+                    to_node_id: NxId = adb_map[adb_e["_to"]]["nx_id"]
+                    self.__cntrl._prepare_arangodb_edge(adb_e, col)
+                    cg_edges.append((from_node_id, to_node_id))
+
+            srcs = [s for (s, _) in cg_edges]
+            dsts = [d for (_, d) in cg_edges]
+            cg_graph = cuGraphMultiDiGraph()
+            cg_graph.from_cudf_edgelist(
+                DataFrame({"source": srcs, "destination": dsts})
+            )
+
+            print(f"cuGraph: {name} created")
+            return cg_graph
+
+        def arangodb_collections_to_cugraph(
+            self,
+            name: str,
+            v_cols: Set[str],
+            e_cols: Set[str],
+            **query_options: Any,
+        ) -> cuGraphMultiDiGraph:
+            """Create a cuGraph graph from ArangoDB collections.
+            :param name: The cuGraph graph name.
+            :type name: str
+            :param v_cols: A set of vertex collections to import to cuGraph.
+            :type v_cols: Set[str]
+            :param e_cols: A set of edge collections to import to cuGraph.
+            :type e_cols: Set[str]
+            :param query_options: Keyword arguments to specify AQL query options when
+                fetching documents from the ArangoDB instance.
+            :type query_options: Any
+            :return: A Multi-Directed cuGraph Graph.
+            :rtype: cugraph.structure.graph_classes.MultiDiGraph
+            """
+            metagraph: ArangoMetagraph = {
+                "vertexCollections": {col: set() for col in v_cols},
+                "edgeCollections": {col: set() for col in e_cols},
+            }
+
+            return self.arangodb_to_cugraph(
+                name, metagraph, is_keep=True, **query_options
+            )
+
+        def arangodb_graph_to_cugraph(
+            self, name: str, **query_options: Any
+        ) -> cuGraphMultiDiGraph:
+            """Create a cuGraph graph from an ArangoDB graph.
+            :param name: The ArangoDB graph name.
+            :type name: str
+            :param query_options: Keyword arguments to specify AQL query options when
+                fetching documents from the ArangoDB instance.
+            :type query_options: Any
+            :return: A Multi-Directed cuGraph Graph.
+            :rtype: cugraph.structure.graph_classes.MultiDiGraph
+            """
+            graph = self.__db.graph(name)
+            v_cols = graph.vertex_collections()
+            e_cols = {col["edge_collection"] for col in graph.edge_definitions()}
+
+            return self.arangodb_collections_to_cugraph(
+                name, v_cols, e_cols, **query_options
+            )
 
     def __validate_attributes(
         self, type: str, attributes: Set[str], valid_attributes: Set[str]
