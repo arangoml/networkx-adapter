@@ -5,6 +5,13 @@ from abc import ABC
 from typing import Any, List, Set
 
 from arango.graph import Graph as ArangoDBGraph
+
+try:
+    from cugraph import MultiGraph as cuGraphMultiGraph
+
+    cugraph = True
+except ImportError:
+    cugraph = False
 from networkx.classes.graph import Graph as NetworkXGraph
 from networkx.classes.multidigraph import MultiDiGraph
 
@@ -32,6 +39,33 @@ class Abstract_ADBNX_Adapter(ABC):
         **query_options: Any,
     ) -> MultiDiGraph:
         raise NotImplementedError  # pragma: no cover
+
+    if cugraph is False:
+        pass
+    else:
+
+        def arangodb_to_cugraph(
+            self,
+            name: str,
+            metagraph: ArangoMetagraph,
+            is_keep: bool = True,
+            **query_options: Any,
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
+            raise NotImplementedError  # pragma: no cover
+
+        def arangodb_collections_to_cugraph(
+            self,
+            name: str,
+            v_cols: Set[str],
+            e_cols: Set[str],
+            **query_options: Any,
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
+            raise NotImplementedError  # pragma: no cover
+
+        def arangodb_graph_to_cugraph(
+            self, name: str, **query_options: Any
+        ) -> cuGraphMultiGraph(directed=True):  # type: ignore
+            raise NotImplementedError  # pragma: no cover
 
     def arangodb_graph_to_networkx(
         self, name: str, **query_options: Any
