@@ -67,6 +67,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
         self.__cntrl: ADBNX_Controller = controller
 
+    def db(self) -> ArangoClient:
+        return self.__db
+
     def arangodb_to_networkx(
         self,
         name: str,
