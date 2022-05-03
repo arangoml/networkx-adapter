@@ -6,6 +6,7 @@ from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
 
 from arango import ArangoClient
 from arango.cursor import Cursor
+from arango.database import StandardDatabase
 from arango.graph import Graph as ArangoDBGraph
 from arango.result import Result
 from networkx import MultiDiGraph
@@ -51,6 +52,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         print(f"Connecting to {url}")
         self.__db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
         self.__cntrl: ADBNX_Controller = controller
+
+    def db(self) -> StandardDatabase:
+        return self.__db
 
     def arangodb_to_networkx(
         self,
