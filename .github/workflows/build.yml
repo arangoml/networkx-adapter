@@ -45,21 +45,23 @@ jobs:
           source ~/anaconda3/etc/profile.d/conda.sh
           conda activate ${{ matrix.python }}
           pip install .[dev]
-      - name: Run black
-        run: black --check --verbose --diff --color ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
-      - name: Run flake8
-        run: flake8 ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
-      - name: Run isort
-        run: isort --check --profile=black ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
-      - name: Run mypy
-        run: mypy ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
-      - name: Run pytest in conda env
-        run: |
-          source ~/anaconda3/etc/profile.d/conda.sh
-          conda activate ${{ matrix.python }}
-          conda run -n ${{ matrix.python }} py.test --cov=${{env.PACKAGE_DIR}} --cov-report xml -v --color=yes --no-cov-on-fail --code-highlight=yes
-      - name: Publish to coveralls.io
-        if: matrix.python == '3.8'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --service=github
+          pip list
+          conda list
+      # - name: Run black
+      #   run: black --check --verbose --diff --color ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+      # - name: Run flake8
+      #   run: flake8 ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+      # - name: Run isort
+      #   run: isort --check --profile=black ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+      # - name: Run mypy
+      #   run: mypy ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+      # - name: Run pytest in conda env
+      #   run: |
+      #     source ~/anaconda3/etc/profile.d/conda.sh
+      #     conda activate ${{ matrix.python }}
+      #     conda run -n ${{ matrix.python }} py.test --cov=${{env.PACKAGE_DIR}} --cov-report xml -v --color=yes --no-cov-on-fail --code-highlight=yes
+      # - name: Publish to coveralls.io
+      #   if: matrix.python == '3.8'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: coveralls --service=github
