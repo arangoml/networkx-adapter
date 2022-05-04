@@ -64,11 +64,7 @@ def test_validate_controller() -> None:
                 },
                 "edgeCollections": {
                     "accountHolder": {},
-                    "Relationship": {
-                        "label",
-                        "name",
-                        "relationshipType",
-                    },
+                    "Relationship": {"label", "name", "relationshipType"},
                     "transaction": {
                         "transaction_amt",
                         "sender_bank_id",

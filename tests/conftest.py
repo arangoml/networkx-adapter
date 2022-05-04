@@ -1,18 +1,13 @@
 import io
-import json
 import os
 import subprocess
-import time
 import urllib.request as urllib
 import zipfile
 from pathlib import Path
 from typing import Any
 
-from arango import ArangoClient
-from arango.database import StandardDatabase
 from networkx import grid_2d_graph, parse_gml
 from networkx.classes import Graph as NetworkXGraph
-from requests import post
 
 from adbnx_adapter.adapter import ADBNX_Adapter
 from adbnx_adapter.controller import ADBNX_Controller
@@ -36,7 +31,7 @@ def pytest_addoption(parser: Any) -> None:
     parser.addoption("--password", action="store", default="openSesame")
 
 
-def pytest_configure(config) -> None:
+def pytest_configure(config: Any) -> None:
     global con
     con = {
         "protocol": config.getoption("protocol"),
