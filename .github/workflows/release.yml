@@ -8,27 +8,21 @@ env:
   TESTS_DIR: tests
 jobs:
   build:
-    runs-on: self-hosted
-    defaults:
-      run:
-        shell: bash -l {0}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.7", "3.8"]
-    name: gpu
+        python: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+    name: Python ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v2
-      - name: Setup python
+      - name: Setup Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
       - name: Setup pip
         run: python -m pip install --upgrade pip setuptools wheel
-      - name: Install dependencies
-        run: |
-          source ~/anaconda3/etc/profile.d/conda.sh
-          conda activate ${{ matrix.python }}
-          pip install .[dev]
+      - name: Install packages
+        run: pip install .[dev]
       - name: Run black
         run: black --check --verbose --diff --color ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
       - name: Run flake8
@@ -37,11 +31,8 @@ jobs:
         run: isort --check --profile=black ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
       - name: Run mypy
         run: mypy ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
-      - name: Run pytest in conda env
-        run: |
-          source ~/anaconda3/etc/profile.d/conda.sh
-          conda activate ${{ matrix.python }}
-          conda run -n ${{ matrix.python }} py.test --cov=${{env.PACKAGE_DIR}} --cov-report xml -v --color=yes --no-cov-on-fail --code-highlight=yes
+      - name: Run pytest
+        run: py.test --cov=${{env.PACKAGE_DIR}} --cov-report xml -v --color=yes --no-cov-on-fail --code-highlight=yes
       - name: Publish to coveralls.io
         if: matrix.python == '3.8'
         env:
