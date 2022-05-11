@@ -59,10 +59,6 @@ class Abstract_ADBNX_Adapter(ABC):
         raise NotImplementedError  # pragma: no cover
 
     @property
-    def CONNECTION_ATRIBS(self) -> Set[str]:
-        return {"hostname", "username", "password", "dbName"}
-
-    @property
     def METAGRAPH_ATRIBS(self) -> Set[str]:
         return {"vertexCollections", "edgeCollections"}
 
