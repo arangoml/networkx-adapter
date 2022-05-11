@@ -28,8 +28,13 @@ Networkx is a commonly used tool for analysis of network-data. If your analytics
 
 ## Installation
 
+#### Latest Release
 ```
 pip install adbnx-adapter
+```
+#### Current State
+```
+pip install git+https://github.com/arangoml/networkx-adapter.git
 ```
 
 
@@ -41,31 +46,27 @@ For a more detailed walk-through, access the official notebook on Colab: <a href
 # Import the ArangoDB-NetworkX Adapter
 from adbnx_adapter.adapter import ADBNX_Adapter
 
+# Import the Python-Arango driver
+from arango import ArangoClient
+
 # Import a sample graph from NetworkX
 from networkx import grid_2d_graph
 
-# Store ArangoDB endpoint connection info
-# Assumption: the ArangoDB "fraud detection" dataset is imported to this endpoint for example purposes
-con = {
-    "protocol": "http",
-    "hostname": "localhost",
-    "port": 8529,
-    "username": "root",
-    "password": "openSesame",
-    "dbName": "_system",
-}
+# Instantiate driver client based on user preference
+# Let's assume that the ArangoDB "fraud detection" dataset is imported to this endpoint for example purposes
+db = ArangoClient(hosts="http://localhost:8529").db("_system", username="root", password="openSesame")
 
-# Instantiate your ADBNX Adapter with connection credentials
-adbnx_adapter = ADBNX_Adapter(con)
+# Instantiate your ADBNX Adapter with driver client
+adbnx_adapter = ADBNX_Adapter(db)
 
 # Convert ArangoDB to NetworkX via Graph Name
 nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
 
 # Convert ArangoDB to NetworkX via Collection Names
 nx_fraud_graph_2 = adbnx_adapter.arangodb_collections_to_networkx(
-        "fraud-detection", 
-        {"account", "bank", "branch", "Class", "customer"}, # Specify vertex collections
-        {"accountHolder", "Relationship", "transaction"} # Specify edge collections
+    "fraud-detection", 
+    {"account", "bank", "branch", "Class", "customer"}, # Specify vertex collections
+    {"accountHolder", "Relationship", "transaction"} # Specify edge collections
 )
 
 # Convert ArangoDB to NetworkX via a Metagraph
@@ -100,16 +101,14 @@ Prerequisite: `arangorestore`
 1. `git clone https://github.com/arangoml/networkx-adapter.git`
 2. `cd networkx-adapter`
 3. (create virtual environment of choice)
-4. `pip install -e . pytest`
+4. `pip install -e .[dev]`
 5. (create an ArangoDB instance with method of choice)
-6. `pytest --protocol <> --host <> --port <> --dbName <> --username <> --password <>`
+6. `pytest --url <> --dbName <> --username <> --password <>`
 
 **Note**: A `pytest` parameter can be omitted if the endpoint is using its default value:
 ```python
 def pytest_addoption(parser):
-    parser.addoption("--protocol", action="store", default="http")
-    parser.addoption("--host", action="store", default="localhost")
-    parser.addoption("--port", action="store", default="8529")
+    parser.addoption("--url", action="store", default="http://localhost:8529")
     parser.addoption("--dbName", action="store", default="_system")
     parser.addoption("--username", action="store", default="root")
     parser.addoption("--password", action="store", default="openSesame")

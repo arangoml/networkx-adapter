@@ -6,6 +6,8 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+from arango import ArangoClient
+from arango.database import StandardDatabase
 from networkx import grid_2d_graph, parse_gml
 from networkx.classes import Graph as NetworkXGraph
 
@@ -15,7 +17,7 @@ from adbnx_adapter.typings import Json, NxData, NxId
 
 PROJECT_DIR = Path(__file__).parent.parent
 
-con: Json
+db: StandardDatabase
 adbnx_adapter: ADBNX_Adapter
 imdb_adbnx_adapter: ADBNX_Adapter
 grid_adbnx_adapter: ADBNX_Adapter
@@ -23,44 +25,44 @@ football_adbnx_adapter: ADBNX_Adapter
 
 
 def pytest_addoption(parser: Any) -> None:
-    parser.addoption("--protocol", action="store", default="http")
-    parser.addoption("--host", action="store", default="localhost")
-    parser.addoption("--port", action="store", default="8529")
+    parser.addoption("--url", action="store", default="http://localhost:8529")
     parser.addoption("--dbName", action="store", default="_system")
     parser.addoption("--username", action="store", default="root")
     parser.addoption("--password", action="store", default="openSesame")
 
 
 def pytest_configure(config: Any) -> None:
-    global con
     con = {
-        "protocol": config.getoption("protocol"),
-        "hostname": config.getoption("host"),
-        "port": config.getoption("port"),
+        "url": config.getoption("url"),
         "username": config.getoption("username"),
         "password": config.getoption("password"),
         "dbName": config.getoption("dbName"),
     }
 
     print("----------------------------------------")
-    print(f"{con['protocol']}://{con['hostname']}:{con['port']}")
+    print("URL: " + con["url"])
     print("Username: " + con["username"])
     print("Password: " + con["password"])
     print("Database: " + con["dbName"])
     print("----------------------------------------")
 
+    global db
+    db = ArangoClient(hosts=con["url"]).db(
+        con["dbName"], con["username"], con["password"]
+    )
+
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
-    adbnx_adapter = ADBNX_Adapter(con)
-    imdb_adbnx_adapter = ADBNX_Adapter(con, IMDB_ADBNX_Controller())
-    grid_adbnx_adapter = ADBNX_Adapter(con, Grid_ADBNX_Controller())
-    football_adbnx_adapter = ADBNX_Adapter(con, Football_ADBNX_Controller())
+    adbnx_adapter = ADBNX_Adapter(db)
+    imdb_adbnx_adapter = ADBNX_Adapter(db, IMDB_ADBNX_Controller())
+    grid_adbnx_adapter = ADBNX_Adapter(db, Grid_ADBNX_Controller())
+    football_adbnx_adapter = ADBNX_Adapter(db, Football_ADBNX_Controller())
 
     arango_restore(con, "examples/data/fraud_dump")
     arango_restore(con, "examples/data/imdb_dump")
 
     # Create Fraud Detection Graph
-    adbnx_adapter.db().delete_graph("fraud-detection", ignore_missing=True)
-    adbnx_adapter.db().create_graph(
+    adbnx_adapter.db.delete_graph("fraud-detection", ignore_missing=True)
+    adbnx_adapter.db.create_graph(
         "fraud-detection",
         edge_definitions=[
             {
@@ -79,13 +81,14 @@ def pytest_configure(config: Any) -> None:
 
 def arango_restore(con: Json, path_to_data: str) -> None:
     restore_prefix = "./assets/" if os.getenv("GITHUB_ACTIONS") else ""
+    protocol = "http+ssl://" if "https://" in con["url"] else "tcp://"
+    url = protocol + con["url"].partition("://")[-1]
 
     subprocess.check_call(
         f'chmod -R 755 ./assets/arangorestore && {restore_prefix}arangorestore \
-            -c none --server.endpoint tcp://{con["hostname"]}:{con["port"]} \
-                --server.username {con["username"]} --server.database {con["dbName"]} \
-                    --server.password {con["password"]} \
-                        --input-directory "{PROJECT_DIR}/{path_to_data}"',
+            -c none --server.endpoint {url} --server.username {con["username"]} \
+                            --server.database {con["dbName"]} --server.password {con["password"]} \
+                                --input-directory "{PROJECT_DIR}/{path_to_data}"',
         cwd=f"{PROJECT_DIR}/tests",
         shell=True,
     )
