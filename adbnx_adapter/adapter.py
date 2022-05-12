@@ -239,9 +239,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 self.__db.create_collection(e_col, edge=True)
 
             v_col: str
-            for v_col in list(e_d["from_vertex_collections"]) + list(
-                e_d["to_vertex_collections"]
-            ):
+            from_collections = set(e_d["from_vertex_collections"])
+            to_collections = set(e_d["to_vertex_collections"])
+            for v_col in from_collections | to_collections:
                 adb_v_cols.add(v_col)
                 if self.__db.has_collection(v_col) is False:
                     self.__db.create_collection(v_col)
