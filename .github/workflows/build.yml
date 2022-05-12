@@ -36,7 +36,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Set up ArangoDB Instance via Docker
-        run: docker create --name adb -p 8529:8529 -e ARANGO_ROOT_PASSWORD=openSesame arangodb/arangodb:3.9.1
+        run: docker create --name adb -p 8529:8529 -e ARANGO_ROOT_PASSWORD= arangodb/arangodb:3.9.1
       - name: Start ArangoDB Instance
         run: docker start adb
       - name: Setup pip
