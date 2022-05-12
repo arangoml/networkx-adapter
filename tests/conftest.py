@@ -28,7 +28,7 @@ def pytest_addoption(parser: Any) -> None:
     parser.addoption("--url", action="store", default="http://localhost:8529")
     parser.addoption("--dbName", action="store", default="_system")
     parser.addoption("--username", action="store", default="root")
-    parser.addoption("--password", action="store", default="openSesame")
+    parser.addoption("--password", action="store", default="")
 
 
 def pytest_configure(config: Any) -> None:

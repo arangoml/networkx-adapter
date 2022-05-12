@@ -111,5 +111,5 @@ def pytest_addoption(parser):
     parser.addoption("--url", action="store", default="http://localhost:8529")
     parser.addoption("--dbName", action="store", default="_system")
     parser.addoption("--username", action="store", default="root")
-    parser.addoption("--password", action="store", default="openSesame")
+    parser.addoption("--password", action="store", default="")
 ```
