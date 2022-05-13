@@ -52,10 +52,12 @@ def pytest_configure(config: Any) -> None:
     )
 
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
-    adbnx_adapter = ADBNX_Adapter(db)
-    imdb_adbnx_adapter = ADBNX_Adapter(db, IMDB_ADBNX_Controller())
-    grid_adbnx_adapter = ADBNX_Adapter(db, Grid_ADBNX_Controller())
-    football_adbnx_adapter = ADBNX_Adapter(db, Football_ADBNX_Controller())
+    adbnx_adapter = ADBNX_Adapter(db, verbose=True)
+    imdb_adbnx_adapter = ADBNX_Adapter(db, IMDB_ADBNX_Controller(), verbose=True)
+    grid_adbnx_adapter = ADBNX_Adapter(db, Grid_ADBNX_Controller(), verbose=True)
+    football_adbnx_adapter = ADBNX_Adapter(
+        db, Football_ADBNX_Controller(), verbose=True
+    )
 
     arango_restore(con, "examples/data/fraud_dump")
     arango_restore(con, "examples/data/imdb_dump")
@@ -94,15 +96,6 @@ def arango_restore(con: Json, path_to_data: str) -> None:
         cwd=f"{PROJECT_DIR}/tests",
         shell=True,
     )
-
-
-def print_connection_details(con: Json) -> None:
-    print("----------------------------------------")
-    print("https://{}:{}".format(con["hostname"], con["port"]))
-    print("Username: " + con["username"])
-    print("Password: " + con["password"])
-    print("Database: " + con["dbName"])
-    print("----------------------------------------")
 
 
 def get_grid_graph() -> NetworkXGraph:
