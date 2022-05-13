@@ -27,6 +27,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         and prepare nodes & edges before insertion, optionally re-defined by the user
         if needed (otherwise defaults to ADBNX_Controller).
     :type controller: ADBNX_Controller
+    :param verbose: If set to True, will print logging.DEBUG logs in the console.
+    :type verbose: bool
     :raise ValueError: If missing required keys in conn
     """
 
