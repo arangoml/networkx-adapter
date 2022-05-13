@@ -51,7 +51,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__db = db
         self.__cntrl: ADBNX_Controller = controller
 
-        logger.info(f"Created ADBNX Adapter with database {db.name}")
+        logger.info(f"Instantiated ADBNX_Adapter with database '{db.name}'")
 
     @property
     def db(self) -> Database:
