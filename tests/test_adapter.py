@@ -32,7 +32,7 @@ def test_validate_constructor() -> None:
         pass
 
     with pytest.raises(TypeError):
-        ADBNX_Adapter(bad_db, Bad_ADBNX_Controller())  # type: ignore
+        ADBNX_Adapter(bad_db)
 
     with pytest.raises(TypeError):
         ADBNX_Adapter(db, Bad_ADBNX_Controller())  # type: ignore
