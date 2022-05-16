@@ -103,9 +103,6 @@ jobs:
       - name: Install release packages
         run: pip install wheel gitchangelog pystache
 
-      - name: Install dependencies
-        run: pip install .[dev]
-
       - name: Set variables
         run: echo "VERSION=$(curl ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest | python -c "import sys; import json; print(json.load(sys.stdin)['tag_name'])")" >> $GITHUB_ENV
 
@@ -130,5 +127,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Alert developer of open PR
-        run: echo "Hi dev! Please go see $PR_URL"
+      - name: Set pull request to auto-merge as rebase
+        run: |
+          gh pr merge $PR_URL \
+            --auto \
+            --delete-branch \
+            --rebase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
