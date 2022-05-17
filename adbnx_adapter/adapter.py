@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
+from typing import Any, DefaultDict, Dict, List, Set, Tuple
 
-from arango import ArangoClient
 from arango.cursor import Cursor
+from arango.database import Database
 from arango.graph import Graph as ArangoDBGraph
 from arango.result import Result
 from networkx import MultiDiGraph
@@ -20,8 +20,8 @@ from .typings import ArangoMetagraph, Json, NxData, NxId
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     """ArangoDB-NetworkX adapter.
 
-    :param conn: Connection details to an ArangoDB instance.
-    :type conn: adbnx_adapter.typings.Json
+    :param db: A python-arango database instance
+    :type db: arango.database.Database
     :param controller: The ArangoDB-NetworkX controller, used to identify, keyify
         and prepare nodes & edges before insertion, optionally re-defined by the user
         if needed (otherwise defaults to ADBNX_Controller).
@@ -31,26 +31,23 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
     def __init__(
         self,
-        conn: Json,
+        db: Database,
         controller: ADBNX_Controller = ADBNX_Controller(),
     ):
-        self.__validate_attributes("connection", set(conn), self.CONNECTION_ATRIBS)
-        if issubclass(type(controller), ADBNX_Controller) is False:
-            msg = "controller must inherit from ADBNX_Controller"
+        if issubclass(type(db), Database) is False:
+            msg = "**db** parameter must inherit from arango.database.Database"
             raise TypeError(msg)
 
-        username: str = conn["username"]
-        password: str = conn["password"]
-        db_name: str = conn["dbName"]
-        host: str = conn["hostname"]
-        protocol: str = conn.get("protocol", "https")
-        port = str(conn.get("port", 8529))
+        if issubclass(type(controller), ADBNX_Controller) is False:
+            msg = "**controller** parameter must inherit from ADBNX_Controller"
+            raise TypeError(msg)
 
-        url = protocol + "://" + host + ":" + port
-
-        print(f"Connecting to {url}")
-        self.__db = ArangoClient(hosts=url).db(db_name, username, password, verify=True)
+        self.__db = db
         self.__cntrl: ADBNX_Controller = controller
+
+    @property
+    def db(self) -> Database:
+        return self.__db
 
     def arangodb_to_networkx(
         self,
@@ -97,7 +94,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
         # Maps ArangoDB vertex IDs to NetworkX node IDs
-        adb_map: Dict[str, Dict[str, Union[NxId, str]]] = dict()
+        adb_map: Dict[str, Dict[str, NxId]] = dict()
 
         nx_graph = MultiDiGraph(name=name)
         nx_nodes: List[Tuple[NxId, NxData]] = []
@@ -242,9 +239,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 self.__db.create_collection(e_col, edge=True)
 
             v_col: str
-            for v_col in list(e_d["from_vertex_collections"]) + list(
-                e_d["to_vertex_collections"]
-            ):
+            from_collections = set(e_d["from_vertex_collections"])
+            to_collections = set(e_d["to_vertex_collections"])
+            for v_col in from_collections | to_collections:
                 adb_v_cols.add(v_col)
                 if self.__db.has_collection(v_col) is False:
                     self.__db.create_collection(v_col)

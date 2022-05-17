@@ -18,7 +18,8 @@ setup(
     python_requires=">=3.6",
     license="Apache Software License",
     install_requires=[
-        "python-arango==7.3.0",
+        "requests>=2.27.1",
+        "python-arango>=7.3.1",
         "networkx>=2.5.1",
         "setuptools>=42",
         "setuptools_scm[toml]>=3.4",
@@ -33,7 +34,6 @@ setup(
             "pytest-cov>=2.0.0",
             "coveralls>=3.3.1",
             "types-setuptools",
-            "types-requests",
         ],
     },
     classifiers=[
