@@ -11,8 +11,7 @@ from arango.database import StandardDatabase
 from networkx import grid_2d_graph, parse_gml
 from networkx.classes import Graph as NetworkXGraph
 
-from adbnx_adapter.adapter import ADBNX_Adapter
-from adbnx_adapter.controller import ADBNX_Controller
+from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import Json, NxData, NxId
 
 PROJECT_DIR = Path(__file__).parent.parent

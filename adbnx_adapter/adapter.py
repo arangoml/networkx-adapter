@@ -12,10 +12,10 @@ from networkx import MultiDiGraph
 from networkx.classes.graph import Graph as NetworkXGraph
 from networkx.classes.multidigraph import MultiDiGraph as NetworkXMultiDiGraph
 
-from . import logger
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
 from .typings import ArangoMetagraph, Json, NxData, NxId
+from .utils import logger
 
 
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):

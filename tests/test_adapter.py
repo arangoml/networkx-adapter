@@ -4,8 +4,7 @@ import pytest
 from arango.graph import Graph as ArangoGraph
 from networkx.classes.graph import Graph as NxGraph
 
-from adbnx_adapter.adapter import ADBNX_Adapter
-from adbnx_adapter.controller import ADBNX_Controller
+from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import ArangoMetagraph, Json, NxData, NxId
 
 from .conftest import (
