@@ -44,7 +44,7 @@ For a more detailed walk-through, access the official notebook on Colab: <a href
 
 ```py
 # Import the ArangoDB-NetworkX Adapter
-from adbnx_adapter.adapter import ADBNX_Adapter
+from adbnx_adapter import ADBNX_Adapter
 
 # Import the Python-Arango driver
 from arango import ArangoClient

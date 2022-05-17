@@ -1,6 +1,9 @@
 import logging
 import os
 
+from adbnx_adapter.adapter import ADBNX_Adapter  # noqa: F401
+from adbnx_adapter.controller import ADBNX_Controller  # noqa: F401
+
 logger = logging.getLogger(__package__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter(
