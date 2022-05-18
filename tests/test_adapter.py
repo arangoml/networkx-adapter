@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List, Set
 
 import pytest
@@ -275,7 +276,9 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             adb_vertex_id: str = str(nx_edge["_id"])
             return adb_vertex_id.split("/")[0] + "_new"
 
-    fraud_adbnx_adapter = ADBNX_Adapter(db, Fraud_ADBNX_Controller(), verbose=True)
+    fraud_adbnx_adapter = ADBNX_Adapter(
+        db, Fraud_ADBNX_Controller(), logging_lvl=logging.DEBUG
+    )
 
     new_fraud_adb_g = fraud_adbnx_adapter.networkx_to_arangodb(
         name + "_new",

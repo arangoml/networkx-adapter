@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Set, Tuple
+from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
 
 from arango.cursor import Cursor
 from arango.database import Database
@@ -27,18 +27,19 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         and prepare nodes & edges before insertion, optionally re-defined by the user
         if needed (otherwise defaults to ADBNX_Controller).
     :type controller: ADBNX_Controller
-    :param verbose: If set to True, will print logging.DEBUG logs in the console.
-    :type verbose: bool
-    :raise ValueError: If missing required keys in conn
+    :param logging_lvl: Defaults to logging.INFO. Other useful options are
+        logging.DEBUG (more verbose), and logging.WARNING (less verbose).
+    :type logging_lvl: str | int
+    :raise ValueError: If invalid parameters
     """
 
     def __init__(
         self,
         db: Database,
         controller: ADBNX_Controller = ADBNX_Controller(),
-        verbose: bool = False,
+        logging_lvl: Union[str, int] = logging.INFO,
     ):
-        self.set_verbose(verbose)
+        self.set_logging(logging_lvl)
 
         if issubclass(type(db), Database) is False:
             msg = "**db** parameter must inherit from arango.database.Database"
@@ -57,8 +58,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def db(self) -> Database:
         return self.__db
 
-    def set_verbose(self, verbose: bool) -> None:
-        logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    def set_logging(self, level: Union[int, str]) -> None:
+        logger.setLevel(level)
 
     def arangodb_to_networkx(
         self,

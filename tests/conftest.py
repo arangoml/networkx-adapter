@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 import subprocess
 import urllib.request as urllib
@@ -51,11 +52,15 @@ def pytest_configure(config: Any) -> None:
     )
 
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
-    adbnx_adapter = ADBNX_Adapter(db, verbose=True)
-    imdb_adbnx_adapter = ADBNX_Adapter(db, IMDB_ADBNX_Controller(), verbose=True)
-    grid_adbnx_adapter = ADBNX_Adapter(db, Grid_ADBNX_Controller(), verbose=True)
+    adbnx_adapter = ADBNX_Adapter(db, logging_lvl=logging.DEBUG)
+    imdb_adbnx_adapter = ADBNX_Adapter(
+        db, IMDB_ADBNX_Controller(), logging_lvl=logging.DEBUG
+    )
+    grid_adbnx_adapter = ADBNX_Adapter(
+        db, Grid_ADBNX_Controller(), logging_lvl=logging.DEBUG
+    )
     football_adbnx_adapter = ADBNX_Adapter(
-        db, Football_ADBNX_Controller(), verbose=True
+        db, Football_ADBNX_Controller(), logging_lvl=logging.DEBUG
     )
 
     arango_restore(con, "examples/data/fraud_dump")
