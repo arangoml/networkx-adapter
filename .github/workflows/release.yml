@@ -127,11 +127,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set pull request to auto-merge as rebase
-        run: |
-          gh pr merge $PR_URL \
-            --auto \
-            --delete-branch \
-            --rebase
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Alert developer of open PR
+        run: echo "Changelog $PR_URL is ready to be merged by developer."
