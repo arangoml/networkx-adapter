@@ -1,11 +1,11 @@
+import logging
 from typing import Any, Dict, List, Set
 
 import pytest
 from arango.graph import Graph as ArangoGraph
 from networkx.classes.graph import Graph as NxGraph
 
-from adbnx_adapter.adapter import ADBNX_Adapter
-from adbnx_adapter.controller import ADBNX_Controller
+from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import ArangoMetagraph, Json, NxData, NxId
 
 from .conftest import (
@@ -32,7 +32,7 @@ def test_validate_constructor() -> None:
         pass
 
     with pytest.raises(TypeError):
-        ADBNX_Adapter(bad_db, Bad_ADBNX_Controller())  # type: ignore
+        ADBNX_Adapter(bad_db)
 
     with pytest.raises(TypeError):
         ADBNX_Adapter(db, Bad_ADBNX_Controller())  # type: ignore
@@ -276,7 +276,9 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             adb_vertex_id: str = str(nx_edge["_id"])
             return adb_vertex_id.split("/")[0] + "_new"
 
-    fraud_adbnx_adapter = ADBNX_Adapter(db, Fraud_ADBNX_Controller())
+    fraud_adbnx_adapter = ADBNX_Adapter(
+        db, Fraud_ADBNX_Controller(), logging_lvl=logging.DEBUG
+    )
 
     new_fraud_adb_g = fraud_adbnx_adapter.networkx_to_arangodb(
         name + "_new",

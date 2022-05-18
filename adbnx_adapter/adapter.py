@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Set, Tuple
+from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
 
 from arango.cursor import Cursor
 from arango.database import Database
@@ -15,6 +15,7 @@ from networkx.classes.multidigraph import MultiDiGraph as NetworkXMultiDiGraph
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
 from .typings import ArangoMetagraph, Json, NxData, NxId
+from .utils import logger
 
 
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):
@@ -26,14 +27,20 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         and prepare nodes & edges before insertion, optionally re-defined by the user
         if needed (otherwise defaults to ADBNX_Controller).
     :type controller: ADBNX_Controller
-    :raise ValueError: If missing required keys in conn
+    :param logging_lvl: Defaults to logging.INFO. Other useful options are
+        logging.DEBUG (more verbose), and logging.WARNING (less verbose).
+    :type logging_lvl: str | int
+    :raise ValueError: If invalid parameters
     """
 
     def __init__(
         self,
         db: Database,
         controller: ADBNX_Controller = ADBNX_Controller(),
+        logging_lvl: Union[str, int] = logging.INFO,
     ):
+        self.set_logging(logging_lvl)
+
         if issubclass(type(db), Database) is False:
             msg = "**db** parameter must inherit from arango.database.Database"
             raise TypeError(msg)
@@ -45,9 +52,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__db = db
         self.__cntrl: ADBNX_Controller = controller
 
+        logger.info(f"Instantiated ADBNX_Adapter with database '{db.name}'")
+
     @property
     def db(self) -> Database:
         return self.__db
+
+    def set_logging(self, level: Union[int, str]) -> None:
+        logger.setLevel(level)
 
     def arangodb_to_networkx(
         self,
@@ -91,6 +103,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             },
         }
         """
+        logger.debug(f"Starting arangodb_to_networkx({name}, ...):")
         self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
         # Maps ArangoDB vertex IDs to NetworkX node IDs
@@ -102,6 +115,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         adb_v: Json
         for col, atribs in metagraph["vertexCollections"].items():
+            logger.debug(f"Preparing '{col}' vertices")
             for adb_v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
                 adb_id: str = adb_v["_id"]
                 nx_id = self.__cntrl._prepare_arangodb_vertex(adb_v, col)
@@ -111,6 +125,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         adb_e: Json
         for col, atribs in metagraph["edgeCollections"].items():
+            logger.debug(f"Preparing '{col}' edges")
             for adb_e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
                 from_node_id: NxId = adb_map[adb_e["_from"]]["nx_id"]
                 to_node_id: NxId = adb_map[adb_e["_to"]]["nx_id"]
@@ -118,10 +133,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
                 nx_edges.append((from_node_id, to_node_id, adb_e))
 
+        logger.debug(f"Inserting {len(nx_nodes)} vertices and {len(nx_edges)} edges")
         nx_graph.add_nodes_from(nx_nodes)
         nx_graph.add_edges_from(nx_edges)
 
-        print(f"NetworkX: {name} created")
+        logger.info(f"Created NetworkX '{name}' Graph")
         return nx_graph
 
     def arangodb_collections_to_networkx(
@@ -222,6 +238,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             }
         ]
         """
+        logger.debug(f"Starting networkx_to_arangodb('{name}', ...):")
         for e_d in edge_definitions:
             self.__validate_attributes(
                 "Edge Definitions", set(e_d), self.EDGE_DEFINITION_ATRIBS
@@ -236,6 +253,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             adb_e_cols.add(e_col)
 
             if self.__db.has_collection(e_col) is False:
+                logger.debug(f"Creating {e_col} edge collection")
                 self.__db.create_collection(e_col, edge=True)
 
             v_col: str
@@ -244,11 +262,13 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             for v_col in from_collections | to_collections:
                 adb_v_cols.add(v_col)
                 if self.__db.has_collection(v_col) is False:
+                    logger.debug(f"Creating {v_col} vertex collection")
                     self.__db.create_collection(v_col)
 
         is_homogeneous = len(adb_v_cols | adb_e_cols) == 2
         adb_v_col = adb_v_cols.pop() if is_homogeneous else None
         adb_e_col = adb_e_cols.pop() if is_homogeneous else None
+        logger.debug(f"Is graph '{name}' homogenous? {is_homogeneous}")
 
         self.__db.delete_graph(name, ignore_missing=True)
         adb_graph: ArangoDBGraph = self.__db.create_graph(name, edge_definitions)
@@ -256,6 +276,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         nx_id: NxId
         nx_node: NxData
+        logger.debug(f"Preparing {len(nx_graph.nodes)} NetworkX nodes")
         for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True)):
             col = adb_v_col or self.__cntrl._identify_networkx_node(nx_id, nx_node)
             key = (
@@ -272,6 +293,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         from_node_id: NxId
         to_node_id: NxId
         nx_edge: NxData
+        logger.debug(f"Preparing {len(nx_graph.edges)} NetworkX edges")
         for i, (from_node_id, to_node_id, nx_edge) in enumerate(
             nx_graph.edges(data=True)
         ):
@@ -302,9 +324,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             self.__insert_adb_docs(col, adb_documents[col], nx_edge, batch_size)
 
         for col, doc_list in adb_documents.items():  # insert remaining documents
+            logger.debug(f"Inserting last {len(doc_list)} documents into '{col}'")
             self.__db.collection(col).import_bulk(doc_list, on_duplicate="replace")
 
-        print(f"ArangoDB: {name} created")
+        logger.info(f"Created ArangoDB '{name}' Graph")
         return adb_graph
 
     def __validate_attributes(
@@ -379,5 +402,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         col_docs.append(doc)
 
         if len(col_docs) >= batch_size:
+            logger.debug(f"Inserting next {batch_size} batch documents into '{col}'")
             self.__db.collection(col).import_bulk(col_docs, on_duplicate="replace")
             col_docs.clear()

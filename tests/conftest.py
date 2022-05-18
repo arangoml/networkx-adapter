@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 import subprocess
 import urllib.request as urllib
@@ -11,8 +12,7 @@ from arango.database import StandardDatabase
 from networkx import grid_2d_graph, parse_gml
 from networkx.classes import Graph as NetworkXGraph
 
-from adbnx_adapter.adapter import ADBNX_Adapter
-from adbnx_adapter.controller import ADBNX_Controller
+from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import Json, NxData, NxId
 
 PROJECT_DIR = Path(__file__).parent.parent
@@ -52,10 +52,16 @@ def pytest_configure(config: Any) -> None:
     )
 
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
-    adbnx_adapter = ADBNX_Adapter(db)
-    imdb_adbnx_adapter = ADBNX_Adapter(db, IMDB_ADBNX_Controller())
-    grid_adbnx_adapter = ADBNX_Adapter(db, Grid_ADBNX_Controller())
-    football_adbnx_adapter = ADBNX_Adapter(db, Football_ADBNX_Controller())
+    adbnx_adapter = ADBNX_Adapter(db, logging_lvl=logging.DEBUG)
+    imdb_adbnx_adapter = ADBNX_Adapter(
+        db, IMDB_ADBNX_Controller(), logging_lvl=logging.DEBUG
+    )
+    grid_adbnx_adapter = ADBNX_Adapter(
+        db, Grid_ADBNX_Controller(), logging_lvl=logging.DEBUG
+    )
+    football_adbnx_adapter = ADBNX_Adapter(
+        db, Football_ADBNX_Controller(), logging_lvl=logging.DEBUG
+    )
 
     arango_restore(con, "examples/data/fraud_dump")
     arango_restore(con, "examples/data/imdb_dump")
@@ -94,15 +100,6 @@ def arango_restore(con: Json, path_to_data: str) -> None:
         cwd=f"{PROJECT_DIR}/tests",
         shell=True,
     )
-
-
-def print_connection_details(con: Json) -> None:
-    print("----------------------------------------")
-    print("https://{}:{}".format(con["hostname"], con["port"]))
-    print("Username: " + con["username"])
-    print("Password: " + con["password"])
-    print("Database: " + con["dbName"])
-    print("----------------------------------------")
 
 
 def get_grid_graph() -> NetworkXGraph:

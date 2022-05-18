@@ -103,9 +103,6 @@ jobs:
       - name: Install release packages
         run: pip install wheel gitchangelog pystache
 
-      - name: Install dependencies
-        run: pip install .[dev]
-
       - name: Set variables
         run: echo "VERSION=$(curl ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest | python -c "import sys; import json; print(json.load(sys.stdin)['tag_name'])")" >> $GITHUB_ENV
 
@@ -131,4 +128,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Alert developer of open PR
-        run: echo "Hi dev! Please go see $PR_URL"
+        run: echo "Changelog $PR_URL is ready to be merged by developer."
