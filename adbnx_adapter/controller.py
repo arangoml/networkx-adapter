@@ -138,8 +138,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         its valid ArangoDB key.
 
         NOTE #1: You must override this function if you want to create custom ArangoDB
-        _key values from your NetworkX edges. To enable the use of this method, enable the
-        **keyify_edges** parameter in ADBNX_Adapter.networkx_to_arangodb().
+        _key values from your NetworkX edges. To enable the use of this method, enable
+        the **keyify_edges** parameter in ADBNX_Adapter.networkx_to_arangodb().
 
         NOTE #2: The two nodes associated to the **nx_edge** can be accessed
         by the **from_nx_node** & **to_nx_node** parameters, and are guaranteed
