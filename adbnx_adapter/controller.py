@@ -88,7 +88,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
 
         NOTE #2: The two nodes associated to the **nx_edge** can be accessed
         by the **from_nx_node** & **to_nx_node** parameters, and are guaranteed
-        to have the following attributes: {"nx_id", "adb_id", "adb_col", "adb_key"}
+        to have the following attributes: `{"nx_id", "adb_id", "adb_col", "adb_key"}`
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
@@ -111,10 +111,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         """Given a NetworkX node, derive its valid ArangoDB key.
 
         NOTE: You must override this function if you want to create custom ArangoDB _key
-        values for your NetworkX nodes, or if your NetworkX graph does NOT comply to
-        ArangoDB standards (i.e the node IDs are not formatted
-        like "{collection}/{key}"). For more  info, see the **keyify_nodes**
-        parameter of ADBNX_Adapter.networkx_to_arangodb()
+        values from your NetworkX nodes. To enable the use of this method, enable the
+        **keyify_nodes** parameter in ADBNX_Adapter.networkx_to_arangodb().
 
         :param nx_node_id: The NetworkX node id.
         :type nx_node_id: adbnx_adapter.typings.NxId
@@ -140,14 +138,12 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         its valid ArangoDB key.
 
         NOTE #1: You must override this function if you want to create custom ArangoDB
-        _key values for your NetworkX edges or if your NetworkX graph does NOT comply
-        to ArangoDB standards (i.e the edge IDs are not formatted
-        like "{collection}/{key}"). For more info, see the **keyify_edges**
-        parameter of ADBNX_Adapter.networkx_to_arangodb()
+        _key values from your NetworkX edges. To enable the use of this method, enable the
+        **keyify_edges** parameter in ADBNX_Adapter.networkx_to_arangodb().
 
-        NOTE #2: You can accesss the ID & Collection belonging to the
-        **from_nx_node** & **to_nx_node** parameters via their "nx_id" & "col"
-        attribute keys. E.g `from_collection = from_nx_node["col"]`
+        NOTE #2: The two nodes associated to the **nx_edge** can be accessed
+        by the **from_nx_node** & **to_nx_node** parameters, and are guaranteed
+        to have the following attributes: `{"nx_id", "adb_id", "adb_col", "adb_key"}`
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
@@ -160,7 +156,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :return: A valid ArangoDB _key value.
         :rtype: str
         """
-        # In this case, nx_edge["_id"] is already a valid ArangoDB _id
+        # In this case, we assume that nx_edge["_id"] is already a valid ArangoDB _id
         adb_edge_id: str = nx_edge["_id"]
         return adb_edge_id.split("/")[1]
 

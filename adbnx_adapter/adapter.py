@@ -218,13 +218,13 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type edge_definitions: List[adbnx_adapter.typings.Json]
         :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
-        :param keyify_nodes: If set to True, will create custom node keys based on the
-            behavior of the ADBNX_Controller's _keyify_networkx_node() method.
+        :param keyify_nodes: If set to True, will create custom vertex keys based on the
+            behavior of ADBNX_Controller._keyify_networkx_node().
             Otherwise, ArangoDB _key values for vertices will range from 0 to N-1,
             where N is the number of NetworkX nodes.
         :type keyify_nodes: bool
         :param keyify_edges: If set to True, will create custom edge keys based on
-            the behavior of the ADBNX_Controller's _keyify_networkx_edge() method.
+            the behavior of ADBNX_Controller._keyify_networkx_edge().
             Otherwise, ArangoDB _key values for edges will range from 0 to E-1,
             where E is the number of NetworkX edges.
         :type keyify_edges: bool
