@@ -6,7 +6,7 @@ from typing import Any, List, Set
 
 from arango.graph import Graph as ADBGraph
 from networkx.classes.graph import Graph as NXGraph
-from networkx.classes.multidigraph import NXMultiDiGraph
+from networkx.classes.multidigraph import MultiGraph as NXMultiDiGraph
 
 from .typings import ArangoMetagraph, Json, NxData, NxId
 
