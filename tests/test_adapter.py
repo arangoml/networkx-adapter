@@ -2,8 +2,8 @@ import logging
 from typing import Any, Dict, List, Set
 
 import pytest
-from arango.graph import Graph as ArangoGraph
-from networkx.classes.graph import Graph as NxGraph
+from arango.graph import Graph as ADBGraph
+from networkx.classes.graph import Graph as NXGraph
 
 from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import ArangoMetagraph, Json, NxData, NxId
@@ -191,7 +191,7 @@ def test_adb_graph_to_nx(
 def test_nx_to_adb(
     adapter: ADBNX_Adapter,
     name: str,
-    nx_g: NxGraph,
+    nx_g: NXGraph,
     edge_definitions: List[Json],
     batch_size: int,
     keyify_nodes: bool,
@@ -335,7 +335,7 @@ def test_full_cycle_from_networkx() -> None:
 
 
 def assert_networkx_data(
-    nx_g: NxGraph, metagraph: ArangoMetagraph, is_keep: bool = False
+    nx_g: NXGraph, metagraph: ArangoMetagraph, is_keep: bool = False
 ) -> None:
     adb_vertex: Json
     for col, atribs in metagraph["vertexCollections"].items():
@@ -375,8 +375,8 @@ def assert_networkx_data(
 
 def assert_arangodb_data(
     adapter: ADBNX_Adapter,
-    nx_g: NxGraph,
-    adb_g: ArangoGraph,
+    nx_g: NXGraph,
+    adb_g: ADBGraph,
     keyify_nodes: bool,
 ) -> None:
     nx_map = dict()

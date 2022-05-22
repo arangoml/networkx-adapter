@@ -10,7 +10,7 @@ from typing import Any
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from networkx import grid_2d_graph, parse_gml
-from networkx.classes import Graph as NetworkXGraph
+from networkx.classes import Graph as NXGraph
 
 from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import Json, NxData, NxId
@@ -102,11 +102,11 @@ def arango_restore(con: Json, path_to_data: str) -> None:
     )
 
 
-def get_grid_graph() -> NetworkXGraph:
+def get_grid_graph() -> NXGraph:
     return grid_2d_graph(5, 5)
 
 
-def get_football_graph() -> NetworkXGraph:
+def get_football_graph() -> NXGraph:
     url = "http://www-personal.umich.edu/~mejn/netdata/football.zip"
     sock = urllib.urlopen(url)
     s = io.BytesIO(sock.read())
