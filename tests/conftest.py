@@ -118,20 +118,20 @@ def get_football_graph() -> NetworkXGraph:
 
 
 class IMDB_ADBNX_Controller(ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> None:
         adb_vertex["bipartite"] = 0 if col == "Users" else 1
-        return super()._prepare_arangodb_vertex(adb_vertex, col)
+        return
 
 
 class Grid_ADBNX_Controller(ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
-        nx_node_id = tuple(
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> None:
+        adb_vertex["_id"] = tuple(
             int(n)
             for n in tuple(
                 adb_vertex["_key"],
             )
         )
-        return nx_node_id
+        return
 
     def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
         adb_v_key: str = self._tuple_to_arangodb_key_helper(nx_node_id)  # type: ignore

@@ -68,13 +68,15 @@ class Abstract_ADBNX_Adapter(ABC):
 
 
 class Abstract_ADBNX_Controller(ABC):
-    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> None:
         raise NotImplementedError  # pragma: no cover
 
-    def _prepare_arangodb_edge(self, adb_edge: Json, col: str) -> NxId:
+    def _prepare_arangodb_edge(self, adb_edge: Json, col: str) -> None:
         raise NotImplementedError  # pragma: no cover
 
-    def _identify_networkx_node(self, nx_node_id: NxId, nx_node: NxData) -> str:
+    def _identify_networkx_node(
+        self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: Set[str]
+    ) -> str:
         raise NotImplementedError  # pragma: no cover
 
     def _identify_networkx_edge(
@@ -82,6 +84,7 @@ class Abstract_ADBNX_Controller(ABC):
         nx_edge: NxData,
         from_nx_node: NxData,
         to_nx_node: NxData,
+        adb_e_cols: Set[str],
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
