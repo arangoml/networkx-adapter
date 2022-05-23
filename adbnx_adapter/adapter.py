@@ -254,8 +254,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         adb_v_cols = adb_graph.vertex_collections()
         adb_e_cols = [e_d["edge_collection"] for e_d in edge_definitions]
 
-        is_homogeneous = len(adb_v_cols + adb_e_cols) == 2
-        logger.debug(f"Is graph '{name}' homogenous? {is_homogeneous}")
+        has_one_vcol = len(adb_v_cols) == 1
+        has_one_ecol = len(adb_e_cols) == 1
+        logger.debug(f"Is graph '{name}' homogeneous? {has_one_vcol and has_one_ecol}")
 
         nx_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
         adb_documents: DefaultDict[str, List[Json]] = defaultdict(list)
@@ -266,7 +267,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True)):
             col = (
                 adb_v_cols[0]
-                if is_homogeneous
+                if has_one_vcol
                 else self.__cntrl._identify_networkx_node(nx_id, nx_node, adb_v_cols)
             )
             key = (
@@ -299,7 +300,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             col = (
                 adb_e_cols[0]
-                if is_homogeneous
+                if has_one_ecol
                 else self.__cntrl._identify_networkx_edge(
                     nx_edge, from_n, to_n, adb_e_cols
                 )

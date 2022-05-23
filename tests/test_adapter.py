@@ -385,12 +385,13 @@ def assert_arangodb_data(
     adb_v_cols = adb_g.vertex_collections()
     adb_e_cols = [e_d["edge_collection"] for e_d in edge_definitions]
 
-    is_homogeneous = len(adb_v_cols + adb_e_cols) == 2
+    has_one_vcol = len(adb_v_cols) == 1
+    has_one_ecol = len(adb_e_cols) == 1
 
     for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True)):
         col = (
             adb_v_cols[0]
-            if is_homogeneous
+            if has_one_vcol
             else adapter.cntrl._identify_networkx_node(nx_id, nx_node, adb_v_cols)
         )
         key = (
@@ -417,7 +418,7 @@ def assert_arangodb_data(
 
         col = (
             adb_e_cols[0]
-            if is_homogeneous
+            if has_one_ecol
             else adapter.cntrl._identify_networkx_edge(
                 nx_edge, from_node, to_node, adb_e_cols
             )

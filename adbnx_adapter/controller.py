@@ -13,8 +13,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
     Responsible for controlling how nodes & edges are handled when
     transitioning from ArangoDB to NetworkX, and vice-versa.
 
-    You can derive your own custom ADBNX_Controller, but it is not
-    necessary for Homogeneous graphs.
+    You can derive your own custom ADBNX_Controller.
     """
 
     def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> None:
@@ -53,9 +52,9 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         """Given a NetworkX node, and a list of ArangoDB vertex collections defined,
         identify which ArangoDB vertex collection it should belong to.
 
-        NOTE: You must override this function if your NetworkX graph is NOT Homogeneous
-        or does NOT comply to ArangoDB standards (i.e the node IDs are not formatted
-        like "{collection}/{key}").
+        NOTE: You must override this function if len(**adb_v_cols**) > 1
+        OR **nx_node_id* does NOT comply to ArangoDB standards
+        (i.e "{collection}/{key}").
 
         :param nx_node_id: The NetworkX ID of the node.
         :type nx_node_id: adbnx_adapter.typings.NxId
@@ -68,6 +67,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :rtype: str
         """
         # In this case, we assume that **nx_node_id** is already a valid ArangoDB _id
+        # Otherwise, user must override this function
         adb_vertex_id: str = str(nx_node_id)
         return adb_vertex_id.split("/")[0]
 
@@ -82,9 +82,9 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         edge collections defined, identify which ArangoDB edge collection it
         should belong to.
 
-        NOTE #1: You must override this function if your NetworkX graph is NOT
-        Homogeneous or does NOT comply to ArangoDB standards
-        (i.e the edge IDs are not formatted like "{collection}/{key}").
+        NOTE #1: You must override this function if len(**adb_e_cols**) > 1
+        OR **nx_edge["_id"]** does NOT comply to ArangoDB standards
+        (i.e "{collection}/{key}").
 
         NOTE #2: The two nodes associated to the **nx_edge** can be accessed
         by the **from_nx_node** & **to_nx_node** parameters, and are guaranteed
@@ -104,6 +104,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :rtype: str
         """
         # In this case, we assume that nx_edge["_id"] is already a valid ArangoDB _id
+        # Otherwise, user must override this function
         adb_edge_id: str = nx_edge["_id"]
         return adb_edge_id.split("/")[0]
 
@@ -124,6 +125,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :rtype: str
         """
         # In this case, we assume that **nx_node_id** is already a valid ArangoDB _id
+        # Otherwise, user must override this function
         adb_vertex_id: str = str(nx_node_id)
         return adb_vertex_id.split("/")[1]
 
@@ -157,6 +159,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :rtype: str
         """
         # In this case, we assume that nx_edge["_id"] is already a valid ArangoDB _id
+        # Otherwise, user must override this function
         adb_edge_id: str = nx_edge["_id"]
         return adb_edge_id.split("/")[1]
 
