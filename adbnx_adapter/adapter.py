@@ -220,12 +220,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type batch_size: int
         :param keyify_nodes: If set to True, will create custom vertex keys based on the
             behavior of ADBNX_Controller._keyify_networkx_node().
-            Otherwise, ArangoDB _key values for vertices will range from 0 to N-1,
+            Otherwise, ArangoDB _key values for vertices will range from 1 to N,
             where N is the number of NetworkX nodes.
         :type keyify_nodes: bool
         :param keyify_edges: If set to True, will create custom edge keys based on
             the behavior of ADBNX_Controller._keyify_networkx_edge().
-            Otherwise, ArangoDB _key values for edges will range from 0 to E-1,
+            Otherwise, ArangoDB _key values for edges will range from 1 to E,
             where E is the number of NetworkX edges.
         :type keyify_edges: bool
         :return: The ArangoDB Graph API wrapper.
@@ -264,7 +264,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_id: NxId
         nx_node: NxData
         logger.debug(f"Preparing {nx_graph.number_of_nodes()} NetworkX nodes")
-        for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True)):
+        for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True), 1):
             col = (
                 adb_v_cols[0]
                 if has_one_vcol
@@ -293,7 +293,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_edge: NxData
         logger.debug(f"Preparing {nx_graph.number_of_edges()} NetworkX edges")
         for i, (from_node_id, to_node_id, nx_edge) in enumerate(
-            nx_graph.edges(data=True)
+            nx_graph.edges(data=True), 1
         ):
             from_n = {**nx_graph.nodes[from_node_id], **nx_map[from_node_id]}
             to_n = {**nx_graph.nodes[to_node_id], **nx_map[to_node_id]}
