@@ -251,12 +251,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__db.delete_graph(name, ignore_missing=True)
         adb_graph: ADBGraph = self.__db.create_graph(name, edge_definitions)
 
-        adb_v_cols = set(adb_graph.vertex_collections())
-        adb_e_cols = {e_d["edge_collection"] for e_d in edge_definitions}
+        adb_v_cols = adb_graph.vertex_collections()
+        adb_e_cols = [e_d["edge_collection"] for e_d in edge_definitions]
 
-        is_homogeneous = len(adb_v_cols | adb_e_cols) == 2
-        homogenous_v_col = adb_v_cols.pop() if is_homogeneous else None
-        homogenous_e_col = adb_e_cols.pop() if is_homogeneous else None
+        is_homogeneous = len(adb_v_cols + adb_e_cols) == 2
         logger.debug(f"Is graph '{name}' homogenous? {is_homogeneous}")
 
         nx_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
@@ -266,8 +264,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_node: NxData
         logger.debug(f"Preparing {nx_graph.number_of_nodes()} NetworkX nodes")
         for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True)):
-            col = homogenous_v_col or self.__cntrl._identify_networkx_node(
-                nx_id, nx_node, adb_v_cols
+            col = (
+                adb_v_cols[0]
+                if is_homogeneous
+                else self.__cntrl._identify_networkx_node(nx_id, nx_node, adb_v_cols)
             )
             key = (
                 self.__cntrl._keyify_networkx_node(nx_id, nx_node, col)
@@ -297,8 +297,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             from_n = {**nx_graph.nodes[from_node_id], **nx_map[from_node_id]}
             to_n = {**nx_graph.nodes[to_node_id], **nx_map[to_node_id]}
 
-            col = homogenous_e_col or self.__cntrl._identify_networkx_edge(
-                nx_edge, from_n, to_n, adb_e_cols
+            col = (
+                adb_e_cols[0]
+                if is_homogeneous
+                else self.__cntrl._identify_networkx_edge(
+                    nx_edge, from_n, to_n, adb_e_cols
+                )
             )
             key = (
                 self.__cntrl._keyify_networkx_edge(nx_edge, from_n, to_n, col)

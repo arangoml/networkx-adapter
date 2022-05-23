@@ -75,7 +75,7 @@ class Abstract_ADBNX_Controller(ABC):
         raise NotImplementedError  # pragma: no cover
 
     def _identify_networkx_node(
-        self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: Set[str]
+        self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
@@ -84,7 +84,7 @@ class Abstract_ADBNX_Controller(ABC):
         nx_edge: NxData,
         from_nx_node: NxData,
         to_nx_node: NxData,
-        adb_e_cols: Set[str],
+        adb_e_cols: List[str],
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 

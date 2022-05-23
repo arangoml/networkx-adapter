@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Any, Set, Tuple
+from typing import Any, List, Tuple
 
 from .abc import Abstract_ADBNX_Controller
 from .typings import Json, NxData, NxId
@@ -48,9 +48,9 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         return
 
     def _identify_networkx_node(
-        self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: Set[str]
+        self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
     ) -> str:
-        """Given a NetworkX node, and a set of ArangoDB vertex collections defined,
+        """Given a NetworkX node, and a list of ArangoDB vertex collections defined,
         identify which ArangoDB vertex collection it should belong to.
 
         NOTE: You must override this function if your NetworkX graph is NOT Homogeneous
@@ -63,7 +63,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :type nx_node: adbnx_adapter.typings.NxData
         :param adb_v_cols: All ArangoDB vertex collections specified
             by the **edge_definitions** parameter of networkx_to_arangodb()
-        :type adb_v_cols: Set[str]
+        :type adb_v_cols: List[str]
         :return: The ArangoDB collection name
         :rtype: str
         """
@@ -76,9 +76,9 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         nx_edge: NxData,
         from_nx_node: NxData,
         to_nx_node: NxData,
-        adb_e_cols: Set[str],
+        adb_e_cols: List[str],
     ) -> str:
-        """Given a NetworkX edge, its pair of nodes, and a set of ArangoDB
+        """Given a NetworkX edge, its pair of nodes, and a list of ArangoDB
         edge collections defined, identify which ArangoDB edge collection it
         should belong to.
 
@@ -99,7 +99,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :param adb_e_cols: All ArangoDB edge collections specified
             by the **edge_definitions** parameter of
             ADBNX_Adapter.networkx_to_arangodb()
-        :type adb_e_cols: Set[str]
+        :type adb_e_cols: List[str]
         :return: The ArangoDB collection name
         :rtype: str
         """

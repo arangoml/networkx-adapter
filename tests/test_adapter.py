@@ -267,7 +267,7 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
 
     class Fraud_ADBNX_Controller(ADBNX_Controller):
         def _identify_networkx_node(
-            self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: Set[str]
+            self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
         ) -> str:
             adb_vertex_id: str = str(nx_node_id)
             return adb_vertex_id.split("/")[0] + "_new"
@@ -277,7 +277,7 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             nx_edge: NxData,
             from_nx_node: NxData,
             to_nx_node: NxData,
-            adb_e_cols: Set[str],
+            adb_e_cols: List[str],
         ) -> str:
             adb_vertex_id: str = str(nx_edge["_id"])
             return adb_vertex_id.split("/")[0] + "_new"
@@ -380,25 +380,18 @@ def assert_arangodb_data(
     keyify_nodes: bool,
 ) -> None:
     nx_map = dict()
-    adb_v_cols = set()
-    adb_e_cols = set()
 
     edge_definitions = adb_g.edge_definitions()
-    for e_d in edge_definitions:
-        adb_e_cols.add(e_d["edge_collection"])
+    adb_v_cols = adb_g.vertex_collections()
+    adb_e_cols = [e_d["edge_collection"] for e_d in edge_definitions]
 
-        from_collections = set(e_d["from_vertex_collections"])
-        to_collections = set(e_d["to_vertex_collections"])
-        for v_col in from_collections | to_collections:
-            adb_v_cols.add(v_col)
-
-    is_homogeneous = len(adb_v_cols | adb_e_cols) == 2
-    homogenous_v_col = adb_v_cols.pop() if is_homogeneous else None
-    homogenous_e_col = adb_e_cols.pop() if is_homogeneous else None
+    is_homogeneous = len(adb_v_cols + adb_e_cols) == 2
 
     for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True)):
-        col = homogenous_v_col or adapter.cntrl._identify_networkx_node(
-            nx_id, nx_node, adb_v_cols
+        col = (
+            adb_v_cols[0]
+            if is_homogeneous
+            else adapter.cntrl._identify_networkx_node(nx_id, nx_node, adb_v_cols)
         )
         key = (
             adapter.cntrl._keyify_networkx_node(nx_id, nx_node, col)
@@ -422,8 +415,12 @@ def assert_arangodb_data(
         from_node = {**nx_g.nodes[from_node_id], **nx_map[from_node_id]}
         to_node = {**nx_g.nodes[to_node_id], **nx_map[to_node_id]}
 
-        col = homogenous_e_col or adapter.cntrl._identify_networkx_edge(
-            nx_edge, from_node, to_node, adb_e_cols
+        col = (
+            adb_e_cols[0]
+            if is_homogeneous
+            else adapter.cntrl._identify_networkx_edge(
+                nx_edge, from_node, to_node, adb_e_cols
+            )
         )
         adb_edges = adb_g.edge_collection(col).find(
             {
