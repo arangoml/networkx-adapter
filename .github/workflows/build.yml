@@ -1,24 +1,5 @@
 name: build
-on:
-  workflow_dispatch:
-  push:
-    branches: [ master ]
-    paths:
-      - 'adbnx_adapter/**'
-      - 'tests/**'
-      - 'setup.py'
-      - 'setup.cfg'
-      - 'pyproject.toml'
-      - '.github/workflows/build.yml'
-  pull_request:
-    branches: [ master ]
-    paths:
-      - 'adbnx_adapter/**'
-      - 'tests/**'
-      - 'setup.py'
-      - 'setup.cfg'
-      - 'pyproject.toml'
-      - '.github/workflows/build.yml'
+on: [push, pull_request, workflow_dispatch]
 env:
   PACKAGE_DIR: adbnx_adapter
   TESTS_DIR: tests

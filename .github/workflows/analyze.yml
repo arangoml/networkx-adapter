@@ -13,24 +13,9 @@ name: analyze
 on:
   push:
     branches: [ master ]
-    paths:
-      - 'adbnx_adapter/**'
-      - 'tests/**'
-      - 'setup.py'
-      - 'setup.cfg'
-      - 'pyproject.toml'
-      - '.github/workflows/analyze.yml'
   pull_request:
-    branches: [ master ]
-    paths:
-      - 'adbnx_adapter/**'
-      - 'tests/**'
-      - 'setup.py'
-      - 'setup.cfg'
-      - 'pyproject.toml'
-      - '.github/workflows/analyze.yml'
   schedule:
-    - cron: "00 9 * * 1"
+    - cron: "00 9 1,15 * *"
 jobs:
   analyze:
     name: Analyze
