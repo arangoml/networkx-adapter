@@ -124,10 +124,10 @@ def test_adb_graph_to_nx(
 ) -> None:
     # Re-create the graph if defintions are provided
     if edge_definitions:
-        adapter.db.delete_graph(name, ignore_missing=True)
-        adapter.db.create_graph(name, edge_definitions=edge_definitions)
+        db.delete_graph(name, ignore_missing=True)
+        db.create_graph(name, edge_definitions=edge_definitions)
 
-    arango_graph = adapter.db.graph(name)
+    arango_graph = db.graph(name)
     v_cols = arango_graph.vertex_collections()
     e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
 
@@ -204,7 +204,7 @@ def test_nx_to_adb(
 
 def test_full_cycle_from_arangodb_with_existing_collections() -> None:
     name = "fraud-detection"
-    original_fraud_adb_g = adbnx_adapter.db.graph(name)
+    original_fraud_adb_g = db.graph(name)
     edge_definitions = original_fraud_adb_g.edge_definitions()
 
     col: str
@@ -249,7 +249,7 @@ def test_full_cycle_from_arangodb_with_existing_collections() -> None:
 
 def test_full_cycle_from_arangodb_with_new_collections() -> None:
     name = "fraud-detection"
-    original_fraud_adb_g = adbnx_adapter.db.graph(name)
+    original_fraud_adb_g = db.graph(name)
     fraud_nx_g = adbnx_adapter.arangodb_graph_to_networkx(name)
 
     edge_definitions = [
@@ -309,8 +309,8 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
 
 def test_full_cycle_from_networkx() -> None:
     name = "Grid_v3"
-    if adbnx_adapter.db.has_graph(name):
-        adbnx_adapter.db.delete_graph(name, drop_collections=True)
+    if db.has_graph(name):
+        db.delete_graph(name, drop_collections=True)
 
     original_grid_nx_g = get_grid_graph()
     grid_edge_definitions = [
@@ -339,7 +339,7 @@ def assert_networkx_data(
 ) -> None:
     adb_vertex: Json
     for col, atribs in metagraph["vertexCollections"].items():
-        for adb_vertex in adbnx_adapter.db.collection(col):
+        for adb_vertex in db.collection(col):
             adb_id: str = adb_vertex["_id"]
             nx_node: NxData = nx_g.nodes[adb_id]
 
@@ -352,7 +352,7 @@ def assert_networkx_data(
 
     adb_edge: Json
     for col, atribs in metagraph["edgeCollections"].items():
-        for adb_edge in adbnx_adapter.db.collection(col):
+        for adb_edge in db.collection(col):
             nx_edges: NxData = nx_g.get_edge_data(adb_edge["_from"], adb_edge["_to"])
 
             # (there can be multiple edges with the same _from & _to values)
