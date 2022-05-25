@@ -10,7 +10,7 @@ from typing import Any
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from networkx import grid_2d_graph, parse_gml
-from networkx.classes import Graph as NetworkXGraph
+from networkx.classes import Graph as NXGraph
 
 from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import Json, NxData, NxId
@@ -102,11 +102,11 @@ def arango_restore(con: Json, path_to_data: str) -> None:
     )
 
 
-def get_grid_graph() -> NetworkXGraph:
+def get_grid_graph() -> NXGraph:
     return grid_2d_graph(5, 5)
 
 
-def get_football_graph() -> NetworkXGraph:
+def get_football_graph() -> NXGraph:
     url = "http://www-personal.umich.edu/~mejn/netdata/football.zip"
     sock = urllib.urlopen(url)
     s = io.BytesIO(sock.read())
@@ -118,20 +118,20 @@ def get_football_graph() -> NetworkXGraph:
 
 
 class IMDB_ADBNX_Controller(ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> None:
         adb_vertex["bipartite"] = 0 if col == "Users" else 1
-        return super()._prepare_arangodb_vertex(adb_vertex, col)
+        return
 
 
 class Grid_ADBNX_Controller(ADBNX_Controller):
-    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> NxId:
-        nx_node_id = tuple(
+    def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> None:
+        adb_vertex["_id"] = tuple(
             int(n)
             for n in tuple(
                 adb_vertex["_key"],
             )
         )
-        return nx_node_id
+        return
 
     def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
         adb_v_key: str = self._tuple_to_arangodb_key_helper(nx_node_id)  # type: ignore
