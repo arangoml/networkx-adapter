@@ -1,3 +1,292 @@
+## 4.0.0 (2022-05-25)
+
+### New
+
+* Notebook prep for 4.0.0 release (#79) [Anthony Mahanna]
+
+  #75: initial commit
+
+* Housekeeping prior to 4.0.0 release (#78) [Anthony Mahanna]
+
+  * initial commit
+
+  * update: import module names
+
+  * cleanup
+
+  * fix: flake8
+
+  * fix: import
+
+  * cleanup
+
+  * fix: mypy
+
+  * cleanup
+
+  * update: build & analyze triggers
+
+  * update: build & analyze triggers
+
+  * update: start enumerate() at 1
+
+* Verbose Logging (#76) [Anthony Mahanna]
+
+  * Revert "Extend adapter with the functionality to export into cuGraph (#64)"
+
+  This reverts commit 808d9bf1052b6a5517f917af46e532d51aad5ae8.
+
+  * mirror changes of https://github.com/arangoml/dgl-adapter/pull/12
+
+  * Update setup.py
+
+  * cleanup
+
+  * fix: simplify adb_map typing
+
+  * #70: initial commit
+
+  * fix: flake8
+
+  * new: in-line coverage report
+
+  * Update abc.py
+
+  * Update release.yml
+
+  * cleanup
+
+  * fix: set default password to empty string
+
+  * set empty password
+
+  * Update adapter.py
+
+  * #72: initial commit
+
+  * Update adapter.py
+
+  * Update adapter.py
+
+  * cleanup
+
+  * cleanup release.yml
+
+  * Update setup.py
+
+  * new: import shortcut
+
+  * fix: isort
+
+  * remove: import shortcut for tests
+
+  * cleanup
+
+  * fix: switch back to manual changelog merge
+
+  * replace: set_verbose with set_logging
+
+* Docker-based testing and exposing ArangoClient  (#74) [Anthony Mahanna]
+
+  * Revert "Extend adapter with the functionality to export into cuGraph (#64)"
+
+  This reverts commit 808d9bf1052b6a5517f917af46e532d51aad5ae8.
+
+  * mirror changes of https://github.com/arangoml/dgl-adapter/pull/12
+
+  * Update setup.py
+
+  * cleanup
+
+  * fix: simplify adb_map typing
+
+  * #70: initial commit
+
+  * fix: flake8
+
+  * new: in-line coverage report
+
+  * Update abc.py
+
+  * Update release.yml
+
+  * cleanup
+
+  * fix: set default password to empty string
+
+  * set empty password
+
+  * Update adapter.py
+
+  * fix: specify requests dep
+
+### Other
+
+* Revert: "Extend adapter with the functionality to export into cuGraph (#64)" (#73) [Anthony Mahanna]
+
+  This reverts commit 808d9bf1052b6a5517f917af46e532d51aad5ae8.
+
+
+## 3.1.1 (2022-03-04)
+
+### Other
+
+* Extend adapter with the functionality to export into cuGraph (#64) [maxkernbach]
+
+  * add cuGraph code
+
+  * fix formatting
+
+  * add rapids logo
+
+  * README.md: add cuGraph
+
+  * format with black
+
+  * rerun black with recent version
+
+  * fix imports with isort
+
+  * add conda-incubator/setup-miniconda
+
+  * add conda packages
+
+  * cudatoolkit installation
+
+  * change setup order
+
+  * add default shell
+
+  * run pytest in conda env
+
+  * add driver
+
+  * run on ubuntu-18.04
+
+  * test sdist build
+
+  * test self-hosted
+
+  * run conda
+
+  * fix typo
+
+  * activate cugraph conda env
+
+  * <xx
+
+  * init conda
+
+  * test conda env
+
+  * test gpu build
+
+  * fix conda env name
+
+  * init conda
+
+  * run in same step
+
+  * run pytest in conda env
+
+  * use python version matrix
+
+  * remove duplicate step
+
+  * run on different conda envs
+
+  * pip setup in conda env
+
+  * remove old build job
+
+  * replace build job to run on self-hosted runner
+
+  * make cuGraph imports optional
+
+  * add cugraph test coverage
+
+  * fix formatting
+
+* Revert "Extend adapter with the functionality to export into cuGraph (#60)" (#63) [Chris Woodward]
+
+  This reverts commit a012af97f79dc8c237d3ed8c8e64a8c75b05ad76.
+
+
+## 3.1.0 (2022-03-01)
+
+### Other
+
+* Extend adapter with the functionality to export into cuGraph (#60) [maxkernbach]
+
+  * add cuGraph code
+
+  * fix formatting
+
+  * add rapids logo
+
+  * README.md: add cuGraph
+
+  * format with black
+
+  * rerun black with recent version
+
+  * fix imports with isort
+
+  * add conda-incubator/setup-miniconda
+
+  * add conda packages
+
+  * cudatoolkit installation
+
+  * change setup order
+
+  * add default shell
+
+  * run pytest in conda env
+
+  * add driver
+
+  * run on ubuntu-18.04
+
+  * test sdist build
+
+  * test self-hosted
+
+  * run conda
+
+  * fix typo
+
+  * activate cugraph conda env
+
+  * <xx
+
+  * init conda
+
+  * test conda env
+
+  * test gpu build
+
+  * fix conda env name
+
+  * init conda
+
+  * run in same step
+
+  * run pytest in conda env
+
+  * use python version matrix
+
+  * remove duplicate step
+
+  * run on different conda envs
+
+  * pip setup in conda env
+
+  * remove old build job
+
+  * replace build job to run on self-hosted runner
+
+
 ## 3.0.1 (2021-12-31)
 
 ### New
@@ -12,6 +301,10 @@
 
 * Release. [aMahanna]
 
+* Release. [aMahanna]
+
+* Release.yml. [aMahanna]
+
 ### Other
 
 * Revert "trying white networkx logo" [aMahanna]
@@ -23,6 +316,8 @@
 * Replace auto merge with echo. [aMahanna]
 
 * Update: restrict build & analyze triggers. [aMahanna]
+
+* Update release.yml. [aMahanna]
 
 
 ## 3.0.0 (2021-12-28)
@@ -37,28 +332,28 @@
 
 * General Adapter Improvements (#45) [Anthony Mahanna]
 
+* Release Automation Debugging (#37) [Anthony Mahanna]
+
 ### Changes
 
 * Disable twine skip-existing flag (#44) [Anthony Mahanna]
 
 ### Fix
 
-* Release. [aMahanna]
+* Invalid artifact directories (#42) [Anthony Mahanna]
 
-* Release.yml. [aMahanna]
+* Github actions workflow (#39) [Anthony Mahanna]
 
 ### Other
 
-* Update release.yml. [aMahanna]
-
 * Build workflow improvements (#51) [Anthony Mahanna]
 
+* Trigger 2.0.0 release. [aMahanna]
 
-## 2.0.0 (2021-12-02)
+
+## 2.0.0 (2021-12-01)
 
 ### New
-
-* Release Automation Debugging (#37) [Anthony Mahanna]
 
 * Introduce batch insertion (#30) [Anthony Mahanna]
 
@@ -178,17 +473,11 @@
 
 ### Fix
 
-* Invalid artifact directories (#42) [Anthony Mahanna]
-
-* Github actions workflow (#39) [Anthony Mahanna]
-
 * Trigger new github action release (#36) [Anthony Mahanna]
 
   The initial 2.0.0 release was unsuccessful due to a faulty path, this has now been fixed.
 
 ### Other
-
-* Trigger 2.0.0 release. [aMahanna]
 
 * Update release.yml. [aMahanna]
 
