@@ -142,12 +142,13 @@ def test_adb_graph_to_nx(
 
 
 @pytest.mark.parametrize(
-    "adapter, name, nx_g, edge_definitions, batch_size, keyify_nodes",
+    "adapter, name, nx_g, edge_definitions, \
+        batch_size, keyify_nodes, keyify_edges, overwrite",
     [
         (
             adbnx_adapter,
             "Grid_v1",
-            get_grid_graph(),
+            get_grid_graph(5),
             [
                 {
                     "edge_collection": "to_v1",
@@ -157,11 +158,14 @@ def test_adb_graph_to_nx(
             ],
             5,
             False,
+            False,
+            False,
         ),
+        (adbnx_adapter, "Grid_v1", get_grid_graph(25), None, 1000, False, False, True),
         (
             grid_adbnx_adapter,
             "Grid_v2",
-            get_grid_graph(),
+            get_grid_graph(5),
             [
                 {
                     "edge_collection": "to_v2",
@@ -170,6 +174,8 @@ def test_adb_graph_to_nx(
                 }
             ],
             1000,
+            True,
+            False,
             True,
         ),
         (
@@ -185,6 +191,8 @@ def test_adb_graph_to_nx(
             ],
             1000,
             True,
+            False,
+            True,
         ),
     ],
 )
@@ -195,9 +203,11 @@ def test_nx_to_adb(
     edge_definitions: List[Json],
     batch_size: int,
     keyify_nodes: bool,
+    keyify_edges: bool,
+    overwrite: bool,
 ) -> None:
     adb_g = adapter.networkx_to_arangodb(
-        name, nx_g, edge_definitions, batch_size, keyify_nodes
+        name, nx_g, edge_definitions, batch_size, keyify_nodes, keyify_edges, overwrite
     )
     assert_arangodb_data(adapter, nx_g, adb_g, keyify_nodes)
 
@@ -312,7 +322,7 @@ def test_full_cycle_from_networkx() -> None:
     if db.has_graph(name):
         db.delete_graph(name, drop_collections=True)
 
-    original_grid_nx_g = get_grid_graph()
+    original_grid_nx_g = get_grid_graph(5)
     grid_edge_definitions = [
         {
             "edge_collection": "to_v3",

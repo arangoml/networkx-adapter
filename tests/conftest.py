@@ -102,8 +102,8 @@ def arango_restore(con: Json, path_to_data: str) -> None:
     )
 
 
-def get_grid_graph() -> NXGraph:
-    return grid_2d_graph(5, 5)
+def get_grid_graph(n: int) -> NXGraph:
+    return grid_2d_graph(n, n)
 
 
 def get_football_graph() -> NXGraph:

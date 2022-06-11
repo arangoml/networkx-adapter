@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
+from typing import Any, DefaultDict, Dict, List, Optional, Set, Tuple, Union
 
 from arango.cursor import Cursor
 from arango.database import Database
@@ -199,10 +199,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self,
         name: str,
         nx_graph: NXGraph,
-        edge_definitions: List[Json],
+        edge_definitions: Optional[List[Json]] = None,
         batch_size: int = 1000,
         keyify_nodes: bool = False,
         keyify_edges: bool = False,
+        overwrite: bool = False,
+        **graph_options: Any,
     ) -> ADBGraph:
         """Create an ArangoDB graph from a NetworkX graph, and a set of edge
         definitions.
@@ -214,7 +216,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param edge_definitions: List of edge definitions, where each edge definition
             entry is a dictionary with fields "edge_collection",
             "from_vertex_collections" and "to_vertex_collections"
-            (see below for example).
+            (see below for example). If unspecified, assumes that
+            graph **name** already exists.
         :type edge_definitions: List[adbnx_adapter.typings.Json]
         :param batch_size: The maximum number of documents to insert at once
         :type batch_size: int
@@ -228,6 +231,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             Otherwise, ArangoDB _key values for edges will range from 1 to E,
             where E is the number of NetworkX edges.
         :type keyify_edges: bool
+        :param overwrite: If set to True, will first delete the existing
+            graph, and drop its collections.
+        :param overwrite: bool
+        :param graph_options: Keyword arguments to specify additional
+            parameters for creating the ArangoDB graph via the
+            python-arango create_graph() function
+            (e.g smart graph, orphan collections, sharding, ...)
+        :type graph_options: Any
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
 
@@ -243,13 +254,25 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         ]
         """
         logger.debug(f"Starting networkx_to_arangodb('{name}', ...):")
-        for e_d in edge_definitions:
-            self.__validate_attributes(
-                "Edge Definitions", set(e_d), self.EDGE_DEFINITION_ATRIBS
-            )
 
-        self.__db.delete_graph(name, ignore_missing=True)
-        adb_graph: ADBGraph = self.__db.create_graph(name, edge_definitions)
+        if edge_definitions is None:
+            logger.debug(f"Assuming {name} already exists. Grabbing edge_definitions.")
+            edge_definitions = self.__db.graph(name).edge_definitions()
+        else:
+            for e_d in edge_definitions:
+                self.__validate_attributes(
+                    "Edge Definitions", set(e_d), self.EDGE_DEFINITION_ATRIBS
+                )
+
+        if overwrite:
+            logger.debug("Overwrite is True. Deleting existing graph & collections.")
+            self.__db.delete_graph(name, drop_collections=True, ignore_missing=True)
+
+        adb_graph = (
+            self.__db.graph(name)
+            if self.__db.has_graph(name)
+            else self.__db.create_graph(name, edge_definitions, **graph_options)
+        )
 
         adb_v_cols = adb_graph.vertex_collections()
         adb_e_cols = [e_d["edge_collection"] for e_d in edge_definitions]
