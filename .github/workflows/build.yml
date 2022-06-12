@@ -38,7 +38,7 @@ jobs:
       - name: Run mypy
         run: mypy ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
       - name: Run pytest
-        run: py.test --cov=${{env.PACKAGE_DIR}} --cov-report xml --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+        run: py.test -s --cov=${{env.PACKAGE_DIR}} --cov-report xml --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
       - name: Publish to coveralls.io
         if: matrix.python == '3.8'
         env:
