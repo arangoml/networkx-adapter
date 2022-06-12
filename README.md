@@ -14,7 +14,7 @@
 <a href="https://www.arangodb.com/" rel="arangodb.com">![](./examples/assets/logos/ArangoDB_logo.png)</a>
 <a href="https://networkx.org/" rel="networkx.org">![](./examples/assets/logos/networkx_logo.svg)</a>
 
-The ArangoDB-Networkx Adapter exports Graphs from ArangoDB, a multi-model Graph Database, into NetworkX, the swiss army knife for graph analysis with python, and vice-versa.
+The ArangoDB-Networkx Adapter exports Graphs from ArangoDB, the multi-model Graph Database, into NetworkX, the swiss army knife for graph analysis with python, and vice-versa.
 
 
 
