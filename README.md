@@ -56,7 +56,7 @@ from networkx import grid_2d_graph
 
 # Instantiate driver client based on user preference
 # Let's assume that the ArangoDB "fraud detection" dataset is imported to this endpoint for example purposes
-db = ArangoClient(hosts="http://localhost:8529").db("_system", username="root", password="openSesame")
+db = ArangoClient(hosts="http://localhost:8529").db("_system", username="root", password="")
 
 # Instantiate your ADBNX Adapter with driver client
 adbnx_adapter = ADBNX_Adapter(db)
