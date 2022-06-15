@@ -107,7 +107,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         }
         """
         logger.debug(f"Starting arangodb_to_networkx({name}, ...):")
-        self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
         # Maps ArangoDB vertex IDs to NetworkX node IDs
         adb_map: Dict[str, Dict[str, NxId]] = dict()
@@ -258,11 +257,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         if edge_definitions is None:
             logger.debug(f"Assuming {name} already exists. Grabbing edge_definitions.")
             edge_definitions = self.__db.graph(name).edge_definitions()
-        else:
-            for e_d in edge_definitions:
-                self.__validate_attributes(
-                    "Edge Definitions", set(e_d), self.EDGE_DEFINITION_ATRIBS
-                )
 
         if overwrite:
             logger.debug("Overwrite is True. Deleting existing graph & collections.")
@@ -353,25 +347,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         logger.info(f"Created ArangoDB '{name}' Graph")
         return adb_graph
-
-    def __validate_attributes(
-        self, type: str, attributes: Set[str], valid_attributes: Set[str]
-    ) -> None:
-        """Validates that a set of attributes includes the required valid
-        attributes.
-
-        :param type: The context of the attribute validation
-            (e.g connection attributes, graph attributes, etc).
-        :type type: str
-        :param attributes: The provided attributes, possibly invalid.
-        :type attributes: Set[str]
-        :param valid_attributes: The valid attributes.
-        :type valid_attributes: Set[str]
-        :raise ValueError: If **valid_attributes** is not a subset of **attributes**
-        """
-        if valid_attributes.issubset(attributes) is False:
-            missing_attributes = valid_attributes - attributes
-            raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
     def __fetch_adb_docs(
         self, col: str, attributes: Set[str], is_keep: bool, query_options: Any

@@ -19,12 +19,6 @@ from .conftest import (
 )
 
 
-def test_validate_attributes() -> None:
-    with pytest.raises(ValueError):
-        bad_metagraph: Dict[str, Any] = dict()
-        adbnx_adapter.arangodb_to_networkx("graph_name", bad_metagraph)
-
-
 def test_validate_constructor() -> None:
     bad_db: Dict[str, Any] = dict()
 

@@ -49,22 +49,11 @@ class Abstract_ADBNX_Adapter(ABC):
     ) -> ADBGraph:
         raise NotImplementedError  # pragma: no cover
 
-    def __validate_attributes(self) -> None:
-        raise NotImplementedError  # pragma: no cover
-
     def __fetch_adb_docs(self) -> None:
         raise NotImplementedError  # pragma: no cover
 
     def __insert_adb_docs(self) -> None:
         raise NotImplementedError  # pragma: no cover
-
-    @property
-    def METAGRAPH_ATRIBS(self) -> Set[str]:
-        return {"vertexCollections", "edgeCollections"}
-
-    @property
-    def EDGE_DEFINITION_ATRIBS(self) -> Set[str]:
-        return {"edge_collection", "from_vertex_collections", "to_vertex_collections"}
 
 
 class Abstract_ADBNX_Controller(ABC):
