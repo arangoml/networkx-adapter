@@ -204,7 +204,7 @@ def test_adb_graph_to_nx(
         ),
         (
             adbnx_adapter,
-            "Sample",
+            "Letter",
             get_letter_graph(),
             [
                 {
