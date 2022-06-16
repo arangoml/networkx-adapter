@@ -7,9 +7,9 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+import networkx as nx
 from arango import ArangoClient
 from arango.database import StandardDatabase
-from networkx import grid_2d_graph, parse_gml
 from networkx.classes import Graph as NXGraph
 
 from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
@@ -103,7 +103,7 @@ def arango_restore(con: Json, path_to_data: str) -> None:
 
 
 def get_grid_graph(n: int) -> NXGraph:
-    return grid_2d_graph(n, n)
+    return nx.grid_2d_graph(n, n)
 
 
 def get_football_graph() -> NXGraph:
@@ -114,7 +114,14 @@ def get_football_graph() -> NXGraph:
     zf = zipfile.ZipFile(s)
     gml = zf.read("football.gml").decode()
     gml_list = gml.split("\n")[1:]
-    return parse_gml(gml_list)
+    return nx.parse_gml(gml_list)
+
+
+def get_letter_graph() -> NXGraph:
+    nx_g = nx.Graph()
+    nx_g.add_nodes_from(["A/1", "B/1", "F/1"])
+    nx_g.add_edge("A/1", "B/1")
+    return nx_g
 
 
 class IMDB_ADBNX_Controller(ADBNX_Controller):
