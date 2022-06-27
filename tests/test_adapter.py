@@ -403,9 +403,8 @@ def assert_arangodb_data(
 ) -> None:
     nx_map = dict()
 
-    edge_definitions = adb_g.edge_definitions()
     adb_v_cols = adb_g.vertex_collections()
-    adb_e_cols = [e_d["edge_collection"] for e_d in edge_definitions]
+    adb_e_cols = [e_d["edge_collection"] for e_d in adb_g.edge_definitions()]
 
     has_one_vcol = len(adb_v_cols) == 1
     has_one_ecol = len(adb_e_cols) == 1
