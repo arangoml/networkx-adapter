@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 import pytest
 from arango.graph import Graph as ADBGraph
@@ -14,7 +14,6 @@ from .conftest import (
     football_adbnx_adapter,
     get_football_graph,
     get_grid_graph,
-    get_letter_graph,
     grid_adbnx_adapter,
     imdb_adbnx_adapter,
 )
@@ -138,11 +137,11 @@ def test_adb_graph_to_nx(
 
 @pytest.mark.parametrize(
     "adapter, name, nx_g, edge_definitions, \
-        batch_size, keyify_nodes, keyify_edges, overwrite, graph_options",
+        keyify_nodes, keyify_edges, overwrite_graph, import_options",
     [
         (
             adbnx_adapter,
-            "Grid_v1",
+            "Grid",
             get_grid_graph(5),
             [
                 {
@@ -151,26 +150,24 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Grid_Node_v1"],
                 }
             ],
-            5,
-            False,
-            False,
-            False,
-            {},
-        ),
-        (
-            adbnx_adapter,
-            "Grid_v1",
-            get_grid_graph(25),
-            None,
-            1000,
             False,
             False,
             True,
-            {},
+            {"overwrite": True},
+        ),
+        (
+            adbnx_adapter,
+            "Grid",
+            get_grid_graph(25),
+            None,
+            False,
+            False,
+            False,
+            {"on_duplicate": "replace"},
         ),
         (
             grid_adbnx_adapter,
-            "Grid_v2",
+            "Grid",
             get_grid_graph(1),
             [
                 {
@@ -179,11 +176,10 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Grid_Node_v2"],
                 }
             ],
-            1000,
             True,
             False,
             True,
-            {},
+            {"overwrite": True},
         ),
         (
             football_adbnx_adapter,
@@ -196,28 +192,10 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Football_Team"],
                 }
             ],
-            1000,
             True,
             False,
             True,
-            {},
-        ),
-        (
-            adbnx_adapter,
-            "Letter",
-            get_letter_graph(),
-            [
-                {
-                    "edge_collection": "to",
-                    "from_vertex_collections": ["A"],
-                    "to_vertex_collections": ["B"],
-                }
-            ],
-            5,
-            True,
-            False,
-            True,
-            {"orphan_collections": ["F"]},
+            {"batch_size": 300, "on_duplicate": "replace"},
         ),
     ],
 )
@@ -225,26 +203,22 @@ def test_nx_to_adb(
     adapter: ADBNX_Adapter,
     name: str,
     nx_g: NXGraph,
-    edge_definitions: List[Json],
-    batch_size: int,
+    edge_definitions: Optional[List[Json]],
     keyify_nodes: bool,
     keyify_edges: bool,
-    overwrite: bool,
-    graph_options: Dict[str, Any],
+    overwrite_graph: bool,
+    import_options: Dict[str, Any],
 ) -> None:
     adb_g = adapter.networkx_to_arangodb(
         name,
         nx_g,
         edge_definitions,
-        batch_size,
         keyify_nodes,
         keyify_edges,
-        overwrite,
-        **graph_options
+        overwrite_graph,
+        **import_options,
     )
-    assert_arangodb_data(
-        adapter, nx_g, adb_g, keyify_nodes, keyify_edges, overwrite, graph_options
-    )
+    assert_arangodb_data(adapter, nx_g, adb_g, keyify_nodes, keyify_edges)
 
 
 def test_full_cycle_from_arangodb_with_existing_collections() -> None:
@@ -273,9 +247,10 @@ def test_full_cycle_from_arangodb_with_existing_collections() -> None:
         name,
         fraud_nx_g,
         edge_definitions,
-        batch_size=50,
         keyify_nodes=True,
         keyify_edges=True,
+        batch_size=50,
+        on_duplicate="replace",
     )
 
     for col in updated_fraud_adb_g.vertex_collections():
@@ -337,6 +312,7 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
         edge_definitions,
         keyify_nodes=True,
         keyify_edges=True,
+        on_duplicate="replace",
     )
 
     col: str
@@ -424,8 +400,6 @@ def assert_arangodb_data(
     adb_g: ADBGraph,
     keyify_nodes: bool,
     keyify_edges: bool,
-    overwrite: bool,
-    graph_options: Dict[str, Any],
 ) -> None:
     nx_map = dict()
 
@@ -486,7 +460,3 @@ def assert_arangodb_data(
                 break
 
         assert has_edge_match
-
-    assert adb_g.properties()["orphan_collections"] == graph_options.get(
-        "orphan_collections", []
-    )

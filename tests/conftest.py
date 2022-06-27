@@ -117,13 +117,6 @@ def get_football_graph() -> NXGraph:
     return nx.parse_gml(gml_list)
 
 
-def get_letter_graph() -> NXGraph:
-    nx_g = nx.Graph()
-    nx_g.add_nodes_from(["A/1", "B/1", "F/1"])
-    nx_g.add_edge("A/1", "B/1")
-    return nx_g
-
-
 class IMDB_ADBNX_Controller(ADBNX_Controller):
     def _prepare_arangodb_vertex(self, adb_vertex: Json, col: str) -> None:
         adb_vertex["bipartite"] = 0 if col == "Users" else 1
