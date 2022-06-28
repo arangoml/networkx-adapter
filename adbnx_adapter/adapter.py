@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Set, Tuple, Union
+from typing import Any, DefaultDict, Dict, List, Optional, Set, Tuple, Union
 
 from arango.cursor import Cursor
 from arango.database import Database
@@ -107,7 +107,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         }
         """
         logger.debug(f"Starting arangodb_to_networkx({name}, ...):")
-        self.__validate_attributes("graph", set(metagraph), self.METAGRAPH_ATRIBS)
 
         # Maps ArangoDB vertex IDs to NetworkX node IDs
         adb_map: Dict[str, Dict[str, NxId]] = dict()
@@ -199,10 +198,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self,
         name: str,
         nx_graph: NXGraph,
-        edge_definitions: List[Json],
-        batch_size: int = 1000,
+        edge_definitions: Optional[List[Json]] = None,
         keyify_nodes: bool = False,
         keyify_edges: bool = False,
+        overwrite_graph: bool = False,
+        **import_options: Any,
     ) -> ADBGraph:
         """Create an ArangoDB graph from a NetworkX graph, and a set of edge
         definitions.
@@ -211,23 +211,28 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type name: str
         :param nx_graph: The existing NetworkX graph.
         :type nx_graph: networkx.classes.graph.Graph
-        :param edge_definitions: List of edge definitions, where each edge definition
-            entry is a dictionary with fields "edge_collection",
-            "from_vertex_collections" and "to_vertex_collections"
-            (see below for example).
+        :param edge_definitions: List of edge definitions, where each edge
+            definition entry is a dictionary with fields "edge_collection",
+            "from_vertex_collections" and "to_vertex_collections" (see below
+            for example). Can be omitted if the graph already exists.
         :type edge_definitions: List[adbnx_adapter.typings.Json]
-        :param batch_size: The maximum number of documents to insert at once
-        :type batch_size: int
         :param keyify_nodes: If set to True, will create custom vertex keys based on the
-            behavior of ADBNX_Controller._keyify_networkx_node().
-            Otherwise, ArangoDB _key values for vertices will range from 1 to N,
-            where N is the number of NetworkX nodes.
+            behavior of ADBNX_Controller._keyify_networkx_node(). Otherwise, ArangoDB
+            _key values for vertices will range from 1 to N, where N is the number of
+            NetworkX nodes.
         :type keyify_nodes: bool
         :param keyify_edges: If set to True, will create custom edge keys based on
             the behavior of ADBNX_Controller._keyify_networkx_edge().
             Otherwise, ArangoDB _key values for edges will range from 1 to E,
             where E is the number of NetworkX edges.
         :type keyify_edges: bool
+        :param overwrite_graph: Overwrites the graph if it already exists.
+            Does not drop associated collections.
+        :type overwrite_graph: bool
+        :param import_options: Keyword arguments to specify additional
+            parameters for ArangoDB document insertion. See
+            arango.collection.Collection.import_bulk for all options.
+        :type import_options: Any
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
 
@@ -243,16 +248,18 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         ]
         """
         logger.debug(f"Starting networkx_to_arangodb('{name}', ...):")
-        for e_d in edge_definitions:
-            self.__validate_attributes(
-                "Edge Definitions", set(e_d), self.EDGE_DEFINITION_ATRIBS
-            )
 
-        self.__db.delete_graph(name, ignore_missing=True)
-        adb_graph: ADBGraph = self.__db.create_graph(name, edge_definitions)
+        if overwrite_graph:
+            logger.debug("Overwrite graph flag is True. Deleting old graph.")
+            self.__db.delete_graph(name, ignore_missing=True)
+
+        if self.__db.has_graph(name):
+            adb_graph = self.__db.graph(name)
+        else:
+            adb_graph = self.__db.create_graph(name, edge_definitions)
 
         adb_v_cols = adb_graph.vertex_collections()
-        adb_e_cols = [e_d["edge_collection"] for e_d in edge_definitions]
+        adb_e_cols = [e_d["edge_collection"] for e_d in adb_graph.edge_definitions()]
 
         has_one_vcol = len(adb_v_cols) == 1
         has_one_ecol = len(adb_e_cols) == 1
@@ -284,9 +291,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 "adb_key": key,
             }
 
-            self.__insert_adb_docs(
-                col, adb_documents[col], {**nx_node, "_id": adb_v_id}, batch_size
-            )
+            adb_documents[col].append({**nx_node, "_id": adb_v_id})
 
         from_node_id: NxId
         to_node_id: NxId
@@ -311,44 +316,22 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 else str(i)
             )
 
-            self.__insert_adb_docs(
-                col,
-                adb_documents[col],
+            adb_documents[col].append(
                 {
                     **nx_edge,
                     "_id": col + "/" + key,
                     "_from": from_n["adb_id"],
                     "_to": to_n["adb_id"],
-                },
-                batch_size,
+                }
             )
 
-        for col, doc_list in adb_documents.items():  # insert remaining documents
-            if doc_list:
-                logger.debug(f"Inserting last {len(doc_list)} documents into '{col}'")
-                self.__db.collection(col).import_bulk(doc_list, on_duplicate="replace")
+        for col, doc_list in adb_documents.items():  # import documents into ArangoDB
+            logger.debug(f"Inserting {len(doc_list)} documents into '{col}'")
+            result = self.__db.collection(col).import_bulk(doc_list, **import_options)
+            logger.debug(result)
 
         logger.info(f"Created ArangoDB '{name}' Graph")
         return adb_graph
-
-    def __validate_attributes(
-        self, type: str, attributes: Set[str], valid_attributes: Set[str]
-    ) -> None:
-        """Validates that a set of attributes includes the required valid
-        attributes.
-
-        :param type: The context of the attribute validation
-            (e.g connection attributes, graph attributes, etc).
-        :type type: str
-        :param attributes: The provided attributes, possibly invalid.
-        :type attributes: Set[str]
-        :param valid_attributes: The valid attributes.
-        :type valid_attributes: Set[str]
-        :raise ValueError: If **valid_attributes** is not a subset of **attributes**
-        """
-        if valid_attributes.issubset(attributes) is False:
-            missing_attributes = valid_attributes - attributes
-            raise ValueError(f"Missing {type} attributes: {missing_attributes}")
 
     def __fetch_adb_docs(
         self, col: str, attributes: Set[str], is_keep: bool, query_options: Any
@@ -380,29 +363,3 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """
 
         return self.__db.aql.execute(aql, **query_options)
-
-    def __insert_adb_docs(
-        self,
-        col: str,
-        col_docs: List[Json],
-        doc: Json,
-        batch_size: int,
-    ) -> None:
-        """Insert an ArangoDB document into a list. If the list exceeds
-        batch_size documents, insert into the ArangoDB collection.
-
-        :param col: The collection name
-        :type col: str
-        :param col_docs: The existing documents data belonging to the collection.
-        :type col_docs: List[adbnx_adapter.typings.Json]
-        :param doc: The current document to insert.
-        :type doc: adbnx_adapter.typings.Json
-        :param batch_size: The maximum number of documents to insert at once
-        :type batch_size: int
-        """
-        col_docs.append(doc)
-
-        if len(col_docs) >= batch_size:
-            logger.debug(f"Inserting next {batch_size} batch documents into '{col}'")
-            self.__db.collection(col).import_bulk(col_docs, on_duplicate="replace")
-            col_docs.clear()
