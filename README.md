@@ -45,33 +45,28 @@ pip install git+https://github.com/arangoml/networkx-adapter.git
 Also available as an ArangoDB Lunch & Learn session: [Graph & Beyond Course #2.9](https://www.arangodb.com/resources/lunch-sessions/graph-beyond-lunch-break-2-9-introducing-the-arangodb-networkx-adapter/)
 
 ```py
-# Import the ArangoDB-NetworkX Adapter
 from adbnx_adapter import ADBNX_Adapter
 
-# Import the Python-Arango driver
-from arango import ArangoClient
+from arango import ArangoClient # Python-Arango driver
 
-# Import a sample graph from NetworkX
-from networkx import grid_2d_graph
+from networkx import grid_2d_graph # Sample graph from NetworkX
 
-# Instantiate driver client based on user preference
 # Let's assume that the ArangoDB "fraud detection" dataset is imported to this endpoint for example purposes
 db = ArangoClient(hosts="http://localhost:8529").db("_system", username="root", password="")
 
-# Instantiate your ADBNX Adapter with driver client
-adbnx_adapter = ADBNX_Adapter(db)
+adbnx_adapter = ADBNX_Adapter(db) # Instantiate ADBNX Adapter with driver client
 
-# Convert ArangoDB to NetworkX via Graph Name
+# Use Case 1.1: ArangoDB to NetworkX via Graph name
 nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
 
-# Convert ArangoDB to NetworkX via Collection Names
+# Use Case 1.2: ArangoDB to NetworkX via Collection names
 nx_fraud_graph_2 = adbnx_adapter.arangodb_collections_to_networkx(
     "fraud-detection", 
     {"account", "bank", "branch", "Class", "customer"}, # Specify vertex collections
     {"accountHolder", "Relationship", "transaction"} # Specify edge collections
 )
 
-# Convert ArangoDB to NetworkX via a Metagraph
+# Use Case 1.3: ArangoDB to NetworkX via Metagraph
 metagraph = {
     "vertexCollections": {
         "account": {"Balance", "account_type", "customer_id", "rank"},
@@ -84,7 +79,7 @@ metagraph = {
 }
 nx_fraud_graph_3 = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
 
-# Convert NetworkX to ArangoDB
+# Use Case 2: NetworkX to ArangoDB
 nx_grid_graph = grid_2d_graph(5, 5)
 adb_grid_edge_definitions = [
     {
