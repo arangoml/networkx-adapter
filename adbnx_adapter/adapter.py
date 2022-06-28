@@ -83,7 +83,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             attributes are included.
         :type is_keep: bool
         :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance. See the full parameter list at
+            fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
         :type query_options: Any
         :return: A Multi-Directed NetworkX Graph.
@@ -160,7 +160,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param e_cols: A set of edge collections to import to NetworkX.
         :type e_cols: Set[str]
         :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance. See the full parameter list at
+            fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
         :type query_options: Any
         :return: A Multi-Directed NetworkX Graph.
@@ -183,7 +183,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param name: The ArangoDB graph name.
         :type name: str
         :param query_options: Keyword arguments to specify AQL query options when
-            fetching documents from the ArangoDB instance. See the full parameter list at
+            fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
         :type query_options: Any
         :return: A Multi-Directed NetworkX Graph.
@@ -233,7 +233,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             Does not drop associated collections.
         :type overwrite_graph: bool
         :param import_options: Keyword arguments to specify additional
-            parameters for ArangoDB document insertion. See the full parameter list at
+            parameters for ArangoDB document insertion. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.collection.Collection.import_bulk
         :type import_options: Any
         :return: The ArangoDB Graph API wrapper.
