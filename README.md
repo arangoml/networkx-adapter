@@ -45,16 +45,15 @@ pip install git+https://github.com/arangoml/networkx-adapter.git
 Also available as an ArangoDB Lunch & Learn session: [Graph & Beyond Course #2.9](https://www.arangodb.com/resources/lunch-sessions/graph-beyond-lunch-break-2-9-introducing-the-arangodb-networkx-adapter/)
 
 ```py
-from adbnx_adapter import ADBNX_Adapter
-
 from arango import ArangoClient # Python-Arango driver
-
 from networkx import grid_2d_graph # Sample graph from NetworkX
 
-# Let's assume that the ArangoDB "fraud detection" dataset is imported to this endpoint for example purposes
+from adbnx_adapter import ADBNX_Adapter
+
+# Let's assume that the ArangoDB "fraud detection" dataset is imported to this endpoint
 db = ArangoClient(hosts="http://localhost:8529").db("_system", username="root", password="")
 
-adbnx_adapter = ADBNX_Adapter(db) # Instantiate ADBNX Adapter with driver client
+adbnx_adapter = ADBNX_Adapter(db)
 
 # Use Case 1.1: ArangoDB to NetworkX via Graph name
 nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
@@ -62,8 +61,8 @@ nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
 # Use Case 1.2: ArangoDB to NetworkX via Collection names
 nx_fraud_graph_2 = adbnx_adapter.arangodb_collections_to_networkx(
     "fraud-detection", 
-    {"account", "bank", "branch", "Class", "customer"}, # Specify vertex collections
-    {"accountHolder", "Relationship", "transaction"} # Specify edge collections
+    {"account", "bank", "branch", "Class", "customer"}, # Vertex collections
+    {"accountHolder", "Relationship", "transaction"} # Edge collections
 )
 
 # Use Case 1.3: ArangoDB to NetworkX via Metagraph
