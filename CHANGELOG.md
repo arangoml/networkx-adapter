@@ -1,3 +1,68 @@
+## 4.1.0 (2022-06-29)
+
+### New
+
+* 4.1.0 release prep (#84) [Anthony Mahanna]
+
+  * #83: initial commit
+
+  * Update README.md
+
+  * fix: flake8
+
+  * bump: python-arango version
+
+  * update notebook version
+
+* Adjust NetworkX to ArangoDB interface for increased accessibility (#81) [Anthony Mahanna]
+
+  * #80: initial commit
+
+  * Update build.yml
+
+  * :)
+
+  * Update README.md
+
+  * remove: setuptools_scm from setup.py
+
+  deprecated in favor of pyproject.toml usage
+
+  * Update README.md
+
+  * remove: __validate_attributes()
+
+  Uncessary noise as we already have proper docstring examples
+
+  * new: test case
+
+  * Update test_adapter.py
+
+  * chg: #81 (after redefining scope)
+
+  * new: drop official Python 3.6 support
+
+  (python-arango is no longer supporting 3.6)
+
+  * Update test_adapter.py
+
+  * new: CodeQL Action v2
+
+### Fix
+
+* Readme typo. [aMahanna]
+
+* README typo. [aMahanna]
+
+### Other
+
+* Update README.md. [aMahanna]
+
+* Update README.md. [aMahanna]
+
+* Update CHANGELOG.md. [aMahanna]
+
+
 ## 4.0.0 (2022-05-25)
 
 ### New
@@ -301,10 +366,6 @@
 
 * Release. [aMahanna]
 
-* Release. [aMahanna]
-
-* Release.yml. [aMahanna]
-
 ### Other
 
 * Revert "trying white networkx logo" [aMahanna]
@@ -316,8 +377,6 @@
 * Replace auto merge with echo. [aMahanna]
 
 * Update: restrict build & analyze triggers. [aMahanna]
-
-* Update release.yml. [aMahanna]
 
 
 ## 3.0.0 (2021-12-28)
@@ -332,28 +391,28 @@
 
 * General Adapter Improvements (#45) [Anthony Mahanna]
 
-* Release Automation Debugging (#37) [Anthony Mahanna]
-
 ### Changes
 
 * Disable twine skip-existing flag (#44) [Anthony Mahanna]
 
 ### Fix
 
-* Invalid artifact directories (#42) [Anthony Mahanna]
+* Release. [aMahanna]
 
-* Github actions workflow (#39) [Anthony Mahanna]
+* Release.yml. [aMahanna]
 
 ### Other
 
+* Update release.yml. [aMahanna]
+
 * Build workflow improvements (#51) [Anthony Mahanna]
 
-* Trigger 2.0.0 release. [aMahanna]
 
-
-## 2.0.0 (2021-12-01)
+## 2.0.0 (2021-12-02)
 
 ### New
+
+* Release Automation Debugging (#37) [Anthony Mahanna]
 
 * Introduce batch insertion (#30) [Anthony Mahanna]
 
@@ -473,11 +532,17 @@
 
 ### Fix
 
+* Invalid artifact directories (#42) [Anthony Mahanna]
+
+* Github actions workflow (#39) [Anthony Mahanna]
+
 * Trigger new github action release (#36) [Anthony Mahanna]
 
   The initial 2.0.0 release was unsuccessful due to a faulty path, this has now been fixed.
 
 ### Other
+
+* Trigger 2.0.0 release. [aMahanna]
 
 * Update release.yml. [aMahanna]
 
