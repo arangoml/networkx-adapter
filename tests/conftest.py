@@ -11,6 +11,7 @@ import networkx as nx
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from networkx.classes import Graph as NXGraph
+from networkx.classes import MultiGraph as NXMultiGraph
 
 from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import Json, NxData, NxId
@@ -100,6 +101,20 @@ def arango_restore(con: Json, path_to_data: str) -> None:
         cwd=f"{PROJECT_DIR}/tests",
         shell=True,
     )
+
+
+def get_drivers_graph() -> NXGraph:
+    nx_g = NXGraph()
+    nx_g.add_edge("P-John", "C-BMW")
+    nx_g.add_edge("P-Mark", "C-Audi")
+    return nx_g
+
+
+def get_likes_graph() -> NXMultiGraph:
+    nx_g = NXGraph()
+    nx_g.add_edge("P-John", "P-Emily", _id="JE", likes=True)
+    nx_g.add_edge("P-Emily", "P-John", _id="EJ", likes=False)
+    return nx_g
 
 
 def get_grid_graph(n: int) -> NXGraph:

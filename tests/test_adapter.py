@@ -12,8 +12,10 @@ from .conftest import (
     adbnx_adapter,
     db,
     football_adbnx_adapter,
+    get_drivers_graph,
     get_football_graph,
     get_grid_graph,
+    get_likes_graph,
     grid_adbnx_adapter,
     imdb_adbnx_adapter,
 )
@@ -219,6 +221,37 @@ def test_nx_to_adb(
         **import_options,
     )
     assert_arangodb_data(adapter, nx_g, adb_g, keyify_nodes, keyify_edges)
+
+
+def test_nx_to_adb_invalid_collections():
+    nx_g_1 = get_drivers_graph()
+    e_d_1 = [
+        {
+            "edge_collection": "drives",
+            "from_vertex_collections": ["Person"],
+            "to_vertex_collections": ["Car"],
+        }
+    ]
+    # Raise ValueError on invalid vertex collection identification
+    with pytest.raises(ValueError):
+        adbnx_adapter.networkx_to_arangodb("Drivers", nx_g_1, e_d_1)
+
+    nx_g_2 = get_likes_graph()
+    e_d_2 = [
+        {
+            "edge_collection": "likes",
+            "from_vertex_collections": ["Person"],
+            "to_vertex_collections": ["Person"],
+        },
+        {
+            "edge_collection": "dislikes",
+            "from_vertex_collections": ["Person"],
+            "to_vertex_collections": ["Person"],
+        },
+    ]
+    # Raise ValueError on invalid edge collection identification
+    with pytest.raises(ValueError):
+        adbnx_adapter.networkx_to_arangodb("Feelings", nx_g_2, e_d_2)
 
 
 def test_full_cycle_from_arangodb_with_existing_collections() -> None:
