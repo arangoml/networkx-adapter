@@ -119,7 +119,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         adb_v: Json
         for col, atribs in metagraph["vertexCollections"].items():
             logger.debug(f"Preparing '{col}' vertices")
-            for adb_v in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+            for i, adb_v in enumerate(
+                self.__fetch_adb_docs(col, atribs, is_keep, query_options), 1
+            ):
+                logger.debug(f'V{i}: {adb_v["_id"]}')
+
                 adb_id: str = adb_v["_id"]
                 self.__cntrl._prepare_arangodb_vertex(adb_v, col)
                 nx_id: str = adb_v["_id"]
@@ -130,11 +134,15 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         adb_e: Json
         for col, atribs in metagraph["edgeCollections"].items():
             logger.debug(f"Preparing '{col}' edges")
-            for adb_e in self.__fetch_adb_docs(col, atribs, is_keep, query_options):
+            for i, adb_e in enumerate(
+                self.__fetch_adb_docs(col, atribs, is_keep, query_options), 1
+            ):
+                logger.debug(f"E{i}: {adb_e['_id']}")
+
                 from_node_id: NxId = adb_map[adb_e["_from"]]["nx_id"]
                 to_node_id: NxId = adb_map[adb_e["_to"]]["nx_id"]
-                self.__cntrl._prepare_arangodb_edge(adb_e, col)
 
+                self.__cntrl._prepare_arangodb_edge(adb_e, col)
                 nx_edges.append((from_node_id, to_node_id, adb_e))
 
         logger.debug(f"Inserting {len(nx_nodes)} vertices and {len(nx_edges)} edges")
@@ -277,6 +285,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_node: NxData
         logger.debug(f"Preparing {nx_graph.number_of_nodes()} NetworkX nodes")
         for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True), 1):
+            logger.debug(f"N{i}: {nx_id}")
+
             col = (
                 adb_v_cols[0]
                 if has_one_vcol
@@ -310,6 +320,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         for i, (from_node_id, to_node_id, nx_edge) in enumerate(
             nx_graph.edges(data=True), 1
         ):
+            edge_str = f"({from_node_id}, {to_node_id})"
+            logger.debug(f"E{i}: {edge_str}")
+
             from_n = {**nx_graph.nodes[from_node_id], **nx_map[from_node_id]}
             to_n = {**nx_graph.nodes[to_node_id], **nx_map[to_node_id]}
 
@@ -322,7 +335,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             )
 
             if col not in adb_e_cols:
-                msg = f"'{nx_edge}' identified as '{col}', which is not in {adb_e_cols}"
+                msg = f"{edge_str} identified as '{col}', which is not in {adb_e_cols}"
                 raise ValueError(msg)
 
             key = (
