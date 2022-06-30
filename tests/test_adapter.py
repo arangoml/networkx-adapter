@@ -223,7 +223,7 @@ def test_nx_to_adb(
     assert_arangodb_data(adapter, nx_g, adb_g, keyify_nodes, keyify_edges)
 
 
-def test_nx_to_adb_invalid_collections():
+def test_nx_to_adb_invalid_collections() -> None:
     nx_g_1 = get_drivers_graph()
     e_d_1 = [
         {
