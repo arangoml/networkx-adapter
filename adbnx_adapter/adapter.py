@@ -121,9 +121,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             for i, adb_v in enumerate(
                 self.__fetch_adb_docs(col, atribs, is_keep, query_options), 1
             ):
-                logger.debug(f'V{i}: {adb_v["_id"]}')
-
                 adb_id: str = adb_v["_id"]
+                logger.debug(f"V{i}: {adb_id}")
+
                 self.__cntrl._prepare_arangodb_vertex(adb_v, col)
                 nx_id: str = adb_v["_id"]
 
