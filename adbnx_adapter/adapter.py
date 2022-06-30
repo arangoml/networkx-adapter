@@ -107,12 +107,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             },
         }
         """
-        logger.debug(f"Starting arangodb_to_networkx({name}, ...):")
+        logger.debug(f"--arangodb_to_networkx('{name}')--")
 
         # Maps ArangoDB vertex IDs to NetworkX node IDs
-        adb_map: Dict[str, Dict[str, NxId]] = dict()
+        adb_map: Dict[str, NxId] = dict()
 
-        nx_graph = NXMultiDiGraph(name=name)
         nx_nodes: List[Tuple[NxId, NxData]] = []
         nx_edges: List[Tuple[NxId, NxId, NxData]] = []
 
@@ -128,7 +127,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 self.__cntrl._prepare_arangodb_vertex(adb_v, col)
                 nx_id: str = adb_v["_id"]
 
-                adb_map[adb_id] = {"nx_id": nx_id, "collection": col}
+                adb_map[adb_id] = nx_id
                 nx_nodes.append((nx_id, adb_v))
 
         adb_e: Json
@@ -139,13 +138,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             ):
                 logger.debug(f"E{i}: {adb_e['_id']}")
 
-                from_node_id: NxId = adb_map[adb_e["_from"]]["nx_id"]
-                to_node_id: NxId = adb_map[adb_e["_to"]]["nx_id"]
+                from_node_id: NxId = adb_map[adb_e["_from"]]
+                to_node_id: NxId = adb_map[adb_e["_to"]]
 
                 self.__cntrl._prepare_arangodb_edge(adb_e, col)
                 nx_edges.append((from_node_id, to_node_id, adb_e))
 
         logger.debug(f"Inserting {len(nx_nodes)} vertices and {len(nx_edges)} edges")
+        nx_graph = NXMultiDiGraph(name=name)
         nx_graph.add_nodes_from(nx_nodes)
         nx_graph.add_edges_from(nx_edges)
 
@@ -258,7 +258,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             }
         ]
         """
-        logger.debug(f"Starting networkx_to_arangodb('{name}', ...):")
+        logger.debug(f"--networkx_to_arangodb('{name}')--")
 
         if overwrite_graph:
             logger.debug("Overwrite graph flag is True. Deleting old graph.")
@@ -278,7 +278,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         has_one_ecol = len(adb_e_cols) == 1
         logger.debug(f"Is graph '{name}' homogeneous? {has_one_vcol and has_one_ecol}")
 
-        nx_map = dict()  # Maps NetworkX node IDs to ArangoDB vertex IDs
+        # Maps NetworkX node IDs to ArangoDB vertex IDs
+        nx_map: Dict[NxId, Json] = dict()
+
+        # Stores to-be-inserted ArangoDB documents by collection name
         adb_documents: DefaultDict[str, List[Json]] = defaultdict(list)
 
         nx_id: NxId
@@ -323,8 +326,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             edge_str = f"({from_node_id}, {to_node_id})"
             logger.debug(f"E{i}: {edge_str}")
 
-            from_n = {**nx_graph.nodes[from_node_id], **nx_map[from_node_id]}
-            to_n = {**nx_graph.nodes[to_node_id], **nx_map[to_node_id]}
+            from_n = nx_map[from_node_id]
+            to_n = nx_map[to_node_id]
 
             col = (
                 adb_e_cols[0]

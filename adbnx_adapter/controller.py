@@ -30,7 +30,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :param col: The ArangoDB collection the vertex belongs to.
         :type col: str
         """
-        return
+        pass
 
     def _prepare_arangodb_edge(self, adb_edge: Json, col: str) -> None:
         """Prepare an ArangoDB edge before it gets inserted into the NetworkX
@@ -44,7 +44,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :param col: The ArangoDB collection the edge belongs to.
         :type col: str
         """
-        return
+        pass
 
     def _identify_networkx_node(
         self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
