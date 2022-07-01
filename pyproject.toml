@@ -9,7 +9,7 @@ omit = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-s -vv -p"
+addopts = "-s -vv"
 minversion = "6.0"
 testpaths = ["tests"]
 
