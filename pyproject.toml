@@ -8,10 +8,8 @@ omit = [
     "setup.py",
 ]
 
-[tool.isort]
-profile = "black"
-
 [tool.pytest.ini_options]
+addopts = "-s -vv -p"
 minversion = "6.0"
 testpaths = ["tests"]
 

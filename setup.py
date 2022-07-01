@@ -14,7 +14,7 @@ setup(
     keywords=["arangodb", "networkx", "adapter"],
     packages=["adbnx_adapter"],
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     license="Apache Software License",
     install_requires=[
         "requests>=2.27.1",
