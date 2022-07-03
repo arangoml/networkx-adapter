@@ -321,7 +321,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             adb_documents[col].append({**nx_node, "_id": adb_v_id})
 
         self.__insert_adb_docs(adb_documents, import_options)
-        adb_documents.clear()  # memory management
+        adb_documents.clear()  # for memory purposes
 
         from_node_id: NxId
         to_node_id: NxId
