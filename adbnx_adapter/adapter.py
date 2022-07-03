@@ -109,11 +109,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """
         logger.debug(f"--arangodb_to_networkx('{name}')--")
 
-        # Maps ArangoDB vertex IDs to NetworkX node IDs
-        adb_map: Dict[str, NxId] = dict()
-
+        nx_graph = NXMultiDiGraph(name=name)
         nx_nodes: List[Tuple[NxId, NxData]] = []
         nx_edges: List[Tuple[NxId, NxId, NxData]] = []
+
+        # Maps ArangoDB vertex IDs to NetworkX node IDs
+        adb_map: Dict[str, NxId] = dict()
 
         adb_v: Json
         for col, atribs in metagraph["vertexCollections"].items():
@@ -130,6 +131,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 adb_map[adb_id] = nx_id
                 nx_nodes.append((nx_id, adb_v))
 
+            logger.debug(f"Inserting {len(nx_nodes)} '{col}' vertices")
+            nx_graph.add_nodes_from(nx_nodes)
+            nx_nodes.clear()
+
         adb_e: Json
         for col, atribs in metagraph["edgeCollections"].items():
             logger.debug(f"Preparing '{col}' edges")
@@ -144,10 +149,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 self.__cntrl._prepare_arangodb_edge(adb_e, col)
                 nx_edges.append((from_node_id, to_node_id, adb_e))
 
-        logger.debug(f"Inserting {len(nx_nodes)} vertices and {len(nx_edges)} edges")
-        nx_graph = NXMultiDiGraph(name=name)
-        nx_graph.add_nodes_from(nx_nodes)
-        nx_graph.add_edges_from(nx_edges)
+            logger.debug(f"Inserting {len(nx_edges)} '{col}' edges")
+            nx_graph.add_edges_from(nx_edges)
+            nx_edges.clear()
 
         logger.info(f"Created NetworkX '{name}' Graph")
         return nx_graph
@@ -316,6 +320,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             adb_documents[col].append({**nx_node, "_id": adb_v_id})
 
+        self.__insert_adb_docs(adb_documents, import_options)
+        adb_documents.clear()  # memory management
+
         from_node_id: NxId
         to_node_id: NxId
         nx_edge: NxData
@@ -356,10 +363,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 }
             )
 
-        for col, doc_list in adb_documents.items():  # import documents into ArangoDB
-            logger.debug(f"Inserting {len(doc_list)} documents into '{col}'")
-            result = self.__db.collection(col).import_bulk(doc_list, **import_options)
-            logger.debug(result)
+        self.__insert_adb_docs(adb_documents, import_options)
 
         logger.info(f"Created ArangoDB '{name}' Graph")
         return adb_graph
@@ -394,3 +398,19 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """
 
         return self.__db.aql.execute(aql, **query_options)
+
+    def __insert_adb_docs(
+        self, adb_documents: DefaultDict[str, List[Json]], import_options: Any
+    ) -> None:
+        """Insert ArangoDB documents into their ArangoDB collection.
+
+        :param adb_documents: To-be-inserted ArangoDB documents
+        :type adb_documents: DefaultDict[str, List[Json]]
+        :param import_options: Keyword arguments to specify additional
+            parameters for ArangoDB document insertion. Full parameter list:
+            https://docs.python-arango.com/en/main/specs.html#arango.collection.Collection.import_bulk
+        """
+        for col, doc_list in adb_documents.items():
+            logger.debug(f"Inserting {len(doc_list)} documents into '{col}'")
+            result = self.__db.collection(col).import_bulk(doc_list, **import_options)
+            logger.debug(result)
