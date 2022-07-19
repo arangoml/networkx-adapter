@@ -10,6 +10,7 @@ from arango.graph import Graph as ADBGraph
 from arango.result import Result
 from networkx.classes.graph import Graph as NXGraph
 from networkx.classes.multidigraph import MultiDiGraph as NXMultiDiGraph
+from tqdm import tqdm
 
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
@@ -117,39 +118,47 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         adb_map: Dict[str, NxId] = dict()
 
         adb_v: Json
-        for col, atribs in metagraph["vertexCollections"].items():
-            logger.debug(f"Preparing '{col}' vertices")
-            for i, adb_v in enumerate(
-                self.__fetch_adb_docs(col, atribs, is_keep, query_options), 1
+        for v_col, atribs in metagraph["vertexCollections"].items():
+            total = self.__db.collection(v_col).count()
+            logger.debug(f"Preparing {total} '{v_col}' vertices")
+
+            for adb_v in tqdm(
+                self.__fetch_adb_docs(v_col, atribs, is_keep, query_options),
+                total=total,
+                desc=v_col,
+                colour="CYAN",  # should we randomly assign a colour? :P
+                disable=logger.level > logging.INFO,
             ):
                 adb_id: str = adb_v["_id"]
-                logger.debug(f"V{i}: {adb_id}")
-
-                self.__cntrl._prepare_arangodb_vertex(adb_v, col)
+                self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
                 nx_id: str = adb_v["_id"]
 
                 adb_map[adb_id] = nx_id
                 nx_nodes.append((nx_id, adb_v))
 
-            logger.debug(f"Inserting {len(nx_nodes)} '{col}' vertices")
+            logger.debug(f"Inserting {len(nx_nodes)} '{v_col}' vertices")
             nx_graph.add_nodes_from(nx_nodes)
             nx_nodes.clear()
 
         adb_e: Json
-        for col, atribs in metagraph["edgeCollections"].items():
-            logger.debug(f"Preparing '{col}' edges")
-            for i, adb_e in enumerate(
-                self.__fetch_adb_docs(col, atribs, is_keep, query_options), 1
-            ):
-                logger.debug(f"E{i}: {adb_e['_id']}")
+        for e_col, atribs in metagraph["edgeCollections"].items():
+            total = self.__db.collection(e_col).count()
+            logger.debug(f"Preparing {total} '{e_col}' edges")
 
+            for adb_e in tqdm(
+                self.__fetch_adb_docs(e_col, atribs, is_keep, query_options),
+                total=total,
+                desc=e_col,
+                colour="GREEN",
+                disable=logger.level > logging.INFO,
+            ):
                 from_node_id: NxId = adb_map[adb_e["_from"]]
                 to_node_id: NxId = adb_map[adb_e["_to"]]
 
-                self.__cntrl._prepare_arangodb_edge(adb_e, col)
+                self.__cntrl._prepare_arangodb_edge(adb_e, e_col)
                 nx_edges.append((from_node_id, to_node_id, adb_e))
 
-            logger.debug(f"Inserting {len(nx_edges)} '{col}' edges")
+            logger.debug(f"Inserting {len(nx_edges)} '{e_col}' edges")
             nx_graph.add_edges_from(nx_edges)
             nx_edges.clear()
 
@@ -291,9 +300,15 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_id: NxId
         nx_node: NxData
         logger.debug(f"Preparing {nx_graph.number_of_nodes()} NetworkX nodes")
-        for i, (nx_id, nx_node) in enumerate(nx_graph.nodes(data=True), 1):
-            logger.debug(f"N{i}: {nx_id}")
-
+        for i, (nx_id, nx_node) in enumerate(
+            tqdm(
+                nx_graph.nodes(data=True),
+                desc="Nodes",
+                colour="CYAN",
+                disable=logger.level > logging.INFO,
+            ),
+            1,
+        ):
             col = (
                 adb_v_cols[0]
                 if has_one_vcol
@@ -328,10 +343,15 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_edge: NxData
         logger.debug(f"Preparing {nx_graph.number_of_edges()} NetworkX edges")
         for i, (from_node_id, to_node_id, nx_edge) in enumerate(
-            nx_graph.edges(data=True), 1
+            tqdm(
+                nx_graph.edges(data=True),
+                desc="Edges",
+                colour="GREEN",
+                disable=logger.level > logging.INFO,
+            ),
+            1,
         ):
             edge_str = f"({from_node_id}, {to_node_id})"
-            logger.debug(f"E{i}: {edge_str}")
 
             from_n = nx_map[from_node_id]
             to_n = nx_map[to_node_id]
@@ -386,16 +406,20 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :return: Result cursor.
         :rtype: arango.cursor.Cursor
         """
-        aql = f"""
-            FOR doc IN {col}
-                RETURN {is_keep} ?
-                    MERGE(
+        if is_keep:
+            aql = f"""
+                FOR doc IN {col}
+                    RETURN MERGE(
                         KEEP(doc, {list(attributes)}),
                         {{"_id": doc._id}},
                         doc._from ? {{"_from": doc._from, "_to": doc._to}}: {{}}
                     )
-                : doc
-        """
+            """
+        else:
+            aql = f"""
+                FOR doc IN {col}
+                    RETURN doc
+            """
 
         return self.__db.aql.execute(aql, **query_options)
 
