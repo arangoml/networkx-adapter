@@ -351,8 +351,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             ),
             1,
         ):
-            edge_str = f"({from_node_id}, {to_node_id})"
-
             from_n = nx_map[from_node_id]
             to_n = nx_map[to_node_id]
 
@@ -365,6 +363,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             )
 
             if col not in adb_e_cols:
+                edge_str = f"({from_node_id}, {to_node_id})"
                 msg = f"{edge_str} identified as '{col}', which is not in {adb_e_cols}"
                 raise ValueError(msg)
 
