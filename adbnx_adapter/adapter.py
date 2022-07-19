@@ -126,7 +126,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 self.__fetch_adb_docs(v_col, atribs, is_keep, query_options),
                 total=total,
                 desc=v_col,
-                colour="CYAN",  # should we randomly assign a colour? :P
+                colour="CYAN",
                 disable=logger.level > logging.INFO,
             ):
                 adb_id: str = adb_v["_id"]
