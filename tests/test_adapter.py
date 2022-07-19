@@ -234,7 +234,9 @@ def test_nx_to_adb_invalid_collections() -> None:
     ]
     # Raise ValueError on invalid vertex collection identification
     with pytest.raises(ValueError):
-        adbnx_adapter.networkx_to_arangodb("Drivers", nx_g_1, e_d_1)
+        adbnx_adapter.networkx_to_arangodb(
+            "Drivers", nx_g_1, e_d_1, on_duplicate="replace"
+        )
 
     nx_g_2 = get_likes_graph()
     e_d_2 = [
@@ -251,7 +253,9 @@ def test_nx_to_adb_invalid_collections() -> None:
     ]
     # Raise ValueError on invalid edge collection identification
     with pytest.raises(ValueError):
-        adbnx_adapter.networkx_to_arangodb("Feelings", nx_g_2, e_d_2)
+        adbnx_adapter.networkx_to_arangodb(
+            "Feelings", nx_g_2, e_d_2, on_duplicate="replace"
+        )
 
 
 def test_full_cycle_from_arangodb_with_existing_collections() -> None:

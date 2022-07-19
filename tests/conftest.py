@@ -64,26 +64,36 @@ def pytest_configure(config: Any) -> None:
         db, Football_ADBNX_Controller(), logging_lvl=logging.DEBUG
     )
 
-    arango_restore(con, "examples/data/fraud_dump")
-    arango_restore(con, "examples/data/imdb_dump")
+    if db.has_graph("fraud-detection") is False:
+        arango_restore(con, "examples/data/fraud_dump")
+        db.create_graph(
+            "fraud-detection",
+            edge_definitions=[
+                {
+                    "edge_collection": "accountHolder",
+                    "from_vertex_collections": ["customer"],
+                    "to_vertex_collections": ["account"],
+                },
+                {
+                    "edge_collection": "transaction",
+                    "from_vertex_collections": ["account"],
+                    "to_vertex_collections": ["account"],
+                },
+            ],
+        )
 
-    # Create Fraud Detection Graph
-    adbnx_adapter.db.delete_graph("fraud-detection", ignore_missing=True)
-    adbnx_adapter.db.create_graph(
-        "fraud-detection",
-        edge_definitions=[
-            {
-                "edge_collection": "accountHolder",
-                "from_vertex_collections": ["customer"],
-                "to_vertex_collections": ["account"],
-            },
-            {
-                "edge_collection": "transaction",
-                "from_vertex_collections": ["account"],
-                "to_vertex_collections": ["account"],
-            },
-        ],
-    )
+    if db.has_graph("imdb") is False:
+        arango_restore(con, "examples/data/imdb_dump")
+        db.create_graph(
+            "imdb",
+            edge_definitions=[
+                {
+                    "edge_collection": "Ratings",
+                    "from_vertex_collections": ["Users"],
+                    "to_vertex_collections": ["Movies"],
+                },
+            ],
+        )
 
 
 def arango_restore(con: Json, path_to_data: str) -> None:
