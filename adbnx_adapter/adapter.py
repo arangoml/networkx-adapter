@@ -119,12 +119,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         adb_v: Json
         for v_col, atribs in metagraph["vertexCollections"].items():
-            total = self.__db.collection(v_col).count()
-            logger.debug(f"Preparing {total} '{v_col}' vertices")
+            logger.debug(f"Preparing '{v_col}' vertices")
 
+            cursor = self.__fetch_adb_docs(v_col, atribs, is_keep, query_options)
             for adb_v in tqdm(
-                self.__fetch_adb_docs(v_col, atribs, is_keep, query_options),
-                total=total,
+                cursor,
+                total=cursor.count(),
                 desc=v_col,
                 colour="CYAN",
                 disable=logger.level > logging.INFO,
@@ -142,12 +142,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         adb_e: Json
         for e_col, atribs in metagraph["edgeCollections"].items():
-            total = self.__db.collection(e_col).count()
-            logger.debug(f"Preparing {total} '{e_col}' edges")
+            logger.debug(f"Preparing '{e_col}' edges")
 
+            cursor = self.__fetch_adb_docs(e_col, atribs, is_keep, query_options)
             for adb_e in tqdm(
-                self.__fetch_adb_docs(e_col, atribs, is_keep, query_options),
-                total=total,
+                cursor,
+                total=cursor.count(),
                 desc=e_col,
                 colour="GREEN",
                 disable=logger.level > logging.INFO,
@@ -299,7 +299,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         nx_id: NxId
         nx_node: NxData
-        logger.debug(f"Preparing {nx_graph.number_of_nodes()} NetworkX nodes")
+        logger.debug("Preparing NetworkX nodes")
         for i, (nx_id, nx_node) in enumerate(
             tqdm(
                 nx_graph.nodes(data=True),
@@ -341,7 +341,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         from_node_id: NxId
         to_node_id: NxId
         nx_edge: NxData
-        logger.debug(f"Preparing {nx_graph.number_of_edges()} NetworkX edges")
+        logger.debug("Preparing NetworkX edges")
         for i, (from_node_id, to_node_id, nx_edge) in enumerate(
             tqdm(
                 nx_graph.edges(data=True),
@@ -407,7 +407,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """
         if is_keep:
             aql = f"""
-                FOR doc IN {col}
+                FOR doc IN @@col
                     RETURN MERGE(
                         KEEP(doc, {list(attributes)}),
                         {{"_id": doc._id}},
@@ -415,12 +415,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                     )
             """
         else:
-            aql = f"""
-                FOR doc IN {col}
+            aql = """
+                FOR doc IN @@col
                     RETURN doc
             """
 
-        return self.__db.aql.execute(aql, **query_options)
+        return self.__db.aql.execute(
+            aql, count=True, bind_vars={"@col": col}, **query_options
+        )
 
     def __insert_adb_docs(
         self, adb_documents: DefaultDict[str, List[Json]], import_options: Any
