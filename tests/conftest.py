@@ -1,5 +1,4 @@
 import io
-import logging
 import os
 import subprocess
 import urllib.request as urllib
@@ -11,6 +10,7 @@ import networkx as nx
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from networkx.classes import Graph as NXGraph
+from networkx.classes import MultiGraph as NXMultiGraph
 
 from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 from adbnx_adapter.typings import Json, NxData, NxId
@@ -52,37 +52,41 @@ def pytest_configure(config: Any) -> None:
     )
 
     global adbnx_adapter, imdb_adbnx_adapter, grid_adbnx_adapter, football_adbnx_adapter
-    adbnx_adapter = ADBNX_Adapter(db, logging_lvl=logging.DEBUG)
-    imdb_adbnx_adapter = ADBNX_Adapter(
-        db, IMDB_ADBNX_Controller(), logging_lvl=logging.DEBUG
-    )
-    grid_adbnx_adapter = ADBNX_Adapter(
-        db, Grid_ADBNX_Controller(), logging_lvl=logging.DEBUG
-    )
-    football_adbnx_adapter = ADBNX_Adapter(
-        db, Football_ADBNX_Controller(), logging_lvl=logging.DEBUG
-    )
+    adbnx_adapter = ADBNX_Adapter(db)
+    imdb_adbnx_adapter = ADBNX_Adapter(db, IMDB_ADBNX_Controller())
+    grid_adbnx_adapter = ADBNX_Adapter(db, Grid_ADBNX_Controller())
+    football_adbnx_adapter = ADBNX_Adapter(db, Football_ADBNX_Controller())
 
-    arango_restore(con, "examples/data/fraud_dump")
-    arango_restore(con, "examples/data/imdb_dump")
+    if db.has_graph("fraud-detection") is False:
+        arango_restore(con, "examples/data/fraud_dump")
+        db.create_graph(
+            "fraud-detection",
+            edge_definitions=[
+                {
+                    "edge_collection": "accountHolder",
+                    "from_vertex_collections": ["customer"],
+                    "to_vertex_collections": ["account"],
+                },
+                {
+                    "edge_collection": "transaction",
+                    "from_vertex_collections": ["account"],
+                    "to_vertex_collections": ["account"],
+                },
+            ],
+        )
 
-    # Create Fraud Detection Graph
-    adbnx_adapter.db.delete_graph("fraud-detection", ignore_missing=True)
-    adbnx_adapter.db.create_graph(
-        "fraud-detection",
-        edge_definitions=[
-            {
-                "edge_collection": "accountHolder",
-                "from_vertex_collections": ["customer"],
-                "to_vertex_collections": ["account"],
-            },
-            {
-                "edge_collection": "transaction",
-                "from_vertex_collections": ["account"],
-                "to_vertex_collections": ["account"],
-            },
-        ],
-    )
+    if db.has_graph("imdb") is False:
+        arango_restore(con, "examples/data/imdb_dump")
+        db.create_graph(
+            "imdb",
+            edge_definitions=[
+                {
+                    "edge_collection": "Ratings",
+                    "from_vertex_collections": ["Users"],
+                    "to_vertex_collections": ["Movies"],
+                },
+            ],
+        )
 
 
 def arango_restore(con: Json, path_to_data: str) -> None:
@@ -100,6 +104,20 @@ def arango_restore(con: Json, path_to_data: str) -> None:
         cwd=f"{PROJECT_DIR}/tests",
         shell=True,
     )
+
+
+def get_drivers_graph() -> NXGraph:
+    nx_g = NXGraph()
+    nx_g.add_edge("P-John", "C-BMW")
+    nx_g.add_edge("P-Mark", "C-Audi")
+    return nx_g
+
+
+def get_likes_graph() -> NXMultiGraph:
+    nx_g = NXGraph()
+    nx_g.add_edge("P-John", "P-Emily", _id="JE", likes=True)
+    nx_g.add_edge("P-Emily", "P-John", _id="EJ", likes=False)
+    return nx_g
 
 
 def get_grid_graph(n: int) -> NXGraph:

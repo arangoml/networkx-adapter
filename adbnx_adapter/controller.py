@@ -30,7 +30,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :param col: The ArangoDB collection the vertex belongs to.
         :type col: str
         """
-        return
+        pass
 
     def _prepare_arangodb_edge(self, adb_edge: Json, col: str) -> None:
         """Prepare an ArangoDB edge before it gets inserted into the NetworkX
@@ -44,7 +44,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :param col: The ArangoDB collection the edge belongs to.
         :type col: str
         """
-        return
+        pass
 
     def _identify_networkx_node(
         self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
@@ -53,7 +53,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         identify which ArangoDB vertex collection it should belong to.
 
         NOTE: You must override this function if len(**adb_v_cols**) > 1
-        OR **nx_node_id* does NOT comply to ArangoDB standards
+        AND **nx_node_id* does NOT comply to ArangoDB standards
         (i.e "{collection}/{key}").
 
         :param nx_node_id: The NetworkX ID of the node.
@@ -83,7 +83,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         should belong to.
 
         NOTE #1: You must override this function if len(**adb_e_cols**) > 1
-        OR **nx_edge["_id"]** does NOT comply to ArangoDB standards
+        AND **nx_edge["_id"]** does NOT comply to ArangoDB standards
         (i.e "{collection}/{key}").
 
         NOTE #2: The two nodes associated to the **nx_edge** can be accessed
@@ -127,7 +127,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         # In this case, we assume that **nx_node_id** is already a valid ArangoDB _id
         # Otherwise, user must override this function
         adb_vertex_id: str = str(nx_node_id)
-        return adb_vertex_id.split("/")[1]
+        return self._string_to_arangodb_key_helper(adb_vertex_id.split("/")[1])
 
     def _keyify_networkx_edge(
         self,
@@ -161,7 +161,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         # In this case, we assume that nx_edge["_id"] is already a valid ArangoDB _id
         # Otherwise, user must override this function
         adb_edge_id: str = nx_edge["_id"]
-        return adb_edge_id.split("/")[1]
+        return self._string_to_arangodb_key_helper(adb_edge_id.split("/")[1])
 
     def _string_to_arangodb_key_helper(self, string: str) -> str:
         """Given a string, derive a valid ArangoDB _key string.

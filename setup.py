@@ -14,12 +14,13 @@ setup(
     keywords=["arangodb", "networkx", "adapter"],
     packages=["adbnx_adapter"],
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     license="Apache Software License",
     install_requires=[
         "requests>=2.27.1",
         "python-arango>=7.4.1",
         "networkx>=2.5.1",
+        "tqdm>=4.64.0",
         "setuptools>=45",
     ],
     extras_require={

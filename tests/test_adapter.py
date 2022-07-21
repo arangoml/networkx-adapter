@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List, Optional, Set
 
 import pytest
@@ -12,8 +11,10 @@ from .conftest import (
     adbnx_adapter,
     db,
     football_adbnx_adapter,
+    get_drivers_graph,
     get_football_graph,
     get_grid_graph,
+    get_likes_graph,
     grid_adbnx_adapter,
     imdb_adbnx_adapter,
 )
@@ -221,6 +222,41 @@ def test_nx_to_adb(
     assert_arangodb_data(adapter, nx_g, adb_g, keyify_nodes, keyify_edges)
 
 
+def test_nx_to_adb_invalid_collections() -> None:
+    nx_g_1 = get_drivers_graph()
+    e_d_1 = [
+        {
+            "edge_collection": "drives",
+            "from_vertex_collections": ["Person"],
+            "to_vertex_collections": ["Car"],
+        }
+    ]
+    # Raise ValueError on invalid vertex collection identification
+    with pytest.raises(ValueError):
+        adbnx_adapter.networkx_to_arangodb(
+            "Drivers", nx_g_1, e_d_1, on_duplicate="replace"
+        )
+
+    nx_g_2 = get_likes_graph()
+    e_d_2 = [
+        {
+            "edge_collection": "likes",
+            "from_vertex_collections": ["Person"],
+            "to_vertex_collections": ["Person"],
+        },
+        {
+            "edge_collection": "dislikes",
+            "from_vertex_collections": ["Person"],
+            "to_vertex_collections": ["Person"],
+        },
+    ]
+    # Raise ValueError on invalid edge collection identification
+    with pytest.raises(ValueError):
+        adbnx_adapter.networkx_to_arangodb(
+            "Feelings", nx_g_2, e_d_2, on_duplicate="replace"
+        )
+
+
 def test_full_cycle_from_arangodb_with_existing_collections() -> None:
     name = "fraud-detection"
     original_fraud_adb_g = db.graph(name)
@@ -302,9 +338,7 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             adb_vertex_id: str = str(nx_edge["_id"])
             return adb_vertex_id.split("/")[0] + "_new"
 
-    fraud_adbnx_adapter = ADBNX_Adapter(
-        db, Fraud_ADBNX_Controller(), logging_lvl=logging.DEBUG
-    )
+    fraud_adbnx_adapter = ADBNX_Adapter(db, Fraud_ADBNX_Controller())
 
     new_fraud_adb_g = fraud_adbnx_adapter.networkx_to_arangodb(
         name + "_new",
