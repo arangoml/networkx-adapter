@@ -20,7 +20,7 @@ setup(
         "requests>=2.27.1",
         "python-arango>=7.4.1",
         "networkx>=2.5.1",
-        "tqdm>=4.64.0",
+        "rich>=12.5.1",
         "setuptools>=45",
     ],
     extras_require={
