@@ -322,7 +322,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 else self.__cntrl._identify_networkx_node(nx_id, nx_node, adb_v_cols)
             )
 
-            if col not in adb_v_cols:
+            if not has_one_vcol and col not in adb_v_cols:
                 msg = f"'{nx_id}' identified as '{col}', which is not in {adb_v_cols}"
                 raise ValueError(msg)
 
@@ -373,7 +373,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 )
             )
 
-            if col not in adb_e_cols:
+            if not has_one_ecol and col not in adb_e_cols:
                 msg = f"{edge_str} identified as '{col}', which is not in {adb_e_cols}"
                 raise ValueError(msg)
 
