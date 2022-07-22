@@ -1,3 +1,70 @@
+## 4.2.0 (2022-07-22)
+
+### New
+
+* More adapter housekeeping (#86) [Anthony Mahanna]
+
+  * initial commit
+
+  * cleanup
+
+  * new: debug log on individual node/edge level
+
+  * new: test_nx_to_adb_invalid_collections case
+
+  * fix: mypy
+
+  * cleanup
+
+  * fix: logger debug
+
+  * config cleanup
+
+  * fix: typo
+
+  * new: __insert_adb_docs
+
+  also: cleans up node/edge insertion in ArangoDB to NetworkX
+
+  * Update setup.cfg
+
+  * Update adapter.py
+
+  * cleanup: test config
+
+  * replace: node/edge level debug statements in favor of `tqdm` progress bar
+
+  https://pypi.org/project/tqdm/
+
+  * more cleanup: tests
+
+  * Update adapter.py
+
+  * fix: tqdm as a dependency
+
+  * Update adapter.py
+
+  * Update README.md
+
+  * Update adapter.py
+
+### Fix
+
+* Pragma no cover. [aMahanna]
+
+### Other
+
+* Optimize collection validation. [aMahanna]
+
+* Prep notebook for 4.2.0 release. [aMahanna]
+
+* Replace `tqdm` with `rich` [aMahanna]
+
+* Changelog: release 4.1.0 (#85) [github-actions[bot]]
+
+  !gitchangelog
+
+
 ## 4.1.0 (2022-06-29)
 
 ### New
