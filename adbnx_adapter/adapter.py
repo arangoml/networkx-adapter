@@ -11,12 +11,11 @@ from arango.result import Result
 from networkx.classes.graph import Graph as NXGraph
 from networkx.classes.multidigraph import MultiDiGraph as NXMultiDiGraph
 from rich.progress import track
-from rich.status import Status
 
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
 from .typings import ArangoMetagraph, Json, NxData, NxId
-from .utils import logger
+from .utils import logger, progress
 
 
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):
@@ -430,9 +429,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                     RETURN doc
             """
 
-        return self.__db.aql.execute(
-            aql, count=True, bind_vars={"@col": col}, **query_options
-        )
+        with progress(f"Fetching '{col}' documents") as p:
+            p.add_task("__fetch_adb_docs")
+
+            return self.__db.aql.execute(
+                aql, count=True, bind_vars={"@col": col}, **query_options
+            )
 
     def __insert_adb_docs(
         self, adb_documents: DefaultDict[str, List[Json]], kwargs: Any
@@ -446,10 +448,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             https://docs.python-arango.com/en/main/specs.html#arango.collection.Collection.import_bulk
         """
         for col, doc_list in adb_documents.items():
-            with Status(
-                f"POST /_api/import '{col}' ({len(doc_list)})",
-                spinner="aesthetic",
-                spinner_style="cyan",
-            ):
+            with progress(f"Inserting '{col}' documents ({len(doc_list)})") as p:
+                p.add_task("__insert_adb_docs")
+
                 result = self.__db.collection(col).import_bulk(doc_list, **kwargs)
                 logger.debug(result)
