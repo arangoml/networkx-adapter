@@ -248,6 +248,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type edge_definitions: List[adbnx_adapter.typings.Json]
         :param orphan_collections: A list of vertex collections that will be stored as
             orphans in the ArangoDB graph. Can be omitted if the graph already exists.
+        :type orphan_collections: List[str]
         :param keyify_nodes: If set to True, will create custom vertex keys based on the
             behavior of ADBNX_Controller._keyify_networkx_node(). Otherwise, ArangoDB
             _key values for vertices will range from 1 to N, where N is the number of
