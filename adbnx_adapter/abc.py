@@ -19,7 +19,7 @@ class Abstract_ADBNX_Adapter(ABC):
         self,
         name: str,
         metagraph: ArangoMetagraph,
-        is_keep: bool = True,
+        explicit_metagraph: bool = True,
         **query_options: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
@@ -43,6 +43,7 @@ class Abstract_ADBNX_Adapter(ABC):
         name: str,
         nx_graph: NXGraph,
         edge_definitions: Optional[List[Json]] = None,
+        orphan_collections: Optional[List[str]] = None,
         keyify_nodes: bool = False,
         keyify_edges: bool = False,
         overwrite_graph: bool = False,

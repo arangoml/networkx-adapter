@@ -69,7 +69,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self,
         name: str,
         metagraph: ArangoMetagraph,
-        is_keep: bool = True,
+        explicit_metagraph: bool = True,
         **query_options: Any,
     ) -> NXMultiDiGraph:
         """Create a NetworkX graph from graph attributes.
@@ -79,10 +79,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param metagraph: An object defining vertex & edge collections to import to
             NetworkX, along with their associated attributes to keep.
         :type metagraph: adbnx_adapter.typings.ArangoMetagraph
-        :param is_keep: Only keep the document attributes specified in **metagraph**
-            when importing to NetworkX (is True by default). Otherwise, all document
-            attributes are included.
-        :type is_keep: bool
+        :param explicit_metagraph: Only keep the document attributes specified in
+            **metagraph** when importing to NetworkX (is True by default). Otherwise,
+            all document attributes are included. Defaults to True.
+        :type explicit_metagraph: bool
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
@@ -122,7 +122,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             logger.debug(f"Preparing '{v_col}' vertices")
 
             nx_nodes.clear()
-            cursor = self.__fetch_adb_docs(v_col, atribs, is_keep, query_options)
+            cursor = self.__fetch_adb_docs(
+                v_col, atribs, explicit_metagraph, query_options
+            )
             for adb_v in track(
                 cursor,
                 total=cursor.count(),
@@ -145,7 +147,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         for e_col, atribs in metagraph["edgeCollections"].items():
             logger.debug(f"Preparing '{e_col}' edges")
 
-            cursor = self.__fetch_adb_docs(e_col, atribs, is_keep, query_options)
+            cursor = self.__fetch_adb_docs(
+                e_col, atribs, explicit_metagraph, query_options
+            )
             for adb_e in track(
                 cursor,
                 total=cursor.count(),
@@ -194,7 +198,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         }
 
         return self.arangodb_to_networkx(
-            name, metagraph, is_keep=False, **query_options
+            name, metagraph, explicit_metagraph=False, **query_options
         )
 
     def arangodb_graph_to_networkx(
@@ -224,6 +228,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         name: str,
         nx_graph: NXGraph,
         edge_definitions: Optional[List[Json]] = None,
+        orphan_collections: Optional[List[str]] = None,
         keyify_nodes: bool = False,
         keyify_edges: bool = False,
         overwrite_graph: bool = False,
@@ -241,6 +246,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             "from_vertex_collections" and "to_vertex_collections" (see below
             for example). Can be omitted if the graph already exists.
         :type edge_definitions: List[adbnx_adapter.typings.Json]
+        :param orphan_collections: A list of vertex collections that will be stored as
+            orphans in the ArangoDB graph. Can be omitted if the graph already exists.
         :param keyify_nodes: If set to True, will create custom vertex keys based on the
             behavior of ADBNX_Controller._keyify_networkx_node(). Otherwise, ArangoDB
             _key values for vertices will range from 1 to N, where N is the number of
@@ -283,7 +290,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             adb_graph = self.__db.graph(name)
         else:
             logger.debug(f"Creating graph {name}")
-            adb_graph = self.__db.create_graph(name, edge_definitions)
+            adb_graph = self.__db.create_graph(
+                name, edge_definitions, orphan_collections
+            )
 
         adb_v_cols: List[str] = adb_graph.vertex_collections()
         adb_e_cols: List[str] = [
@@ -397,7 +406,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         return adb_graph
 
     def __fetch_adb_docs(
-        self, col: str, attributes: Set[str], is_keep: bool, query_options: Any
+        self,
+        col: str,
+        attributes: Set[str],
+        explicit_metagraph: bool,
+        query_options: Any,
     ) -> Result[Cursor]:
         """Fetches ArangoDB documents within a collection.
 
@@ -405,16 +418,17 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type col: str
         :param attributes: The set of document attributes.
         :type attributes: Set[str]
-        :param is_keep: Only keep the attributes specified in **attributes** when
-            returning the document. Otherwise, all document attributes are included.
-        :type is_keep: bool
+        :param explicit_metagraph: If True, only return the set of **attributes**
+            specified when fetching the documents of the collection **col**.
+            If False, all document attributes are included.
+        :type explicit_metagraph: bool
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance.
         :type query_options: Any
         :return: Result cursor.
         :rtype: arango.cursor.Cursor
         """
-        if is_keep:
+        if explicit_metagraph:
             aql = f"""
                 FOR doc IN @@col
                     RETURN MERGE(

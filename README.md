@@ -46,26 +46,29 @@ Also available as an ArangoDB Lunch & Learn session: [Graph & Beyond Course #2.9
 
 ```py
 from arango import ArangoClient # Python-Arango driver
-from networkx import grid_2d_graph # Sample graph from NetworkX
+import networkx as nx
 
-from adbnx_adapter import ADBNX_Adapter
+from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 
 # Let's assume that the ArangoDB "fraud detection" dataset is imported to this endpoint
 db = ArangoClient(hosts="http://localhost:8529").db("_system", username="root", password="")
 
 adbnx_adapter = ADBNX_Adapter(db)
+```
 
-# Use Case 1.1: ArangoDB to NetworkX via Graph name
-nx_fraud_graph = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
+### ArangoDB to NetworkX
+```py
+# 1.1: ArangoDB to NetworkX via Graph name
+nx_g = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
 
-# Use Case 1.2: ArangoDB to NetworkX via Collection names
-nx_fraud_graph_2 = adbnx_adapter.arangodb_collections_to_networkx(
+# 1.2: ArangoDB to NetworkX via Collection names
+nx_g = adbnx_adapter.arangodb_collections_to_networkx(
     "fraud-detection", 
     {"account", "bank", "branch", "Class", "customer"}, # Vertex collections
     {"accountHolder", "Relationship", "transaction"} # Edge collections
 )
 
-# Use Case 1.3: ArangoDB to NetworkX via Metagraph
+# 1.3: ArangoDB to NetworkX via Metagraph
 metagraph = {
     "vertexCollections": {
         "account": {"Balance", "account_type", "customer_id", "rank"},
@@ -76,18 +79,88 @@ metagraph = {
         "accountHolder": {},
     },
 }
-nx_fraud_graph_3 = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
+nx_g = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
 
-# Use Case 2: NetworkX to ArangoDB
-nx_grid_graph = grid_2d_graph(5, 5)
-adb_grid_edge_definitions = [
+
+# 1.4: ArangoDB to NetworkX with a custom ADBNX Controller
+class Custom_ADBNX_Controller(ADBNX_Controller):
+    """ArangoDB-NetworkX controller.
+
+    Responsible for controlling how nodes & edges are handled when
+    transitioning from ArangoDB to NetworkX, and vice-versa.
+    """
+
+    def _prepare_arangodb_vertex(self, adb_vertex: dict, col: str) -> None:
+        """Prepare an ArangoDB vertex before it gets inserted into the NetworkX
+        graph.
+
+        :param adb_vertex: The ArangoDB vertex object to (optionally) modify.
+        :param col: The ArangoDB collection the vertex belongs to.
+        """
+        adb_vertex["foo"] = "bar"
+
+    def _prepare_arangodb_edge(self, adb_edge: dict, col: str) -> None:
+        """Prepare an ArangoDB edge before it gets inserted into the NetworkX
+        graph.
+
+        :param adb_edge: The ArangoDB edge object to (optionally) modify.
+        :param col: The ArangoDB collection the edge belongs to.
+        """
+        adb_edge["bar"] = "foo"
+
+nx_g = ADBNX_Adapter(db, Custom_ADBNX_Controller()).arangodb_graph_to_networkx("fraud-detection")
+```
+
+### NetworkX to ArangoDB
+```py
+# 2.1: NetworkX Homogeneous graph to ArangoDB
+nx_g = nx.grid_2d_graph(5, 5)
+edge_definitions = [
     {
         "edge_collection": "to",
         "from_vertex_collections": ["Grid_Node"],
         "to_vertex_collections": ["Grid_Node"],
     }
 ]
-adb_grid_graph = adbnx_adapter.networkx_to_arangodb("Grid", nx_grid_graph, adb_grid_edge_definitions)
+adb_g = adbnx_adapter.networkx_to_arangodb("Grid", nx_g, edge_definitions)
+
+# 2.2: NetworkX Heterogeneous graph to ArangoDB with ArangoDB-formatted node IDs
+edges = []
+for i in range(1, 101):
+    for j in range(1, 101):
+        if j % i == 0:
+            # Notice that the NetworkX node IDs are following ArangoDB _id formatting standards (i.e `collection_name/node_key`)
+            edges.append((f"numbers_j/{j}", f"numbers_i/{i}", j / i)) 
+
+nx_g = nx.MultiDiGraph()
+nx_g.add_weighted_edges_from(edges)
+
+edge_definitions = [
+    {
+        "edge_collection": "is_divisible_by",
+        "from_vertex_collections": ["numbers_j"],
+        "to_vertex_collections": ["numbers_i"],
+    }
+]
+adb_g = adbnx_adapter.networkx_to_arangodb("Divisibility", nx_g, edge_definitions, keyify_nodes=True)
+
+# 2.3 NetworkX Heterogeneous graph to ArangoDB with non-ArangoDB-formatted node IDs
+edges = [
+   ('student:101', 'lecture:101'), 
+   ('student:102', 'lecture:102'), 
+   ('student:103', 'lecture:103'), 
+   ('student:103', 'student:101'), 
+   ('student:103', 'student:102'),
+   ('teacher:101', 'lecture:101'),
+   ('teacher:102', 'lecture:102'),
+   ('teacher:103', 'lecture:103'),
+   ('teacher:101', 'teacher:102'),
+   ('teacher:102', 'teacher:103')
+]
+nx_graph = nx.MultiDiGraph()
+nx_graph.add_edges_from(edges)
+
+### Learn how this example is handled in Colab: https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb#scrollTo=OuU0J7p1E9OM
 ```
 
 ##  Development & Testing

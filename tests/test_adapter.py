@@ -137,7 +137,7 @@ def test_adb_graph_to_nx(
 
 
 @pytest.mark.parametrize(
-    "adapter, name, nx_g, edge_definitions, \
+    "adapter, name, nx_g, edge_definitions, orphan_collections, \
         keyify_nodes, keyify_edges, overwrite_graph, import_options",
     [
         (
@@ -151,6 +151,7 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Grid_Node_v1"],
                 }
             ],
+            None,
             False,
             False,
             True,
@@ -160,6 +161,7 @@ def test_adb_graph_to_nx(
             adbnx_adapter,
             "Grid",
             get_grid_graph(25),
+            None,
             None,
             False,
             False,
@@ -177,6 +179,7 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Grid_Node_v2"],
                 }
             ],
+            None,
             True,
             False,
             True,
@@ -193,6 +196,7 @@ def test_adb_graph_to_nx(
                     "to_vertex_collections": ["Football_Team"],
                 }
             ],
+            None,
             True,
             False,
             True,
@@ -205,6 +209,7 @@ def test_nx_to_adb(
     name: str,
     nx_g: NXGraph,
     edge_definitions: Optional[List[Json]],
+    orphan_collections: Optional[List[str]],
     keyify_nodes: bool,
     keyify_edges: bool,
     overwrite_graph: bool,
@@ -214,6 +219,7 @@ def test_nx_to_adb(
         name,
         nx_g,
         edge_definitions,
+        orphan_collections,
         keyify_nodes,
         keyify_edges,
         overwrite_graph,
@@ -390,7 +396,7 @@ def test_full_cycle_from_networkx() -> None:
 
 
 def assert_networkx_data(
-    nx_g: NXGraph, metagraph: ArangoMetagraph, is_keep: bool = False
+    nx_g: NXGraph, metagraph: ArangoMetagraph, explicit_metagraph: bool = False
 ) -> None:
     adb_vertex: Json
     for col, atribs in metagraph["vertexCollections"].items():
@@ -398,7 +404,7 @@ def assert_networkx_data(
             adb_id: str = adb_vertex["_id"]
             nx_node: NxData = nx_g.nodes[adb_id]
 
-            if is_keep:
+            if explicit_metagraph:
                 for atrib in atribs:
                     if atrib in adb_vertex:
                         assert adb_vertex[atrib] == nx_node[atrib]
@@ -412,7 +418,7 @@ def assert_networkx_data(
 
             # (there can be multiple edges with the same _from & _to values)
             has_edge_match: bool = False
-            if is_keep:
+            if explicit_metagraph:
                 for nx_edge in nx_edges.values():
                     has_edge_match = all(
                         [adb_edge[a] == nx_edge[a] for a in atribs if a in adb_edge]
