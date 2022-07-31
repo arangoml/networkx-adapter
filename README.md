@@ -124,7 +124,7 @@ edge_definitions = [
 ]
 adb_g = adbnx_adapter.networkx_to_arangodb("Grid", nx_g, edge_definitions)
 
-# 2.2: NetworkX Heterogeneous graph to ArangoDB with ArangoDB-formatted node IDs
+# 2.2: NetworkX Heterogeneous graph to ArangoDB with ArangoDB node IDs
 edges = []
 for i in range(1, 101):
     for j in range(1, 101):
@@ -144,7 +144,7 @@ edge_definitions = [
 ]
 adb_g = adbnx_adapter.networkx_to_arangodb("Divisibility", nx_g, edge_definitions, keyify_nodes=True)
 
-# 2.3 NetworkX Heterogeneous graph to ArangoDB with non-ArangoDB-formatted node IDs
+# 2.3 NetworkX Heterogeneous graph to ArangoDB with non-ArangoDB node IDs
 edges = [
    ('student:101', 'lecture:101'), 
    ('student:102', 'lecture:102'), 
@@ -157,8 +157,8 @@ edges = [
    ('teacher:101', 'teacher:102'),
    ('teacher:102', 'teacher:103')
 ]
-nx_graph = nx.MultiDiGraph()
-nx_graph.add_edges_from(edges)
+nx_g = nx.MultiDiGraph()
+nx_g.add_edges_from(edges)
 
 ### Learn how this example is handled in Colab: https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb#scrollTo=OuU0J7p1E9OM
 ```
