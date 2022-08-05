@@ -10,12 +10,11 @@ from arango.graph import Graph as ADBGraph
 from arango.result import Result
 from networkx.classes.graph import Graph as NXGraph
 from networkx.classes.multidigraph import MultiDiGraph as NXMultiDiGraph
-from rich.progress import track
 
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
 from .typings import ArangoMetagraph, Json, NxData, NxId
-from .utils import logger, progress
+from .utils import logger, progress, track_adb, track_nx
 
 
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):
@@ -124,14 +123,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             cursor = self.__fetch_adb_docs(
                 v_col, atribs, explicit_metagraph, query_options
             )
-            for adb_v in track(
-                cursor,
-                total=cursor.count(),
-                description=v_col,
-                complete_style="#079DE8",
-                finished_style="#079DE8",
-                disable=logger.level != logging.INFO,
-            ):
+            for adb_v in track_adb(cursor, v_col, "#079DE8"):
                 adb_id: str = adb_v["_id"]
                 self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
                 nx_id: str = adb_v["_id"]
@@ -150,14 +142,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             cursor = self.__fetch_adb_docs(
                 e_col, atribs, explicit_metagraph, query_options
             )
-            for adb_e in track(
-                cursor,
-                total=cursor.count(),
-                description=e_col,
-                complete_style="#FA7D05",
-                finished_style="#FA7D05",
-                disable=logger.level != logging.INFO,
-            ):
+            for adb_e in track_adb(cursor, e_col, "#FA7D05"):
                 from_node_id: NxId = adb_map[adb_e["_from"]]
                 to_node_id: NxId = adb_map[adb_e["_to"]]
 
@@ -315,13 +300,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_node: NxData
         logger.debug("Preparing NetworkX nodes")
         for i, (nx_id, nx_node) in enumerate(
-            track(
-                nx_graph.nodes(data=True),
-                description="Nodes",
-                complete_style="#97C423",
-                finished_style="#97C423",
-                disable=logger.level != logging.INFO,
-            ),
+            track_nx(nx_graph.nodes(data=True), "Nodes", "#97C423"),
             1,
         ):
             logger.debug(f"N{i}: {nx_id}")
@@ -361,13 +340,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_edge: NxData
         logger.debug("Preparing NetworkX edges")
         for i, (from_node_id, to_node_id, nx_edge) in enumerate(
-            track(
-                nx_graph.edges(data=True),
-                description="Edges",
-                complete_style="#5E3108",
-                finished_style="#5E3108",
-                disable=logger.level != logging.INFO,
-            ),
+            track_nx(nx_graph.edges(data=True), "Edges", "#5E3108"),
             1,
         ):
             edge_str = f"({from_node_id}, {to_node_id})"
