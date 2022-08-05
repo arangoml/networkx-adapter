@@ -46,9 +46,9 @@ def track_adb(cursor: Cursor, text: str, colour: str) -> Any:
     )
 
 
-def track_nx(nx_view: Union[NodeView, EdgeView], text: str, colour: str) -> Any:
+def track_nx(nx_data: Union[NodeView, EdgeView], text: str, colour: str) -> Any:
     return track(
-        nx_view,
+        nx_data,
         description=text,
         complete_style=colour,
         finished_style=colour,
