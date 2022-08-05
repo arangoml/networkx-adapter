@@ -147,6 +147,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         for e_col, atribs in metagraph["edgeCollections"].items():
             logger.debug(f"Preparing '{e_col}' edges")
 
+            nx_edges.clear()
             cursor = self.__fetch_adb_docs(
                 e_col, atribs, explicit_metagraph, query_options
             )
@@ -341,15 +342,16 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 else str(i)
             )
 
-            adb_v_id = col + "/" + key
+            nx_node.update({"_key": key})
+            self.__cntrl._prepare_networkx_node(nx_node, col)
+            adb_documents[col].append(nx_node)
+
             nx_map[nx_id] = {
                 "nx_id": nx_id,
-                "adb_id": adb_v_id,
+                "adb_id": col + "/" + key,
                 "adb_col": col,
                 "adb_key": key,
             }
-
-            adb_documents[col].append({**nx_node, "_id": adb_v_id})
 
         self.__insert_adb_docs(adb_documents, import_options)
         adb_documents.clear()  # for memory purposes
@@ -392,14 +394,16 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 else str(i)
             )
 
-            adb_documents[col].append(
+            nx_edge.update(
                 {
-                    **nx_edge,
                     "_id": col + "/" + key,
                     "_from": from_n["adb_id"],
                     "_to": to_n["adb_id"],
                 }
             )
+
+            self.__cntrl._prepare_networkx_edge(nx_edge, col)
+            adb_documents[col].append(nx_edge)
 
         self.__insert_adb_docs(adb_documents, import_options)
 

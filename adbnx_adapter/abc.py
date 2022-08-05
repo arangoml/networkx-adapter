@@ -91,6 +91,20 @@ class Abstract_ADBNX_Controller(ABC):
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
+    def _prepare_networkx_node(
+        self,
+        nx_node: Json,
+        col: str,
+    ) -> None:
+        raise NotImplementedError  # pragma: no cover
+
+    def _prepare_networkx_edge(
+        self,
+        nx_node: Json,
+        col: str,
+    ) -> None:
+        raise NotImplementedError  # pragma: no cover
+
     @property
     def VALID_KEY_CHARS(self) -> Set[str]:
         return {

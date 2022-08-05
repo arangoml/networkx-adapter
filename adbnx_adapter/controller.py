@@ -163,6 +163,38 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         adb_edge_id: str = nx_edge["_id"]
         return self._string_to_arangodb_key_helper(adb_edge_id.split("/")[1])
 
+    def _prepare_networkx_node(self, nx_node: Json, col: str) -> None:
+        """Prepare a NetworkX node before it gets inserted into the ArangoDB
+        collection **col**.
+
+        Given an ArangoDB representation of a NetworkX node (i.e {_key: ..., ...}),
+        you can (optionally) modify the object before it gets inserted into its
+        designated ArangoDB collection.
+
+        :param nx_node: The ArangoDB representation of the NetworkX node
+            to (optionally) modify.
+        :type nx_node: adbnx_adapter.typings.Json
+        :param col: The ArangoDB collection associated to the node.
+        :type col: str
+        """
+        pass
+
+    def _prepare_networkx_edge(self, nx_edge: Json, col: str) -> None:
+        """Prepare a NetworkX edge before it gets inserted into the ArangoDB
+        collection **col**.
+
+        Given an ArangoDB representation of a NetworkX edge
+        (i.e {_key: ..., _from: ..., _to: ..., ...}), you can (optionally) modify
+        the object before it gets inserted into its designated ArangoDB collection.
+
+        :param nx_edge: The ArangoDB representation of the NetworkX edge
+            to (optionally) modify.
+        :type nx_edge: adbnx_adapter.typings.Json
+        :param col: The ArangoDB collection associated to the edge.
+        :type col: str
+        """
+        pass
+
     def _string_to_arangodb_key_helper(self, string: str) -> str:
         """Given a string, derive a valid ArangoDB _key string.
 
