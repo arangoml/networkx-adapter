@@ -124,7 +124,35 @@ edge_definitions = [
 ]
 adb_g = adbnx_adapter.networkx_to_arangodb("Grid", nx_g, edge_definitions)
 
-# 2.2: NetworkX Heterogeneous graph to ArangoDB with ArangoDB node IDs
+# 2.2: NetworkX to ArangoDB with a custom ADBNX Controller
+class Custom_ADBNX_Controller(ADBNX_Controller):
+    """ArangoDB-NetworkX controller.
+
+    Responsible for controlling how nodes & edges are handled when
+    transitioning from ArangoDB to NetworkX, and vice-versa.
+    """
+
+    def _prepare_networkx_node(self, nx_node: dict, col: str) -> None:
+        """Prepare a NetworkX node before it gets inserted into the ArangoDB
+        collection **col**.
+
+        :param nx_node: The NetworkX node object to (optionally) modify.
+        :param col: The ArangoDB collection the node belongs to.
+        """
+        nx_node["foo"] = "bar"
+
+    def _prepare_networkx_edge(self, nx_edge: dict, col: str) -> None:
+        """Prepare a NetworkX edge before it gets inserted into the ArangoDB
+        collection **col**.
+
+        :param nx_edge: The NetworkX edge object to (optionally) modify.
+        :param col: The ArangoDB collection the edge belongs to.
+        """
+        nx_edge["bar"] = "foo"
+
+adb_g = ADBNX_Adapter(db, Custom_ADBNX_Controller()).networkx_to_arangodb("Grid", nx_g, edge_definitions)
+
+# 2.3: NetworkX Heterogeneous graph to ArangoDB with ArangoDB node IDs
 edges = []
 for i in range(1, 101):
     for j in range(1, 101):
@@ -144,7 +172,7 @@ edge_definitions = [
 ]
 adb_g = adbnx_adapter.networkx_to_arangodb("Divisibility", nx_g, edge_definitions, keyify_nodes=True)
 
-# 2.3 NetworkX Heterogeneous graph to ArangoDB with non-ArangoDB node IDs
+# 2.4 NetworkX Heterogeneous graph to ArangoDB with non-ArangoDB node IDs
 edges = [
    ('student:101', 'lecture:101'), 
    ('student:102', 'lecture:102'), 
@@ -159,6 +187,8 @@ edges = [
 ]
 nx_g = nx.MultiDiGraph()
 nx_g.add_edges_from(edges)
+
+# ...
 
 ### Learn how this example is handled in Colab: https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb#scrollTo=OuU0J7p1E9OM
 ```
