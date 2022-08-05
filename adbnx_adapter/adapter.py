@@ -121,7 +121,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         for v_col, atribs in metagraph["vertexCollections"].items():
             logger.debug(f"Preparing '{v_col}' vertices")
 
-            nx_nodes.clear()
             cursor = self.__fetch_adb_docs(
                 v_col, atribs, explicit_metagraph, query_options
             )
@@ -142,12 +141,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             logger.debug(f"Inserting {len(nx_nodes)} '{v_col}' vertices")
             nx_graph.add_nodes_from(nx_nodes)
+            nx_nodes.clear()
 
         adb_e: Json
         for e_col, atribs in metagraph["edgeCollections"].items():
             logger.debug(f"Preparing '{e_col}' edges")
 
-            nx_edges.clear()
             cursor = self.__fetch_adb_docs(
                 e_col, atribs, explicit_metagraph, query_options
             )
@@ -167,6 +166,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             logger.debug(f"Inserting {len(nx_edges)} '{e_col}' edges")
             nx_graph.add_edges_from(nx_edges)
+            nx_edges.clear()
 
         logger.info(f"Created NetworkX '{name}' Graph")
         return nx_graph
