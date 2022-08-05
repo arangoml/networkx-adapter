@@ -4,13 +4,7 @@ from typing import Any, Union
 
 from arango.aql import Cursor
 from networkx.classes.graph import EdgeView, NodeView
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    TimeElapsedColumn,
-    track,
-)
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn, track
 
 logger = logging.getLogger(__package__)
 handler = logging.StreamHandler()
