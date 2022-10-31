@@ -1,10 +1,9 @@
 import logging
 import os
-from typing import Any, Union
+from typing import Any
 
-from arango.aql import Cursor
-from networkx.classes.graph import EdgeView, NodeView
-from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn, track
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+from rich.progress import track as progress_track
 
 logger = logging.getLogger(__package__)
 handler = logging.StreamHandler()
@@ -29,20 +28,10 @@ def progress(
     )
 
 
-def track_adb(cursor: Cursor, text: str, colour: str) -> Any:
-    return track(
-        cursor,
-        total=cursor.count(),
-        description=text,
-        complete_style=colour,
-        finished_style=colour,
-        disable=logger.level != logging.INFO,
-    )
-
-
-def track_nx(nx_data: Union[NodeView, EdgeView], text: str, colour: str) -> Any:
-    return track(
-        nx_data,
+def track(sequence: Any, total: int, text: str, colour: str) -> Any:
+    return progress_track(
+        sequence,
+        total=total,
         description=text,
         complete_style=colour,
         finished_style=colour,

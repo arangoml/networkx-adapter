@@ -14,7 +14,7 @@ from networkx.classes.multidigraph import MultiDiGraph as NXMultiDiGraph
 from .abc import Abstract_ADBNX_Adapter
 from .controller import ADBNX_Controller
 from .typings import ArangoMetagraph, Json, NxData, NxId
-from .utils import logger, progress, track_adb, track_nx
+from .utils import logger, progress, track
 
 
 class ADBNX_Adapter(Abstract_ADBNX_Adapter):
@@ -123,7 +123,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             cursor = self.__fetch_adb_docs(
                 v_col, atribs, explicit_metagraph, query_options
             )
-            for adb_v in track_adb(cursor, v_col, "#079DE8"):
+
+            for adb_v in track(cursor, cursor.count(), v_col, "#079DE8"):
                 adb_id: str = adb_v["_id"]
                 self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
                 nx_id: str = adb_v["_id"]
@@ -142,7 +143,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             cursor = self.__fetch_adb_docs(
                 e_col, atribs, explicit_metagraph, query_options
             )
-            for adb_e in track_adb(cursor, e_col, "#FA7D05"):
+
+            for adb_e in track(cursor, cursor.count(), e_col, "#FA7D05"):
                 from_node_id: NxId = adb_map[adb_e["_from"]]
                 to_node_id: NxId = adb_map[adb_e["_to"]]
 
@@ -298,9 +300,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         nx_id: NxId
         nx_node: NxData
+        nx_nodes = nx_graph.nodes(data=True)
+
         logger.debug("Preparing NetworkX nodes")
         for i, (nx_id, nx_node) in enumerate(
-            track_nx(nx_graph.nodes(data=True), "Nodes", "#97C423"),
+            track(nx_nodes, len(nx_nodes), "Nodes", "#97C423"),
             1,
         ):
             logger.debug(f"N{i}: {nx_id}")
@@ -338,9 +342,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         from_node_id: NxId
         to_node_id: NxId
         nx_edge: NxData
+        nx_edges = nx_graph.edges(data=True)
+
         logger.debug("Preparing NetworkX edges")
         for i, (from_node_id, to_node_id, nx_edge) in enumerate(
-            track_nx(nx_graph.edges(data=True), "Edges", "#5E3108"),
+            track(nx_edges, len(nx_edges), "Edges", "#5E3108"),
             1,
         ):
             edge_str = f"({from_node_id}, {to_node_id})"
