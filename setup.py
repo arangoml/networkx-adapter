@@ -14,7 +14,7 @@ setup(
     keywords=["arangodb", "networkx", "adapter"],
     packages=["adbnx_adapter"],
     include_package_data=True,
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     license="Apache Software License",
     install_requires=[
         "requests>=2.27.1",
@@ -40,7 +40,6 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
