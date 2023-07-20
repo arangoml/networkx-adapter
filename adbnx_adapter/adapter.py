@@ -120,11 +120,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         for v_col, atribs in metagraph["vertexCollections"].items():
             logger.debug(f"Preparing '{v_col}' vertices")
 
+            total: int = self.db.collection(v_col).count()  # type: ignore
             cursor = self.__fetch_adb_docs(
                 v_col, atribs, explicit_metagraph, query_options
             )
 
-            for adb_v in track(cursor, cursor.count(), v_col, "#079DE8"):
+            for adb_v in track(cursor, total, v_col, "#079DE8"):
                 adb_id: str = adb_v["_id"]
                 self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
                 nx_id: str = adb_v["_id"]
@@ -140,11 +141,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         for e_col, atribs in metagraph["edgeCollections"].items():
             logger.debug(f"Preparing '{e_col}' edges")
 
+            total: int = self.db.collection(e_col).count()  # type: ignore
             cursor = self.__fetch_adb_docs(
                 e_col, atribs, explicit_metagraph, query_options
             )
 
-            for adb_e in track(cursor, cursor.count(), e_col, "#FA7D05"):
+            for adb_e in track(cursor, total, e_col, "#FA7D05"):
                 from_node_id: NxId = adb_map[adb_e["_from"]]
                 to_node_id: NxId = adb_map[adb_e["_to"]]
 
@@ -204,8 +206,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
         graph = self.__db.graph(name)
-        v_cols = graph.vertex_collections()
-        e_cols = {col["edge_collection"] for col in graph.edge_definitions()}
+        v_cols: Set[str] = graph.vertex_collections()  # type: ignore
+        edge_definitions: List[Json] = graph.edge_definitions()  # type: ignore
+        e_cols: Set[str] = {c["edge_collection"] for c in edge_definitions}
 
         return self.arangodb_collections_to_networkx(
             name, v_cols, e_cols, **query_options
@@ -281,11 +284,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             logger.debug(f"Creating graph {name}")
             adb_graph = self.__db.create_graph(
                 name, edge_definitions, orphan_collections
-            )
+            )  # type: ignore
 
-        adb_v_cols: List[str] = adb_graph.vertex_collections()
+        adb_v_cols: List[str] = adb_graph.vertex_collections()  # type: ignore
         adb_e_cols: List[str] = [
-            e_d["edge_collection"] for e_d in adb_graph.edge_definitions()
+            c["edge_collection"] for c in adb_graph.edge_definitions()  # type: ignore
         ]
 
         has_one_vcol = len(adb_v_cols) == 1

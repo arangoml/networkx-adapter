@@ -30,7 +30,7 @@ def test_validate_constructor() -> None:
         ADBNX_Adapter(bad_db)
 
     with pytest.raises(TypeError):
-        ADBNX_Adapter(db, Bad_ADBNX_Controller())  # type: ignore
+        ADBNX_Adapter(db, Bad_ADBNX_Controller())
 
 
 @pytest.mark.parametrize(
@@ -122,9 +122,10 @@ def test_adb_graph_to_nx(
         db.delete_graph(name, ignore_missing=True)
         db.create_graph(name, edge_definitions=edge_definitions)
 
-    arango_graph = db.graph(name)
-    v_cols = arango_graph.vertex_collections()
-    e_cols = {col["edge_collection"] for col in arango_graph.edge_definitions()}
+    graph = db.graph(name)
+    v_cols: Set[str] = graph.vertex_collections()
+    edge_definitions: List[Json] = graph.edge_definitions()
+    e_cols: Set[str] = {c["edge_collection"] for c in edge_definitions}
 
     nx_g = adapter.arangodb_graph_to_networkx(name)
     assert_networkx_data(
@@ -266,14 +267,14 @@ def test_nx_to_adb_invalid_collections() -> None:
 def test_full_cycle_from_arangodb_with_existing_collections() -> None:
     name = "fraud-detection"
     original_fraud_adb_g = db.graph(name)
-    edge_definitions = original_fraud_adb_g.edge_definitions()
+    edge_definitions: List[Json] = original_fraud_adb_g.edge_definitions()
 
     col: str
     original_doc_count = dict()
     for col in original_fraud_adb_g.vertex_collections():
         original_doc_count[col] = original_fraud_adb_g.vertex_collection(col).count()
 
-    e_cols = {col["edge_collection"] for col in original_fraud_adb_g.edge_definitions()}
+    e_cols = {e_d["edge_collection"] for e_d in edge_definitions}
     for col in e_cols:
         original_doc_count[col] = original_fraud_adb_g.edge_collection(col).count()
 
@@ -361,7 +362,9 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
         for vertex in original_fraud_adb_g.vertex_collection(col):
             assert new_fraud_adb_g.vertex_collection(new_col).has(vertex["_key"])
 
-    e_cols = {col["edge_collection"] for col in original_fraud_adb_g.edge_definitions()}
+    original_edge_definitions = original_fraud_adb_g.edge_definitions()
+    e_cols = {e_d["edge_collection"] for e_d in original_edge_definitions}
+
     for col in e_cols:
         new_col = col + "_new"
         for edge in original_fraud_adb_g.edge_collection(col):
@@ -443,8 +446,8 @@ def assert_arangodb_data(
 ) -> None:
     nx_map = dict()
 
-    adb_v_cols = adb_g.vertex_collections()
-    adb_e_cols = [e_d["edge_collection"] for e_d in adb_g.edge_definitions()]
+    adb_v_cols: List[str] = adb_g.vertex_collections()
+    adb_e_cols: List[str] = [c["edge_collection"] for c in adb_g.edge_definitions()]
 
     has_one_vcol = len(adb_v_cols) == 1
     has_one_ecol = len(adb_e_cols) == 1
@@ -469,7 +472,7 @@ def assert_arangodb_data(
             "adb_key": key,
         }
 
-        adb_vertex = adb_g.vertex_collection(col).get(key)
+        adb_vertex: Json = adb_g.vertex_collection(col).get(key)
         for key, val in nx_node.items():
             assert val == adb_vertex[key]
 
