@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC
-from typing import Any, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from arango.graph import Graph as ADBGraph
 from networkx.classes.graph import Graph as NXGraph
@@ -73,9 +73,10 @@ class Abstract_ADBNX_Controller(ABC):
     def _identify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_node: NxData,
-        to_nx_node: NxData,
+        from_nx_id: NxId,
+        to_nx_id: NxId,
         adb_e_cols: List[str],
+        nx_map: Dict[NxId, str],
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
@@ -85,9 +86,10 @@ class Abstract_ADBNX_Controller(ABC):
     def _keyify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_node: NxData,
-        to_nx_node: NxData,
+        from_nx_id: NxId,
+        to_nx_id: NxId,
         col: str,
+        nx_map: Dict[NxId, str],
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
@@ -100,7 +102,7 @@ class Abstract_ADBNX_Controller(ABC):
 
     def _prepare_networkx_edge(
         self,
-        nx_node: Json,
+        nx_edge: Json,
         col: str,
     ) -> None:
         raise NotImplementedError  # pragma: no cover

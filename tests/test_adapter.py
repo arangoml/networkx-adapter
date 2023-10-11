@@ -341,6 +341,7 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             from_nx_node: NxData,
             to_nx_node: NxData,
             adb_e_cols: List[str],
+            nx_map: Dict[NxId, str],
         ) -> str:
             adb_vertex_id: str = str(nx_edge["_id"])
             return adb_vertex_id.split("/")[0] + "_new"
@@ -476,9 +477,9 @@ def assert_arangodb_data(
         for key, val in nx_node.items():
             assert val == adb_vertex[key]
 
-    for from_node_id, to_node_id, nx_edge in nx_g.edges(data=True):
-        from_node = {**nx_g.nodes[from_node_id], **nx_map[from_node_id]}
-        to_node = {**nx_g.nodes[to_node_id], **nx_map[to_node_id]}
+    for from_nx_id, to_nx_id, nx_edge in nx_g.edges(data=True):
+        from_node = {**nx_g.nodes[from_nx_id], **nx_map[from_nx_id]}
+        to_node = {**nx_g.nodes[to_nx_id], **nx_map[to_nx_id]}
 
         col = (
             adb_e_cols[0]
@@ -489,8 +490,8 @@ def assert_arangodb_data(
         )
         adb_edges = adb_g.edge_collection(col).find(
             {
-                "_from": nx_map[from_node_id]["adb_id"],
-                "_to": nx_map[to_node_id]["adb_id"],
+                "_from": nx_map[from_nx_id]["adb_id"],
+                "_to": nx_map[to_nx_id]["adb_id"],
             }
         )
 

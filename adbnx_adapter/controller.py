@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from .abc import Abstract_ADBNX_Controller
 from .typings import Json, NxData, NxId
@@ -74,9 +74,10 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
     def _identify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_node: NxData,
-        to_nx_node: NxData,
+        from_nx_id: NxId,
+        to_nx_id: NxId,
         adb_e_cols: List[str],
+        nx_map: Dict[NxId, str],
     ) -> str:
         """Given a NetworkX edge, its pair of nodes, and a list of ArangoDB
         edge collections defined, identify which ArangoDB edge collection it
@@ -87,19 +88,21 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         (i.e "{collection}/{key}").
 
         NOTE #2: The two nodes associated to the **nx_edge** can be accessed
-        by the **from_nx_node** & **to_nx_node** parameters, and are guaranteed
+        by the **from_nx_id** & **to_nx_id** parameters, and are guaranteed
         to have the following attributes: `{"nx_id", "adb_id", "adb_col", "adb_key"}`
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
-        :param from_nx_node: The NetworkX node object representing the edge source.
-        :type from_nx_node: adbnx_adapter.typings.NxData
-        :param to_nx_node: The NetworkX node object representing the edge destination.
-        :type to_nx_node: adbnx_adapter.typings.NxData
+        :param from_nx_id: The NetworkX ID of the node representing the edge source.
+        :type from_nx_id: adbnx_adapter.typings.NxId
+        :param to_nx_id: The NetworkX ID of the node representing the edge destination.
+        :type to_nx_id: adbnx_adapter.typings.NxId
         :param adb_e_cols: All ArangoDB edge collections specified
             by the **edge_definitions** parameter of
             ADBNX_Adapter.networkx_to_arangodb()
         :type adb_e_cols: List[str]
+        :param nx_map: A mapping of NetworkX node ids to ArangoDB vertex ids.
+        :type nx_map: Dict[NxId, str]
         :return: The ArangoDB collection name
         :rtype: str
         """
@@ -132,9 +135,10 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
     def _keyify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_node: NxData,
-        to_nx_node: NxData,
+        from_nx_id: NxId,
+        to_nx_id: NxId,
         col: str,
+        nx_map: Dict[NxId, str],
     ) -> str:
         """Given a NetworkX edge, its collection, and its pair of nodes, derive
         its valid ArangoDB key.
@@ -144,17 +148,19 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         the **keyify_edges** parameter in ADBNX_Adapter.networkx_to_arangodb().
 
         NOTE #2: The two nodes associated to the **nx_edge** can be accessed
-        by the **from_nx_node** & **to_nx_node** parameters, and are guaranteed
+        by the **from_nx_id** & **to_nx_id** parameters, and are guaranteed
         to have the following attributes: `{"nx_id", "adb_id", "adb_col", "adb_key"}`
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
-        :param from_nx_node: The NetworkX node object representing the edge source.
-        :type from_nx_node: adbnx_adapter.typings.NxData
-        :param to_nx_node: The NetworkX node object representing the edge destination.
-        :type to_nx_node: adbnx_adapter.typings.NxData
+        :param from_nx_id: The NetworkX ID of the node representing the edge source.
+        :type from_nx_id: adbnx_adapter.typings.NxId
+        :param to_nx_id: The NetworkX ID of the node representing the edge destination.
+        :type to_nx_id: adbnx_adapter.typings.NxId
         :param col: The ArangoDB collection the edge belongs to.
         :type col: str
+        :param nx_map: A mapping of NetworkX node ids to ArangoDB vertex ids.
+        :type nx_map: Dict[NxId, str]
         :return: A valid ArangoDB _key value.
         :rtype: str
         """
