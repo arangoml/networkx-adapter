@@ -252,8 +252,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_graph: NXGraph,
         edge_definitions: Optional[List[Json]] = None,
         orphan_collections: Optional[List[str]] = None,
-        keyify_nodes: bool = False,
-        keyify_edges: bool = False,
         overwrite_graph: bool = False,
         batch_size: Optional[int] = None,
         use_async: bool = False,
@@ -274,16 +272,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param orphan_collections: A list of vertex collections that will be stored as
             orphans in the ArangoDB graph. Can be omitted if the graph already exists.
         :type orphan_collections: List[str]
-        :param keyify_nodes: If set to True, will create custom vertex keys based on the
-            behavior of ADBNX_Controller._keyify_networkx_node(). Otherwise, ArangoDB
-            _key values for vertices will range from 1 to N, where N is the number of
-            NetworkX nodes.
-        :type keyify_nodes: bool
-        :param keyify_edges: If set to True, will create custom edge keys based on
-            the behavior of ADBNX_Controller._keyify_networkx_edge().
-            Otherwise, ArangoDB _key values for edges will range from 1 to E,
-            where E is the number of NetworkX edges.
-        :type keyify_edges: bool
         :param overwrite_graph: Overwrites the graph if it already exists.
             Does not drop associated collections.
         :type overwrite_graph: bool
@@ -323,9 +311,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             c["edge_collection"] for c in adb_graph.edge_definitions()  # type: ignore
         ]
 
-        has_one_vcol = len(adb_v_cols) == 1
-        has_one_ecol = len(adb_e_cols) == 1
-        logger.debug(f"Is graph '{name}' homogeneous? {has_one_vcol and has_one_ecol}")
+        has_one_v_col = len(adb_v_cols) == 1
+        has_one_e_col = len(adb_e_cols) == 1
+        logger.debug(f"Is '{name}' homogeneous? {has_one_v_col and has_one_e_col}")
 
         # This maps NetworkX node IDs to ArangoDB vertex IDs
         nx_map: Dict[NxId, str] = dict()
@@ -341,6 +329,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         nx_id: NxId
         nx_node: NxData
+
         nx_nodes = nx_graph.nodes(data=True)
         node_batch_size = batch_size or len(nx_nodes)
 
@@ -358,8 +347,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                     nx_map,
                     adb_docs,
                     adb_v_cols,
-                    has_one_vcol,
-                    keyify_nodes,
+                    has_one_v_col,
                 )
 
                 bar_progress.advance(bar_progress_task)
@@ -382,6 +370,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         from_nx_id: NxId
         to_nx_id: NxId
         nx_edge: NxData
+
         nx_edges = nx_graph.edges(data=True)
         edge_batch_size = batch_size or len(nx_edges)
 
@@ -400,8 +389,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                     nx_map,
                     adb_docs,
                     adb_e_cols,
-                    has_one_ecol,
-                    keyify_edges,
+                    has_one_e_col,
                 )
 
                 bar_progress.advance(bar_progress_task)
@@ -610,7 +598,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         adb_docs: DefaultDict[str, List[Json]],
         adb_v_cols: List[str],
         has_one_v_col: bool,
-        keyify_nodes: bool,
     ) -> None:
         """NetworkX -> ArangoDB: Processes a NetworkX node.
 
@@ -628,9 +615,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type adb_v_cols: List[str]
         :param has_one_v_col: True if the Graph has one Vertex collection.
         :type has_one_v_col: bool
-        :param keyify_nodes: Create custom vertex keys based on the
-            behavior of ADBNX_Controller._keyify_networkx_node().
-        :type keyify_nodes: bool
         """
         logger.debug(f"N{i}: {nx_id}")
 
@@ -644,16 +628,15 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             msg = f"'{nx_id}' identified as '{col}', which is not in {adb_v_cols}"
             raise ValueError(msg)
 
-        key = (
-            self.__cntrl._keyify_networkx_node(nx_id, nx_node, col)
-            if keyify_nodes
-            else str(i)
-        )
+        key = self.__cntrl._keyify_networkx_node(i, nx_id, nx_node, col)
 
-        nx_node.update({"_key": key})
+        adb_id = f"{col}/{key}"
+        nx_node["_id"] = adb_id
+        nx_node["_key"] = key
+
+        nx_map[nx_id] = adb_id
+
         self.__cntrl._prepare_networkx_node(nx_node, col)
-
-        nx_map[nx_id] = f"{col}/{key}"
         adb_docs[col].append(nx_node)
 
     def __process_nx_edge(
@@ -665,8 +648,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_map: Dict[NxId, str],
         adb_documents: DefaultDict[str, List[Json]],
         adb_e_cols: List[str],
-        has_one_ecol: bool,
-        keyify_edges: bool,
+        has_one_e_col: bool,
     ) -> None:
         """NetworkX -> ArangoDB: Processes a NetworkX edge.
 
@@ -684,42 +666,41 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type adb_documents: DefaultDict[str, List[adbnx_adapter.typings.Json]]
         :param adb_e_cols: The ArangoDB edge collections.
         :type adb_e_cols: List[str]
-        :param has_one_ecol: True if the Graph has one Edge collection.
-        :type has_one_ecol: bool
-        :param keyify_edges: Create custom edge keys based on the
-            behavior of ADBNX_Controller._keyify_networkx_edge().
-        :type keyify_edges: bool
+        :param has_one_e_col: True if the Graph has one Edge collection.
+        :type has_one_e_col: bool
         """
         edge_str = f"({from_nx_id}, {to_nx_id})"
         logger.debug(f"E{i}: {edge_str}")
 
         col = (
             adb_e_cols[0]
-            if has_one_ecol
+            if has_one_e_col
             else self.__cntrl._identify_networkx_edge(
-                nx_edge, from_nx_id, to_nx_id, adb_e_cols, nx_map
+                nx_edge,
+                from_nx_id,
+                to_nx_id,
+                nx_map,
+                adb_e_cols,
             )
         )
 
-        if not has_one_ecol and col not in adb_e_cols:
+        if not has_one_e_col and col not in adb_e_cols:
             msg = f"{edge_str} identified as '{col}', which is not in {adb_e_cols}"
             raise ValueError(msg)
 
-        key = (
-            self.__cntrl._keyify_networkx_edge(
-                nx_edge, from_nx_id, to_nx_id, col, nx_map
-            )
-            if keyify_edges
-            else str(i)
+        key = self.__cntrl._keyify_networkx_edge(
+            i,
+            nx_edge,
+            from_nx_id,
+            to_nx_id,
+            nx_map,
+            col,
         )
 
-        nx_edge.update(
-            {
-                "_id": col + "/" + key,
-                "_from": nx_map[from_nx_id],
-                "_to": nx_map[to_nx_id],
-            }
-        )
+        nx_edge["_id"] = f"{col}/{key}"
+        nx_edge["_key"] = key
+        nx_edge["_from"] = nx_map[from_nx_id]
+        nx_edge["_to"] = nx_map[to_nx_id]
 
         self.__cntrl._prepare_networkx_edge(nx_edge, col)
         adb_documents[col].append(nx_edge)

@@ -49,8 +49,6 @@ class Abstract_ADBNX_Adapter(ABC):
         nx_graph: NXGraph,
         edge_definitions: Optional[List[Json]] = None,
         orphan_collections: Optional[List[str]] = None,
-        keyify_nodes: bool = False,
-        keyify_edges: bool = False,
         overwrite_graph: bool = False,
         batch_size: Optional[int] = None,
         use_async: bool = False,
@@ -76,21 +74,24 @@ class Abstract_ADBNX_Controller(ABC):
         nx_edge: NxData,
         from_nx_id: NxId,
         to_nx_id: NxId,
-        adb_e_cols: List[str],
         nx_map: Dict[NxId, str],
+        adb_e_cols: List[str],
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
-    def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
+    def _keyify_networkx_node(
+        self, i: int, nx_node_id: NxId, nx_node: NxData, col: str
+    ) -> str:
         raise NotImplementedError  # pragma: no cover
 
     def _keyify_networkx_edge(
         self,
+        i: int,
         nx_edge: NxData,
         from_nx_id: NxId,
         to_nx_id: NxId,
-        col: str,
         nx_map: Dict[NxId, str],
+        col: str,
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 

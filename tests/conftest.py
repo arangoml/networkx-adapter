@@ -150,12 +150,16 @@ class Grid_ADBNX_Controller(ADBNX_Controller):
         )
         return
 
-    def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
+    def _keyify_networkx_node(
+        self, i: int, nx_node_id: NxId, nx_node: NxData, col: str
+    ) -> str:
         adb_v_key: str = self._tuple_to_arangodb_key_helper(nx_node_id)  # type: ignore
         return adb_v_key
 
 
 class Football_ADBNX_Controller(ADBNX_Controller):
-    def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
+    def _keyify_networkx_node(
+        self, i: int, nx_node_id: NxId, nx_node: NxData, col: str
+    ) -> str:
         adb_v_key: str = self._string_to_arangodb_key_helper(str(nx_node_id))
         return adb_v_key
