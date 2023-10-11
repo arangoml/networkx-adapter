@@ -34,7 +34,7 @@ def test_validate_constructor() -> None:
 
 
 @pytest.mark.parametrize(
-    "adapter, name, metagraph",
+    "adapter, name, metagraph, batch_size",
     [
         (
             adbnx_adapter,
@@ -64,6 +64,7 @@ def test_validate_constructor() -> None:
                     },
                 },
             },
+            1,
         ),
         (
             imdb_adbnx_adapter,
@@ -72,13 +73,14 @@ def test_validate_constructor() -> None:
                 "vertexCollections": {"Users": {"Age", "Gender"}, "Movies": {}},
                 "edgeCollections": {"Ratings": {"Rating"}},
             },
+            None,
         ),
     ],
 )
 def test_adb_to_nx(
-    adapter: ADBNX_Adapter, name: str, metagraph: ArangoMetagraph
+    adapter: ADBNX_Adapter, name: str, metagraph: ArangoMetagraph, batch_size: Optional[int]
 ) -> None:
-    nx_g = adapter.arangodb_to_networkx(name, metagraph)
+    nx_g = adapter.arangodb_to_networkx(name, metagraph, batch_size=batch_size)
     assert_networkx_data(nx_g, metagraph, True)
 
 
