@@ -336,9 +336,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         bar_progress = get_bar_progress("NX → ADB (Nodes)", "#97C423")
         bar_progress_task = bar_progress.add_task("Nodes", total=len(nx_nodes))
 
-        logger.debug("Preparing NetworkX nodes")
         with Live(Group(bar_progress, spinner_progress)):
             for i, (nx_id, nx_node) in enumerate(nx_nodes, 1):
+                bar_progress.advance(bar_progress_task)
+
                 # 1. Process NetworkX node
                 self.__process_nx_node(
                     i,
@@ -349,8 +350,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                     adb_v_cols,
                     has_one_v_col,
                 )
-
-                bar_progress.advance(bar_progress_task)
 
                 # 2. Insert batch of nodes
                 if i % node_batch_size == 0:
@@ -377,9 +376,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         bar_progress = get_bar_progress("NX → ADB (Edges)", "#5E3108")
         bar_progress_task = bar_progress.add_task("Edges", total=len(nx_edges))
 
-        logger.debug("Preparing NetworkX edges")
         with Live(Group(bar_progress, spinner_progress)):
             for i, (from_nx_id, to_nx_id, nx_edge) in enumerate(nx_edges, 1):
+                bar_progress.advance(bar_progress_task)
+
                 # 1. Process NetworkX edge
                 self.__process_nx_edge(
                     i,
@@ -391,8 +391,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                     adb_e_cols,
                     has_one_e_col,
                 )
-
-                bar_progress.advance(bar_progress_task)
 
                 # 2. Insert batch of edges
                 if i % edge_batch_size == 0:
@@ -493,8 +491,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         with Live(Group(progress)):
             while not cursor.empty():
                 for doc in cursor.batch():  # type: ignore # false positive
-                    process_adb_doc(doc, col, adb_map, nx_graph)
                     progress.advance(progress_task_id)
+
+                    process_adb_doc(doc, col, adb_map, nx_graph)
 
                 cursor.batch().clear()  # type: ignore # false positive
                 if cursor.has_more():
