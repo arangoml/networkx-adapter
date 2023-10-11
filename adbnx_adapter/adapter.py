@@ -465,7 +465,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self,
         progress_color: str,
         cursor: Cursor,
-        callback: Callable[..., None],
+        process_adb_doc: Callable[..., None],
         col: str,
         col_size: int,
         adb_map: Dict[str, NxId],
@@ -477,8 +477,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type progress_color: str
         :param cursor: The ArangoDB cursor for the current **col**.
         :type cursor: arango.cursor.Cursor
-        :param callback: The callback function to process the cursor.
-        :type callback: Callable
+        :param process_adb_doc: The function to process the cursor data.
+        :type process_adb_doc: Callable
         :param col: The ArangoDB collection for the current **cursor**.
         :type col: str
         :param col_size: The size of **col**.
@@ -495,10 +495,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         with Live(Group(progress)):
             while not cursor.empty():
-                for doc in cursor:
-                    callback(doc, col, adb_map, nx_graph)
+                for doc in cursor.batch():  # type: ignore # false positive
+                    process_adb_doc(doc, col, adb_map, nx_graph)
                     progress.advance(progress_task_id)
 
+                cursor.batch().clear()  # type: ignore # false positive
                 if cursor.has_more():
                     cursor.fetch()
 
