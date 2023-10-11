@@ -110,7 +110,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         .. code-block:: python
         {
             "vertexCollections": {
-                "user": {"age", "name"},
+                "account": {"Balance", "account_type", "customer_id", "rank"},
                 "bank": {"Country", "Id", "bank_id", "bank_name"},
                 "customer": {"Name", "Sex", "Ssn", "rank"},
             },
@@ -184,6 +184,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         name: str,
         v_cols: Set[str],
         e_cols: Set[str],
+        nx_graph: Optional[NXMultiDiGraph] = None,
         **query_options: Any,
     ) -> NXMultiDiGraph:
         """Create a NetworkX graph from ArangoDB collections.
@@ -194,6 +195,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type v_cols: Set[str]
         :param e_cols: A set of edge collections to import to NetworkX.
         :type e_cols: Set[str]
+        :param nx_graph: An existing NetworkX graph to append to (optional).
+        :type nx_graph: networkx.classes.multidigraph.MultiDiGraph | None
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
@@ -207,16 +210,22 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         }
 
         return self.arangodb_to_networkx(
-            name, metagraph, explicit_metagraph=False, **query_options
+            name,
+            metagraph,
+            explicit_metagraph=False,
+            nx_graph=nx_graph,
+            **query_options,
         )
 
     def arangodb_graph_to_networkx(
-        self, name: str, **query_options: Any
+        self, name: str, nx_graph: Optional[NXMultiDiGraph] = None, **query_options: Any
     ) -> NXMultiDiGraph:
         """Create a NetworkX graph from an ArangoDB graph.
 
         :param name: The ArangoDB graph name.
         :type name: str
+        :param nx_graph: An existing NetworkX graph to append to (optional).
+        :type nx_graph: networkx.classes.multidigraph.MultiDiGraph | None
         :param query_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
@@ -230,7 +239,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         e_cols: Set[str] = {c["edge_collection"] for c in edge_definitions}
 
         return self.arangodb_collections_to_networkx(
-            name, v_cols, e_cols, **query_options
+            name, v_cols, e_cols, nx_graph, **query_options
         )
 
     ################################
