@@ -152,27 +152,7 @@ class Custom_ADBNX_Controller(ADBNX_Controller):
 
 adb_g = ADBNX_Adapter(db, Custom_ADBNX_Controller()).networkx_to_arangodb("Grid", nx_g, edge_definitions)
 
-# 2.3: NetworkX Heterogeneous graph to ArangoDB with ArangoDB node IDs
-edges = []
-for i in range(1, 101):
-    for j in range(1, 101):
-        if j % i == 0:
-            # Notice that the NetworkX node IDs are following ArangoDB _id formatting standards (i.e `collection_name/node_key`)
-            edges.append((f"numbers_j/{j}", f"numbers_i/{i}", j / i)) 
-
-nx_g = nx.MultiDiGraph()
-nx_g.add_weighted_edges_from(edges)
-
-edge_definitions = [
-    {
-        "edge_collection": "is_divisible_by",
-        "from_vertex_collections": ["numbers_j"],
-        "to_vertex_collections": ["numbers_i"],
-    }
-]
-adb_g = adbnx_adapter.networkx_to_arangodb("Divisibility", nx_g, edge_definitions, keyify_nodes=True)
-
-# 2.4 NetworkX Heterogeneous graph to ArangoDB with non-ArangoDB node IDs
+# 2.3 NetworkX Heterogeneous graph to ArangoDB
 edges = [
    ('student:101', 'lecture:101'), 
    ('student:102', 'lecture:102'), 
