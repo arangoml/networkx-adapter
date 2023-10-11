@@ -20,6 +20,7 @@ class Abstract_ADBNX_Adapter(ABC):
         name: str,
         metagraph: ArangoMetagraph,
         explicit_metagraph: bool = True,
+        nx_graph: Optional[NXMultiDiGraph] = None,
         **query_options: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
@@ -29,12 +30,16 @@ class Abstract_ADBNX_Adapter(ABC):
         name: str,
         v_cols: Set[str],
         e_cols: Set[str],
+        nx_graph: Optional[NXMultiDiGraph] = None,
         **query_options: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
     def arangodb_graph_to_networkx(
-        self, name: str, **query_options: Any
+        self,
+        name: str,
+        nx_graph: Optional[NXMultiDiGraph] = None,
+        **query_options: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -47,14 +52,10 @@ class Abstract_ADBNX_Adapter(ABC):
         keyify_nodes: bool = False,
         keyify_edges: bool = False,
         overwrite_graph: bool = False,
+        batch_size: Optional[int] = None,
+        use_async: bool = False,
         **import_options: Any,
     ) -> ADBGraph:
-        raise NotImplementedError  # pragma: no cover
-
-    def __fetch_adb_docs(self) -> None:
-        raise NotImplementedError  # pragma: no cover
-
-    def __insert_adb_docs(self) -> None:
         raise NotImplementedError  # pragma: no cover
 
 
