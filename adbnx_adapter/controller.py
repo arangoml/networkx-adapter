@@ -238,7 +238,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
 class ADBNX_Controller_Full_Cycle(ADBNX_Controller):
     """AragonDB-NetworkX controller for full-cycle operations.
 
-    It  preserves the original ArangoDB _id, _key, and collection
+    It preserves the original ArangoDB _id, _key, and collection
     values of the nodes and edges when transitioning from NetworkX to ArangoDB.
 
     Useful when combined with `on_duplicate='replace'` when going
