@@ -139,16 +139,16 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             # 1. Fetch ArangoDB vertices
             v_col_cursor, v_col_size = self.__fetch_adb_docs(
-                v_col, atribs, explicit_metagraph, query_options
+                v_col, atribs, explicit_metagraph, **query_options
             )
 
             # 2. Process ArangoDB vertices
             self.__process_adb_cursor(
                 "#079DE8",
                 v_col_cursor,
+                v_col_size,
                 self.__process_adb_vertex,
                 v_col,
-                v_col_size,
                 adb_map,
                 nx_graph,
             )
@@ -162,16 +162,16 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             # 1. Fetch ArangoDB edges
             e_col_cursor, e_col_size = self.__fetch_adb_docs(
-                e_col, atribs, explicit_metagraph, query_options
+                e_col, atribs, explicit_metagraph, **query_options
             )
 
             # 2. Process ArangoDB edges
             self.__process_adb_cursor(
                 "#FA7D05",
                 e_col_cursor,
+                e_col_size,
                 self.__process_adb_edge,
                 e_col,
-                e_col_size,
                 adb_map,
                 nx_graph,
             )
@@ -333,7 +333,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_nodes = nx_graph.nodes(data=True)
         node_batch_size = batch_size or len(nx_nodes)
 
-        bar_progress = get_bar_progress("NX → ADB (Nodes)", "#97C423")
+        bar_progress = get_bar_progress("(NX → ADB): Nodes", "#97C423")
         bar_progress_task = bar_progress.add_task("Nodes", total=len(nx_nodes))
 
         with Live(Group(bar_progress, spinner_progress)):
@@ -373,7 +373,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         nx_edges = nx_graph.edges(data=True)
         edge_batch_size = batch_size or len(nx_edges)
 
-        bar_progress = get_bar_progress("NX → ADB (Edges)", "#5E3108")
+        bar_progress = get_bar_progress("(NX → ADB): Edges", "#5E3108")
         bar_progress_task = bar_progress.add_task("Edges", total=len(nx_edges))
 
         with Live(Group(bar_progress, spinner_progress)):
@@ -415,7 +415,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         col: str,
         attributes: Set[str],
         explicit_metagraph: bool,
-        query_options: Any,
+        **export_options: Any,
     ) -> Tuple[Cursor, int]:
         """ArangoDB -> NetworkX: Fetches ArangoDB documents within a collection.
 
@@ -427,9 +427,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             specified when fetching the documents of the collection **col**.
             If False, all document attributes are included.
         :type explicit_metagraph: bool
-        :param query_options: Keyword arguments to specify AQL query options when
+        :param export_options: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance.
-        :type query_options: Any
+        :type export_options: Any
         :return: The document cursor along with the total collection size.
         :rtype: Tuple[arango.cursor.Cursor, int]
         """
@@ -451,7 +451,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             cursor: Cursor = self.__db.aql.execute(  # type: ignore
                 f"FOR doc IN @@col RETURN {aql_return_value}",
                 bind_vars={"@col": col},
-                **{**query_options, **{"stream": True}},
+                **{**export_options, **{"stream": True}},
             )
 
             return cursor, col_size
@@ -460,9 +460,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self,
         progress_color: str,
         cursor: Cursor,
+        col_size: int,
         process_adb_doc: Callable[..., None],
         col: str,
-        col_size: int,
         adb_map: Dict[str, NxId],
         nx_graph: NXMultiDiGraph,
     ) -> None:
@@ -482,10 +482,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type adb_map: Dict[str, adbnx_adapter.typings.NxId]
         :param nx_graph: The NetworkX graph.
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph
-        :type args: Any
         """
 
-        progress = get_bar_progress(f"ADB → NX ({col})", progress_color)
+        progress = get_bar_progress(f"(ADB → NX): '{col}'", progress_color)
         progress_task_id = progress.add_task(col, total=col_size)
 
         with Live(Group(progress)):
@@ -559,7 +558,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         edge_definitions: Optional[List[Json]] = None,
         orphan_collections: Optional[List[str]] = None,
     ) -> ADBGraph:
-        """NetworkX -> ArangoDB: Creates an ArangoDB graph.
+        """NetworkX -> ArangoDB: Creates the ArangoDB graph.
 
         :param name: The ArangoDB graph name.
         :type name: str
@@ -709,17 +708,20 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         spinner_progress: Progress,
         adb_documents: DefaultDict[str, List[Json]],
         use_async: bool,
-        **kwargs: Any,
+        **import_options: Any,
     ) -> None:
         """NetworkX -> ArangoDB: Insert the ArangoDB documents.
 
+        :param spinner_progress: The spinner progress bar.
+        :type spinner_progress: rich.progress.Progress
         :param adb_documents: To-be-inserted ArangoDB documents
         :type adb_documents: DefaultDict[str, List[Json]]
         :param use_async: Performs asynchronous ArangoDB ingestion if enabled.
         :type use_async: bool
-        :param kwargs: Keyword arguments to specify additional
+        :param import_options: Keyword arguments to specify additional
             parameters for ArangoDB document insertion. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.collection.Collection.import_bulk
+        :param import_options: Any
         """
         if len(adb_documents) == 0:
             return
@@ -729,16 +731,16 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         # Avoiding "RuntimeError: dictionary changed size during iteration"
         adb_cols = list(adb_documents.keys())
 
-        for adb_col in adb_cols:
-            doc_list = adb_documents[adb_col]
+        for col in adb_cols:
+            doc_list = adb_documents[col]
 
-            action = f"ADB Import: '{adb_col}' ({len(doc_list)})"
+            action = f"ADB Import: '{col}' ({len(doc_list)})"
             spinner_progress_task = spinner_progress.add_task("", action=action)
 
-            result = db.collection(adb_col).import_bulk(doc_list, **kwargs)
+            result = db.collection(col).import_bulk(doc_list, **import_options)
             logger.debug(result)
 
-            del adb_documents[adb_col]
+            del adb_documents[col]
 
             spinner_progress.stop_task(spinner_progress_task)
             spinner_progress.update(spinner_progress_task, visible=False)
