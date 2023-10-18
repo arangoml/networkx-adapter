@@ -144,7 +144,7 @@ def test_adb_graph_to_nx(
 
 @pytest.mark.parametrize(
     "adapter, name, nx_g, edge_definitions, orphan_collections, \
-        overwrite_graph, import_options",
+        overwrite_graph, adb_import_kwargs",
     [
         (
             adbnx_adapter,
@@ -209,7 +209,7 @@ def test_nx_to_adb(
     edge_definitions: Optional[List[Json]],
     orphan_collections: Optional[List[str]],
     overwrite_graph: bool,
-    import_options: Dict[str, Any],
+    adb_import_kwargs: Dict[str, Any],
 ) -> None:
     adb_g = adapter.networkx_to_arangodb(
         name,
@@ -217,7 +217,7 @@ def test_nx_to_adb(
         edge_definitions,
         orphan_collections,
         overwrite_graph,
-        **import_options,
+        **adb_import_kwargs,
     )
     assert_arangodb_data(adapter, nx_g, adb_g)
 
@@ -281,8 +281,8 @@ def test_nx_to_adb_invalid_collections() -> None:
         def _identify_networkx_edge(
             self,
             nx_edge: NxData,
-            from_nx_id: NxId,
-            to_nx_id: NxId,
+            from_node_id: NxId,
+            to_node_id: NxId,
             nx_map: Dict[NxId, str],
             adb_e_cols: List[str],
         ) -> str:
@@ -371,8 +371,8 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
         def _identify_networkx_edge(
             self,
             nx_edge: NxData,
-            from_nx_id: NxId,
-            to_nx_id: NxId,
+            from_node_id: NxId,
+            to_node_id: NxId,
             nx_map: Dict[NxId, str],
             adb_e_cols: List[str],
         ) -> str:
@@ -508,18 +508,18 @@ def assert_arangodb_data(
         for key, val in nx_node.items():
             assert val == adb_vertex[key]
 
-    for from_nx_id, to_nx_id, nx_edge in nx_g.edges(data=True):
+    for from_node_id, to_node_id, nx_edge in nx_g.edges(data=True):
         col = (
             adb_e_cols[0]
             if has_one_ecol
             else adapter.cntrl._identify_networkx_edge(
-                nx_edge, from_nx_id, to_nx_id, nx_map, adb_e_cols
+                nx_edge, from_node_id, to_node_id, nx_map, adb_e_cols
             )
         )
         adb_edges = adb_g.edge_collection(col).find(
             {
-                "_from": nx_map[from_nx_id],
-                "_to": nx_map[to_nx_id],
+                "_from": nx_map[from_node_id],
+                "_to": nx_map[to_node_id],
             }
         )
 

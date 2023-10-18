@@ -21,7 +21,7 @@ class Abstract_ADBNX_Adapter(ABC):
         metagraph: ArangoMetagraph,
         explicit_metagraph: bool = True,
         nx_graph: Optional[NXMultiDiGraph] = None,
-        **query_options: Any,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -31,7 +31,7 @@ class Abstract_ADBNX_Adapter(ABC):
         v_cols: Set[str],
         e_cols: Set[str],
         nx_graph: Optional[NXMultiDiGraph] = None,
-        **query_options: Any,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -39,7 +39,7 @@ class Abstract_ADBNX_Adapter(ABC):
         self,
         name: str,
         nx_graph: Optional[NXMultiDiGraph] = None,
-        **query_options: Any,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -52,7 +52,7 @@ class Abstract_ADBNX_Adapter(ABC):
         overwrite_graph: bool = False,
         batch_size: Optional[int] = None,
         use_async: bool = False,
-        **import_options: Any,
+        **adb_import_kwargs: Any,
     ) -> ADBGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -72,8 +72,8 @@ class Abstract_ADBNX_Controller(ABC):
     def _identify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_id: NxId,
-        to_nx_id: NxId,
+        from_node_id: NxId,
+        to_node_id: NxId,
         nx_map: Dict[NxId, str],
         adb_e_cols: List[str],
     ) -> str:
@@ -88,8 +88,8 @@ class Abstract_ADBNX_Controller(ABC):
         self,
         i: int,
         nx_edge: NxData,
-        from_nx_id: NxId,
-        to_nx_id: NxId,
+        from_node_id: NxId,
+        to_node_id: NxId,
         nx_map: Dict[NxId, str],
         col: str,
     ) -> str:

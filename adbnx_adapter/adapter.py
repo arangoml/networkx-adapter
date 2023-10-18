@@ -82,7 +82,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         metagraph: ArangoMetagraph,
         explicit_metagraph: bool = True,
         nx_graph: Optional[NXMultiDiGraph] = None,
-        **query_options: Any,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         """Create a NetworkX graph from graph attributes.
 
@@ -95,10 +95,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             **metagraph** when importing to NetworkX (is True by default). Otherwise,
             all document attributes are included. Defaults to True.
         :type explicit_metagraph: bool
-        :param query_options: Keyword arguments to specify AQL query options when
+        :param adb_export_kwargs: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
-        :type query_options: Any
+        :type adb_export_kwargs: Any
         :param nx_graph: An existing NetworkX graph to append to (optional).
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph | None
         :return: A Multi-Directed NetworkX Graph containing the ArangoDB data.
@@ -139,7 +139,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             # 1. Fetch ArangoDB vertices
             v_col_cursor, v_col_size = self.__fetch_adb_docs(
-                v_col, atribs, explicit_metagraph, **query_options
+                v_col, atribs, explicit_metagraph, **adb_export_kwargs
             )
 
             # 2. Process ArangoDB vertices
@@ -162,7 +162,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             # 1. Fetch ArangoDB edges
             e_col_cursor, e_col_size = self.__fetch_adb_docs(
-                e_col, atribs, explicit_metagraph, **query_options
+                e_col, atribs, explicit_metagraph, **adb_export_kwargs
             )
 
             # 2. Process ArangoDB edges
@@ -185,7 +185,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         v_cols: Set[str],
         e_cols: Set[str],
         nx_graph: Optional[NXMultiDiGraph] = None,
-        **query_options: Any,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         """Create a NetworkX graph from ArangoDB collections.
 
@@ -197,10 +197,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type e_cols: Set[str]
         :param nx_graph: An existing NetworkX graph to append to (optional).
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph | None
-        :param query_options: Keyword arguments to specify AQL query options when
+        :param adb_export_kwargs: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
-        :type query_options: Any
+        :type adb_export_kwargs: Any
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
@@ -214,11 +214,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             metagraph,
             explicit_metagraph=False,
             nx_graph=nx_graph,
-            **query_options,
+            **adb_export_kwargs,
         )
 
     def arangodb_graph_to_networkx(
-        self, name: str, nx_graph: Optional[NXMultiDiGraph] = None, **query_options: Any
+        self,
+        name: str,
+        nx_graph: Optional[NXMultiDiGraph] = None,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         """Create a NetworkX graph from an ArangoDB graph.
 
@@ -226,10 +229,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :type name: str
         :param nx_graph: An existing NetworkX graph to append to (optional).
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph | None
-        :param query_options: Keyword arguments to specify AQL query options when
+        :param adb_export_kwargs: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.aql.AQL.execute
-        :type query_options: Any
+        :type adb_export_kwargs: Any
         :return: A Multi-Directed NetworkX Graph.
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
@@ -239,7 +242,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         e_cols: Set[str] = {c["edge_collection"] for c in edge_definitions}
 
         return self.arangodb_collections_to_networkx(
-            name, v_cols, e_cols, nx_graph, **query_options
+            name, v_cols, e_cols, nx_graph, **adb_export_kwargs
         )
 
     ################################
@@ -255,7 +258,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         overwrite_graph: bool = False,
         batch_size: Optional[int] = None,
         use_async: bool = False,
-        **import_options: Any,
+        **adb_import_kwargs: Any,
     ) -> ADBGraph:
         """Create an ArangoDB graph from a NetworkX graph, and a set of edge
         definitions.
@@ -268,7 +271,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             definition entry is a dictionary with fields "edge_collection",
             "from_vertex_collections" and "to_vertex_collections" (see below
             for example). Can be omitted if the graph already exists.
-        :type edge_definitions: List[adbnx_adapter.typings.Json]
+        :type edge_definitions: List[Dict[str, Any]]
         :param orphan_collections: A list of vertex collections that will be stored as
             orphans in the ArangoDB graph. Can be omitted if the graph already exists.
         :type orphan_collections: List[str]
@@ -280,12 +283,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             Defaults to `len(nx_nodes)` & `len(nx_edges)`.
         :type batch_size: int | None
         :param use_async: Performs asynchronous ArangoDB ingestion if enabled.
-            Defaults to True.
+            Defaults to False.
         :type use_async: bool
-        :param import_options: Keyword arguments to specify additional
+        :param adb_import_kwargs: Keyword arguments to specify additional
             parameters for ArangoDB document insertion. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.collection.Collection.import_bulk
-        :type import_options: Any
+        :type adb_import_kwargs: Any
         :return: The ArangoDB Graph API wrapper.
         :rtype: arango.graph.Graph
 
@@ -354,20 +357,20 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 # 2. Insert batch of nodes
                 if i % node_batch_size == 0:
                     self.__insert_adb_docs(
-                        spinner_progress, adb_docs, use_async, **import_options
+                        spinner_progress, adb_docs, use_async, **adb_import_kwargs
                     )
 
             # Insert remaining nodes
             self.__insert_adb_docs(
-                spinner_progress, adb_docs, use_async, **import_options
+                spinner_progress, adb_docs, use_async, **adb_import_kwargs
             )
 
         ##################
         # NetworkX Edges #
         ##################
 
-        from_nx_id: NxId
-        to_nx_id: NxId
+        from_node_id: NxId
+        to_node_id: NxId
         nx_edge: NxData
 
         nx_edges = nx_graph.edges(data=True)
@@ -377,14 +380,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         bar_progress_task = bar_progress.add_task("Edges", total=len(nx_edges))
 
         with Live(Group(bar_progress, spinner_progress)):
-            for i, (from_nx_id, to_nx_id, nx_edge) in enumerate(nx_edges, 1):
+            for i, (from_node_id, to_node_id, nx_edge) in enumerate(nx_edges, 1):
                 bar_progress.advance(bar_progress_task)
 
                 # 1. Process NetworkX edge
                 self.__process_nx_edge(
                     i,
-                    from_nx_id,
-                    to_nx_id,
+                    from_node_id,
+                    to_node_id,
                     nx_edge,
                     nx_map,
                     adb_docs,
@@ -395,12 +398,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 # 2. Insert batch of edges
                 if i % edge_batch_size == 0:
                     self.__insert_adb_docs(
-                        spinner_progress, adb_docs, use_async, **import_options
+                        spinner_progress, adb_docs, use_async, **adb_import_kwargs
                     )
 
             # Insert remaining edges
             self.__insert_adb_docs(
-                spinner_progress, adb_docs, use_async, **import_options
+                spinner_progress, adb_docs, use_async, **adb_import_kwargs
             )
 
         logger.info(f"Created ArangoDB '{name}' Graph")
@@ -415,7 +418,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         col: str,
         attributes: Set[str],
         explicit_metagraph: bool,
-        **export_options: Any,
+        **adb_export_kwargs: Any,
     ) -> Tuple[Cursor, int]:
         """ArangoDB -> NetworkX: Fetches ArangoDB documents within a collection.
 
@@ -427,9 +430,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             specified when fetching the documents of the collection **col**.
             If False, all document attributes are included.
         :type explicit_metagraph: bool
-        :param export_options: Keyword arguments to specify AQL query options when
+        :param adb_export_kwargs: Keyword arguments to specify AQL query options when
             fetching documents from the ArangoDB instance.
-        :type export_options: Any
+        :type adb_export_kwargs: Any
         :return: The document cursor along with the total collection size.
         :rtype: Tuple[arango.cursor.Cursor, int]
         """
@@ -451,7 +454,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             cursor: Cursor = self.__db.aql.execute(  # type: ignore
                 f"FOR doc IN @@col RETURN {aql_return_value}",
                 bind_vars={"@col": col},
-                **{**export_options, **{"stream": True}},
+                **{**adb_export_kwargs, **{"stream": True}},
             )
 
             return cursor, col_size
@@ -508,7 +511,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """ArangoDB -> NetworkX: Processes an ArangoDB vertex.
 
         :param adb_v: The ArangoDB vertex.
-        :type adb_v: adbnx_adapter.typings.Json
+        :type adb_v: Dict[str, Any]
         :param v_col: The ArangoDB vertex collection.
         :type v_col: str
         :param adb_map: Maps ArangoDB vertex IDs to NetworkX node IDs.
@@ -533,7 +536,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """ArangoDB -> NetworkX: Processes an ArangoDB edge.
 
         :param adb_e: The ArangoDB edge.
-        :type adb_e: adbnx_adapter.typings.Json
+        :type adb_e: Dict[str, Any]
         :param e_col: The ArangoDB edge collection.
         :type e_col: str
         :param adb_map: Maps ArangoDB vertex IDs to NetworkX node IDs.
@@ -541,11 +544,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param nx_graph: The NetworkX graph.
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph
         """
-        from_nx_id: NxId = adb_map[adb_e["_from"]]
-        to_nx_id: NxId = adb_map[adb_e["_to"]]
+        from_node_id: NxId = adb_map[adb_e["_from"]]
+        to_node_id: NxId = adb_map[adb_e["_to"]]
 
         self.__cntrl._prepare_arangodb_edge(adb_e, e_col)
-        nx_graph.add_edge(from_nx_id, to_nx_id, **adb_e)
+        nx_graph.add_edge(from_node_id, to_node_id, **adb_e)
 
     #################################
     # Private: NetworkX -> ArangoDB #
@@ -565,7 +568,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param overwrite_graph: Overwrites the graph if it already exists.
         :type overwrite_graph: bool
         :param edge_definitions: ArangoDB edge definitions.
-        :type edge_definitions: List[adbnx_adapter.typings.Json]
+        :type edge_definitions: List[Dict[str, Any]]
         :param orphan_collections: ArangoDB orphan collections.
         :type orphan_collections: List[str]
         :return: The ArangoDB Graph API wrapper.
@@ -608,7 +611,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param nx_map: Maps NetworkX node IDs to ArangoDB vertex IDs.
         :type nx_map: Dict[adbnx_adapter.typings.NxId, str]
         :param adb_docs: To-be-inserted ArangoDB documents.
-        :type adb_docs: DefaultDict[str, List[adbnx_adapter.typings.Json]]
+        :type adb_docs: DefaultDict[str, List[Dict[str, Any]]]
         :param adb_v_cols: The ArangoDB vertex collections.
         :type adb_v_cols: List[str]
         :param has_one_v_col: True if the Graph has one Vertex collection.
@@ -640,11 +643,11 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def __process_nx_edge(
         self,
         i: int,
-        from_nx_id: NxId,
-        to_nx_id: NxId,
+        from_node_id: NxId,
+        to_node_id: NxId,
         nx_edge: NxData,
         nx_map: Dict[NxId, str],
-        adb_documents: DefaultDict[str, List[Json]],
+        adb_docs: DefaultDict[str, List[Json]],
         adb_e_cols: List[str],
         has_one_e_col: bool,
     ) -> None:
@@ -652,22 +655,22 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         :param i: The edge index.
         :type i: int
-        :param from_nx_id: The NetworkX ID of the source node.
-        :type from_nx_id: adbnx_adapter.typings.NxId
-        :param to_nx_id: The NetworkX ID of the target node.
-        :type to_nx_id: adbnx_adapter.typings.NxId
+        :param from_node_id: The NetworkX ID of the source node.
+        :type from_node_id: adbnx_adapter.typings.NxId
+        :param to_node_id: The NetworkX ID of the target node.
+        :type to_node_id: adbnx_adapter.typings.NxId
         :param nx_edge: The NetworkX edge data.
-        :type nx_edge: adbnx_adapter.typings.Json
+        :type nx_edge: Dict[str, Any]
         :param nx_map: Maps NetworkX node IDs to ArangoDB vertex IDs.
         :type nx_map: Dict[adbnx_adapter.typings.NxId, str]
-        :param adb_documents: To-be-inserted ArangoDB documents.
-        :type adb_documents: DefaultDict[str, List[adbnx_adapter.typings.Json]]
+        :param adb_docs: To-be-inserted ArangoDB documents.
+        :type adb_docs: DefaultDict[str, List[Dict[str, Any]]]
         :param adb_e_cols: The ArangoDB edge collections.
         :type adb_e_cols: List[str]
         :param has_one_e_col: True if the Graph has one Edge collection.
         :type has_one_e_col: bool
         """
-        edge_str = f"({from_nx_id}, {to_nx_id})"
+        edge_str = f"({from_node_id}, {to_node_id})"
         logger.debug(f"E{i}: {edge_str}")
 
         col = (
@@ -675,8 +678,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             if has_one_e_col
             else self.__cntrl._identify_networkx_edge(
                 nx_edge,
-                from_nx_id,
-                to_nx_id,
+                from_node_id,
+                to_node_id,
                 nx_map,
                 adb_e_cols,
             )
@@ -689,58 +692,58 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         key = self.__cntrl._keyify_networkx_edge(
             i,
             nx_edge,
-            from_nx_id,
-            to_nx_id,
+            from_node_id,
+            to_node_id,
             nx_map,
             col,
         )
 
         nx_edge["_id"] = f"{col}/{key}"
         nx_edge["_key"] = key
-        nx_edge["_from"] = nx_map[from_nx_id]
-        nx_edge["_to"] = nx_map[to_nx_id]
+        nx_edge["_from"] = nx_map[from_node_id]
+        nx_edge["_to"] = nx_map[to_node_id]
 
         self.__cntrl._prepare_networkx_edge(nx_edge, col)
-        adb_documents[col].append(nx_edge)
+        adb_docs[col].append(nx_edge)
 
     def __insert_adb_docs(
         self,
         spinner_progress: Progress,
-        adb_documents: DefaultDict[str, List[Json]],
+        adb_docs: DefaultDict[str, List[Json]],
         use_async: bool,
-        **import_options: Any,
+        **adb_import_kwargs: Any,
     ) -> None:
         """NetworkX -> ArangoDB: Insert the ArangoDB documents.
 
         :param spinner_progress: The spinner progress bar.
         :type spinner_progress: rich.progress.Progress
-        :param adb_documents: To-be-inserted ArangoDB documents
-        :type adb_documents: DefaultDict[str, List[Json]]
+        :param adb_docs: To-be-inserted ArangoDB documents
+        :type adb_docs: DefaultDict[str, List[Json]]
         :param use_async: Performs asynchronous ArangoDB ingestion if enabled.
         :type use_async: bool
-        :param import_options: Keyword arguments to specify additional
+        :param adb_import_kwargs: Keyword arguments to specify additional
             parameters for ArangoDB document insertion. Full parameter list:
             https://docs.python-arango.com/en/main/specs.html#arango.collection.Collection.import_bulk
-        :param import_options: Any
+        :param adb_import_kwargs: Any
         """
-        if len(adb_documents) == 0:
+        if len(adb_docs) == 0:
             return
 
         db = self.__async_db if use_async else self.__db
 
         # Avoiding "RuntimeError: dictionary changed size during iteration"
-        adb_cols = list(adb_documents.keys())
+        adb_cols = list(adb_docs.keys())
 
         for col in adb_cols:
-            doc_list = adb_documents[col]
+            doc_list = adb_docs[col]
 
             action = f"ADB Import: '{col}' ({len(doc_list)})"
             spinner_progress_task = spinner_progress.add_task("", action=action)
 
-            result = db.collection(col).import_bulk(doc_list, **import_options)
+            result = db.collection(col).import_bulk(doc_list, **adb_import_kwargs)
             logger.debug(result)
 
-            del adb_documents[col]
+            del adb_docs[col]
 
             spinner_progress.stop_task(spinner_progress_task)
             spinner_progress.update(spinner_progress_task, visible=False)

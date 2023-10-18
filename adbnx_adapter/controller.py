@@ -26,7 +26,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         vertex's current "_id" value will be used)
 
         :param adb_vertex: The ArangoDB vertex object to (optionally) modify.
-        :type adb_vertex: adbnx_adapter.typings.Json
+        :type adb_vertex: Dict[str, Any]
         :param col: The ArangoDB collection the vertex belongs to.
         :type col: str
         """
@@ -40,7 +40,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         into the NetworkX graph.
 
         :param adb_edge: The ArangoDB edge object to (optionally) modify.
-        :type adb_edge: adbnx_adapter.typings.Json
+        :type adb_edge: Dict[str, Any]
         :param col: The ArangoDB collection the edge belongs to.
         :type col: str
         """
@@ -73,8 +73,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
     def _identify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_id: NxId,
-        to_nx_id: NxId,
+        from_node_id: NxId,
+        to_node_id: NxId,
         nx_map: Dict[NxId, str],
         adb_e_cols: List[str],
     ) -> str:
@@ -86,14 +86,14 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
 
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
-        :param from_nx_id: The NetworkX ID of the node representing the edge source.
-        :type from_nx_id: adbnx_adapter.typings.NxId
-        :param to_nx_id: The NetworkX ID of the node representing the edge destination.
-        :type to_nx_id: adbnx_adapter.typings.NxId
+        :param from_node_id: The NetworkX ID of the node representing the source.
+        :type from_node_id: adbnx_adapter.typings.NxId
+        :param to_node_id: The NetworkX ID of the node representing the destination.
+        :type to_node_id: adbnx_adapter.typings.NxId
         :param nx_map: A mapping of NetworkX node ids to ArangoDB vertex ids. You
             can use this to derive the ArangoDB _from and _to values of the edge.
-            i.e, `nx_map[from_nx_id]` will give you the ArangoDB _from value,
-            and `nx_map[to_nx_id]` will give you the ArangoDB _to value.
+            i.e, `nx_map[from_node_id]` will give you the ArangoDB _from value,
+            and `nx_map[to_node_id]` will give you the ArangoDB _to value.
         :type nx_map: Dict[NxId, str]
         :param adb_e_cols: All ArangoDB edge collections specified
             by the **edge_definitions** parameter of
@@ -136,8 +136,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         self,
         i: int,
         nx_edge: NxData,
-        from_nx_id: NxId,
-        to_nx_id: NxId,
+        from_node_id: NxId,
+        to_node_id: NxId,
         nx_map: Dict[NxId, str],
         col: str,
     ) -> str:
@@ -148,8 +148,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         _key values for your NetworkX edges.
 
         NOTE #2: You can use **nx_map** to derive the ArangoDB _from and _to values
-        of the edge. i.e, `nx_map[from_nx_id]` will give you the ArangoDB _from value,
-        and `nx_map[to_nx_id]` will give you the ArangoDB _to value.
+        of the edge. i.e, `nx_map[from_node_id]` will give you the ArangoDB _from value,
+        and `nx_map[to_node_id]` will give you the ArangoDB _to value.
 
         NOTE #3: You are free to use `_string_to_arangodb_key_helper()` and
         `_tuple_to_arangodb_key_helper()` to derive a valid ArangoDB _key value.
@@ -158,16 +158,16 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :type i: int
         :param nx_edge: The NetworkX edge object.
         :type nx_edge: adbnx_adapter.typings.NxData
-        :param from_nx_id: The NetworkX ID of the node representing the edge source.
-        :type from_nx_id: adbnx_adapter.typings.NxId
-        :param to_nx_id: The NetworkX ID of the node representing the edge destination.
-        :type to_nx_id: adbnx_adapter.typings.NxId
+        :param from_node_id: The NetworkX ID of the node representing the source.
+        :type from_node_id: adbnx_adapter.typings.NxId
+        :param to_node_id: The NetworkX ID of the node representing the destination.
+        :type to_node_id: adbnx_adapter.typings.NxId
         :param col: The ArangoDB collection that **nx_edge** belongs to.
         :type col: str
         :param nx_map: A mapping of NetworkX node ids to ArangoDB vertex ids. You
             can use this to derive the ArangoDB _from and _to values of the edge.
-            i.e, nx_map[from_nx_id] will give you the ArangoDB _from value,
-            and nx_map[to_nx_id] will give you the ArangoDB _to value.
+            i.e, nx_map[from_node_id] will give you the ArangoDB _from value,
+            and nx_map[to_node_id] will give you the ArangoDB _to value.
         :type nx_map: Dict[NxId, str]
         :return: A valid ArangoDB _key value.
         :rtype: str
@@ -187,7 +187,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
 
         :param nx_node: The ArangoDB representation of the NetworkX node
             to (optionally) modify.
-        :type nx_node: adbnx_adapter.typings.Json
+        :type nx_node: Dict[str, Any]
         :param col: The ArangoDB collection associated to the node.
         :type col: str
         """
@@ -202,7 +202,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
 
         :param nx_edge: The ArangoDB representation of the NetworkX edge
             to (optionally) modify.
-        :type nx_edge: adbnx_adapter.typings.Json
+        :type nx_edge: Dict[str, Any]
         :param col: The ArangoDB collection associated to the edge.
         :type col: str
         """
@@ -253,8 +253,8 @@ class ADBNX_Controller_Full_Cycle(ADBNX_Controller):
     def _identify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_id: NxId,
-        to_nx_id: NxId,
+        from_node_id: NxId,
+        to_node_id: NxId,
         nx_map: Dict[NxId, str],
         adb_e_cols: List[str],
     ) -> str:
@@ -269,8 +269,8 @@ class ADBNX_Controller_Full_Cycle(ADBNX_Controller):
         self,
         i: int,
         nx_edge: NxData,
-        from_nx_id: NxId,
-        to_nx_id: NxId,
+        from_node_id: NxId,
+        to_node_id: NxId,
         nx_map: Dict[NxId, str],
         col: str,
     ) -> str:
