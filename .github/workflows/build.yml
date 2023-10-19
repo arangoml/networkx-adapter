@@ -1,5 +1,9 @@
 name: build
-on: [push, pull_request, workflow_dispatch]
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [ master ]
 env:
   PACKAGE_DIR: adbnx_adapter
   TESTS_DIR: tests
