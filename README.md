@@ -58,17 +58,27 @@ adbnx_adapter = ADBNX_Adapter(db)
 
 ### ArangoDB to NetworkX
 ```py
-# 1.1: ArangoDB to NetworkX via Graph name
+
+#######################
+# 1.1: via Graph name #
+#######################
+
 nx_g = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
 
-# 1.2: ArangoDB to NetworkX via Collection names
+#############################
+# 1.2: via Collection names #
+#############################
+
 nx_g = adbnx_adapter.arangodb_collections_to_networkx(
     "fraud-detection", 
     {"account", "bank", "branch", "Class", "customer"}, # Vertex collections
     {"accountHolder", "Relationship", "transaction"} # Edge collections
 )
 
-# 1.3: ArangoDB to NetworkX via Metagraph
+######################
+# 1.3: via Metagraph #
+######################
+
 metagraph = {
     "vertexCollections": {
         "account": {"Balance", "account_type", "customer_id", "rank"},
@@ -81,8 +91,10 @@ metagraph = {
 }
 nx_g = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
 
+#######################################
+# 1.4: with a custom ADBNX Controller #
+#######################################
 
-# 1.4: ArangoDB to NetworkX with a custom ADBNX Controller
 class Custom_ADBNX_Controller(ADBNX_Controller):
     """ArangoDB-NetworkX controller.
 
@@ -113,7 +125,11 @@ nx_g = ADBNX_Adapter(db, Custom_ADBNX_Controller()).arangodb_graph_to_networkx("
 
 ### NetworkX to ArangoDB
 ```py
-# 2.1: NetworkX Homogeneous graph to ArangoDB
+
+#################################
+# 2.1: with a Homogeneous Graph #
+#################################
+
 nx_g = nx.grid_2d_graph(5, 5)
 edge_definitions = [
     {
@@ -124,7 +140,10 @@ edge_definitions = [
 ]
 adb_g = adbnx_adapter.networkx_to_arangodb("Grid", nx_g, edge_definitions)
 
-# 2.2: NetworkX to ArangoDB with a custom ADBNX Controller
+#############################################################
+# 2.2: with a Homogeneous Graph & a custom ADBNX Controller #
+#############################################################
+
 class Custom_ADBNX_Controller(ADBNX_Controller):
     """ArangoDB-NetworkX controller.
 
@@ -152,7 +171,10 @@ class Custom_ADBNX_Controller(ADBNX_Controller):
 
 adb_g = ADBNX_Adapter(db, Custom_ADBNX_Controller()).networkx_to_arangodb("Grid", nx_g, edge_definitions)
 
-# 2.3 NetworkX Heterogeneous graph to ArangoDB
+###################################
+# 2.3: with a Heterogeneous Graph #
+###################################
+
 edges = [
    ('student:101', 'lecture:101'), 
    ('student:102', 'lecture:102'), 
@@ -170,7 +192,8 @@ nx_g.add_edges_from(edges)
 
 # ...
 
-### Learn how this example is handled in Colab: https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb#scrollTo=OuU0J7p1E9OM
+# Learn how this example is handled in Colab:
+# https://colab.research.google.com/github/arangoml/networkx-adapter/blob/master/examples/ArangoDB_NetworkX_Adapter.ipynb#scrollTo=OuU0J7p1E9OM
 ```
 
 ##  Development & Testing
