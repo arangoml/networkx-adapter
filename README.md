@@ -45,32 +45,32 @@ pip install git+https://github.com/arangoml/networkx-adapter.git
 Also available as an ArangoDB Lunch & Learn session: [Graph & Beyond Course #2.9](https://www.arangodb.com/resources/lunch-sessions/graph-beyond-lunch-break-2-9-introducing-the-arangodb-networkx-adapter/)
 
 ```py
-from arango import ArangoClient # Python-Arango driver
 import networkx as nx
 
+from arango import ArangoClient
 from adbnx_adapter import ADBNX_Adapter, ADBNX_Controller
 
-# Let's assume that the ArangoDB "fraud detection" dataset is imported to this endpoint
-db = ArangoClient(hosts="http://localhost:8529").db("_system", username="root", password="")
+# Connect to ArangoDB
+db = ArangoClient().db()
 
+# Instantiate the adapter
 adbnx_adapter = ADBNX_Adapter(db)
 ```
 
 ### ArangoDB to NetworkX
 ```py
-
 #######################
 # 1.1: via Graph name #
 #######################
 
-nx_g = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
+nx_g = adbnx_adapter.arangodb_graph_to_networkx("ArangoFraudDetectionGraph")
 
 #############################
 # 1.2: via Collection names #
 #############################
 
 nx_g = adbnx_adapter.arangodb_collections_to_networkx(
-    "fraud-detection", 
+    "ArangoFraudDetectionGraph", 
     {"account", "bank", "branch", "Class", "customer"}, # Vertex collections
     {"accountHolder", "Relationship", "transaction"} # Edge collections
 )
@@ -89,6 +89,7 @@ metagraph = {
         "accountHolder": {},
     },
 }
+
 nx_g = adbnx_adapter.arangodb_to_networkx("fraud-detection", metagraph)
 
 #######################################
@@ -125,7 +126,6 @@ nx_g = ADBNX_Adapter(db, Custom_ADBNX_Controller()).arangodb_graph_to_networkx("
 
 ### NetworkX to ArangoDB
 ```py
-
 #################################
 # 2.1: with a Homogeneous Graph #
 #################################
@@ -138,6 +138,7 @@ edge_definitions = [
         "to_vertex_collections": ["Grid_Node"],
     }
 ]
+
 adb_g = adbnx_adapter.networkx_to_arangodb("Grid", nx_g, edge_definitions)
 
 #############################################################
