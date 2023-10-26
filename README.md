@@ -63,14 +63,14 @@ adbnx_adapter = ADBNX_Adapter(db)
 # 1.1: via Graph name #
 #######################
 
-nx_g = adbnx_adapter.arangodb_graph_to_networkx("ArangoFraudDetectionGraph")
+nx_g = adbnx_adapter.arangodb_graph_to_networkx("fraud-detection")
 
 #############################
 # 1.2: via Collection names #
 #############################
 
 nx_g = adbnx_adapter.arangodb_collections_to_networkx(
-    "ArangoFraudDetectionGraph", 
+    "fraud-detection", 
     {"account", "bank", "branch", "Class", "customer"}, # Vertex collections
     {"accountHolder", "Relationship", "transaction"} # Edge collections
 )
