@@ -20,9 +20,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def get_export_spinner_progress(
-    text: str,
-) -> Progress:
+def get_export_spinner_progress(text: str) -> Progress:
     return Progress(
         TextColumn(text),
         SpinnerColumn("aesthetic", "#5BC0DE"),
