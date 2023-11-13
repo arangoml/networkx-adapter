@@ -237,8 +237,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :rtype: networkx.classes.multidigraph.MultiDiGraph
         """
         graph = self.__db.graph(name)
-        v_cols: Set[str] = graph.vertex_collections()  # type: ignore
-        edge_definitions: List[Json] = graph.edge_definitions()  # type: ignore
+        v_cols: Set[str] = graph.vertex_collections()
+        edge_definitions: List[Json] = graph.edge_definitions()
         e_cols: Set[str] = {c["edge_collection"] for c in edge_definitions}
 
         return self.arangodb_collections_to_networkx(
@@ -309,9 +309,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             name, overwrite_graph, edge_definitions, orphan_collections
         )
 
-        adb_v_cols: List[str] = adb_graph.vertex_collections()  # type: ignore
+        adb_v_cols: List[str] = adb_graph.vertex_collections()
         adb_e_cols: List[str] = [
-            c["edge_collection"] for c in adb_graph.edge_definitions()  # type: ignore
+            c["edge_collection"] for c in adb_graph.edge_definitions()
         ]
 
         has_one_v_col = len(adb_v_cols) == 1
@@ -446,12 +446,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 )
             """
 
-        col_size: int = self.__db.collection(col).count()  # type: ignore
+        col_size: int = self.__db.collection(col).count()
 
         with get_export_spinner_progress(f"ADB Export: '{col}' ({col_size})") as p:
             p.add_task(col)
 
-            cursor: Cursor = self.__db.aql.execute(  # type: ignore
+            cursor: Cursor = self.__db.aql.execute(
                 f"FOR doc IN @@col RETURN {aql_return_value}",
                 bind_vars={"@col": col},
                 **{**adb_export_kwargs, **{"stream": True}},
@@ -492,12 +492,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         with Live(Group(progress)):
             while not cursor.empty():
-                for doc in cursor.batch():  # type: ignore # false positive
+                for doc in cursor.batch():
                     progress.advance(progress_task_id)
 
                     process_adb_doc(doc, col, adb_map, nx_graph)
 
-                cursor.batch().clear()  # type: ignore # false positive
+                cursor.batch().clear()
                 if cursor.has_more():
                     cursor.fetch()
 
@@ -584,7 +584,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         else:
             logger.debug(f"Creating graph {name}")
-            return self.__db.create_graph(  # type: ignore
+            return self.__db.create_graph(
                 name,
                 edge_definitions,
                 orphan_collections,

@@ -30,7 +30,7 @@ def test_validate_constructor() -> None:
         ADBNX_Adapter(bad_db)
 
     with pytest.raises(TypeError):
-        ADBNX_Adapter(db, Bad_ADBNX_Controller())
+        ADBNX_Adapter(db, Bad_ADBNX_Controller())  # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -117,19 +117,19 @@ def test_adb_collections_to_nx(
 
 @pytest.mark.parametrize(
     "adapter, name, edge_definitions",
-    [(adbnx_adapter, "fraud-detection", None)],
+    [(adbnx_adapter, "fraud-detection", [])],
 )
 def test_adb_graph_to_nx(
     adapter: ADBNX_Adapter, name: str, edge_definitions: List[Json]
 ) -> None:
     # Re-create the graph if defintions are provided
-    if edge_definitions:
+    if len(edge_definitions) > 0:
         db.delete_graph(name, ignore_missing=True)
         db.create_graph(name, edge_definitions=edge_definitions)
 
     graph = db.graph(name)
     v_cols: Set[str] = graph.vertex_collections()
-    edge_definitions: List[Json] = graph.edge_definitions()
+    edge_definitions = graph.edge_definitions()
     e_cols: Set[str] = {c["edge_collection"] for c in edge_definitions}
 
     nx_g = adapter.arangodb_graph_to_networkx(name)
@@ -272,7 +272,7 @@ def test_nx_to_adb_invalid_collections() -> None:
 
     db.delete_graph("Feelings", ignore_missing=True, drop_collections=True)
 
-    class Custom_ADBNX_Controller(ADBNX_Controller):
+    class Custom_ADBNX_Controller_2(ADBNX_Controller):
         def _identify_networkx_node(
             self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
         ) -> str:
@@ -288,7 +288,7 @@ def test_nx_to_adb_invalid_collections() -> None:
         ) -> str:
             return "invalid_edge_collection"
 
-    custom_adbnx_adapter = ADBNX_Adapter(db, Custom_ADBNX_Controller())
+    custom_adbnx_adapter = ADBNX_Adapter(db, Custom_ADBNX_Controller_2())
 
     # Raise ValueError on invalid edge collection identification
     with pytest.raises(ValueError):
