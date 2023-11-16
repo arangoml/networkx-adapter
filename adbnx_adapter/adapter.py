@@ -58,6 +58,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         self.__db = db
         self.__async_db = db.begin_async_execution(return_result=False)
         self.__cntrl: ADBNX_Controller = controller
+        self.__is_custom_controller = type(controller) is not ADBNX_Controller
 
         logger.info(f"Instantiated ADBNX_Adapter with database '{db.name}'")
 
@@ -519,12 +520,15 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param nx_graph: The NetworkX graph.
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph
         """
-        adb_id: str = adb_v["_id"]
-        self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
-        nx_id: str = adb_v["_id"]
+        if self.__is_custom_controller:
+            adb_id: str = adb_v["_id"]
+            self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
+            new_adb_id: str = adb_v["_id"]
 
-        adb_map[adb_id] = nx_id
-        nx_graph.add_node(nx_id, **adb_v)
+            if adb_id != new_adb_id:
+                adb_map[adb_id] = new_adb_id
+
+        nx_graph.add_node(adb_v["_id"], **adb_v)
 
     def __process_adb_edge(
         self,
@@ -544,8 +548,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param nx_graph: The NetworkX graph.
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph
         """
-        from_node_id: NxId = adb_map[adb_e["_from"]]
-        to_node_id: NxId = adb_map[adb_e["_to"]]
+        from_node_id: NxId = adb_map.get(adb_e["_from"], adb_e["_from"])
+        to_node_id: NxId = adb_map.get(adb_e["_to"], adb_e["_to"])
 
         self.__cntrl._prepare_arangodb_edge(adb_e, e_col)
         nx_graph.add_edge(from_node_id, to_node_id, **adb_e)
