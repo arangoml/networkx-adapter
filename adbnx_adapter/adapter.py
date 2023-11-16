@@ -57,8 +57,14 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         self.__db = db
         self.__async_db = db.begin_async_execution(return_result=False)
+
         self.__cntrl: ADBNX_Controller = controller
-        self.__is_custom_controller = type(controller) is not ADBNX_Controller
+        self.__prepare_adb_vertex_method_is_empty = (
+            controller.__class__._prepare_arangodb_vertex
+            is ADBNX_Controller._prepare_arangodb_vertex
+        )
+
+        breakpoint()
 
         logger.info(f"Instantiated ADBNX_Adapter with database '{db.name}'")
 
@@ -520,7 +526,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         :param nx_graph: The NetworkX graph.
         :type nx_graph: networkx.classes.multidigraph.MultiDiGraph
         """
-        if self.__is_custom_controller:
+        if not self.__prepare_adb_vertex_method_is_empty:
             adb_id: str = adb_v["_id"]
             self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
             nx_id: str = adb_v["_id"]
