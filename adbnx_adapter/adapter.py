@@ -64,8 +64,6 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             is ADBNX_Controller._prepare_arangodb_vertex
         )
 
-        breakpoint()
-
         logger.info(f"Instantiated ADBNX_Adapter with database '{db.name}'")
 
     @property
