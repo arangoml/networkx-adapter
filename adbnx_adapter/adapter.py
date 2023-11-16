@@ -523,10 +523,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         if self.__is_custom_controller:
             adb_id: str = adb_v["_id"]
             self.__cntrl._prepare_arangodb_vertex(adb_v, v_col)
-            new_adb_id: str = adb_v["_id"]
+            nx_id: str = adb_v["_id"]
 
-            if adb_id != new_adb_id:
-                adb_map[adb_id] = new_adb_id
+            if adb_id != nx_id:
+                adb_map[adb_id] = nx_id
 
         nx_graph.add_node(adb_v["_id"], **adb_v)
 
