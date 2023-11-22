@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC
-from typing import Any, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from arango.graph import Graph as ADBGraph
 from networkx.classes.graph import Graph as NXGraph
@@ -20,7 +20,8 @@ class Abstract_ADBNX_Adapter(ABC):
         name: str,
         metagraph: ArangoMetagraph,
         explicit_metagraph: bool = True,
-        **query_options: Any,
+        nx_graph: Optional[NXMultiDiGraph] = None,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -29,12 +30,16 @@ class Abstract_ADBNX_Adapter(ABC):
         name: str,
         v_cols: Set[str],
         e_cols: Set[str],
-        **query_options: Any,
+        nx_graph: Optional[NXMultiDiGraph] = None,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
     def arangodb_graph_to_networkx(
-        self, name: str, **query_options: Any
+        self,
+        name: str,
+        nx_graph: Optional[NXMultiDiGraph] = None,
+        **adb_export_kwargs: Any,
     ) -> NXMultiDiGraph:
         raise NotImplementedError  # pragma: no cover
 
@@ -44,17 +49,11 @@ class Abstract_ADBNX_Adapter(ABC):
         nx_graph: NXGraph,
         edge_definitions: Optional[List[Json]] = None,
         orphan_collections: Optional[List[str]] = None,
-        keyify_nodes: bool = False,
-        keyify_edges: bool = False,
         overwrite_graph: bool = False,
-        **import_options: Any,
+        batch_size: Optional[int] = None,
+        use_async: bool = False,
+        **adb_import_kwargs: Any,
     ) -> ADBGraph:
-        raise NotImplementedError  # pragma: no cover
-
-    def __fetch_adb_docs(self) -> None:
-        raise NotImplementedError  # pragma: no cover
-
-    def __insert_adb_docs(self) -> None:
         raise NotImplementedError  # pragma: no cover
 
 
@@ -73,22 +72,41 @@ class Abstract_ADBNX_Controller(ABC):
     def _identify_networkx_edge(
         self,
         nx_edge: NxData,
-        from_nx_node: NxData,
-        to_nx_node: NxData,
+        from_node_id: NxId,
+        to_node_id: NxId,
+        nx_map: Dict[NxId, str],
         adb_e_cols: List[str],
     ) -> str:
         raise NotImplementedError  # pragma: no cover
 
-    def _keyify_networkx_node(self, nx_node_id: NxId, nx_node: NxData, col: str) -> str:
+    def _keyify_networkx_node(
+        self, i: int, nx_node_id: NxId, nx_node: NxData, col: str
+    ) -> str:
         raise NotImplementedError  # pragma: no cover
 
     def _keyify_networkx_edge(
         self,
+        i: int,
         nx_edge: NxData,
-        from_nx_node: NxData,
-        to_nx_node: NxData,
+        from_node_id: NxId,
+        to_node_id: NxId,
+        nx_map: Dict[NxId, str],
         col: str,
     ) -> str:
+        raise NotImplementedError  # pragma: no cover
+
+    def _prepare_networkx_node(
+        self,
+        nx_node: Json,
+        col: str,
+    ) -> None:
+        raise NotImplementedError  # pragma: no cover
+
+    def _prepare_networkx_edge(
+        self,
+        nx_edge: Json,
+        col: str,
+    ) -> None:
         raise NotImplementedError  # pragma: no cover
 
     @property

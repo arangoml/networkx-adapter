@@ -1,17 +1,86 @@
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2", "wheel"]
+requires = ["setuptools>=45", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
-[tool.coverage.run]
-omit = [
-    "adbnx_adapter/version.py",
-    "setup.py",
+[tool.setuptools_scm]
+normalize = true
+
+[project]
+name = "adbnx_adapter"
+description = "Convert ArangoDB graphs to NetworkX & vice-versa."
+keywords=["arangodb", "networkx", "adapter"]
+readme = "README.md"
+dynamic = ["version"]
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+
+authors = [{name = "Anthony Mahanna", email = "anthony.mahanna@arangodb.com"}]
+
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+    "Typing :: Typed",
 ]
+
+dependencies = [
+    "requests>=2.27.1",
+    "python-arango~=7.4",
+    "networkx>=2.5.1",
+    "rich>=12.5.1",
+    "setuptools>=45",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==23.3.0",
+    "flake8==6.0.0",
+    "Flake8-pyproject",
+    "isort==5.12.0",
+    "mypy==1.4.1",
+    "pytest>=6.0.0",
+    "pytest-cov>=2.0.0",
+    "coveralls>=3.3.1",
+    "types-setuptools",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/arangoml/networkx-adapter"
+
+[tool.setuptools]
+packages = ["adbnx_adapter"]
 
 [tool.pytest.ini_options]
 addopts = "-s -vv"
 minversion = "6.0"
 testpaths = ["tests"]
 
-[tool.setuptools_scm]
-write_to = "adbnx_adapter/version.py"
+[tool.coverage.report]
+omit = ["*tests*"]
+
+[tool.coverage.run]
+omit = ["*tests*"]
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503", "E251", "E272", "E231", "E221", "E271", "E202"]
+exclude = [".git", ".idea", ".*_cache", "dist", "venv"]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+implicit_reexport = true
+scripts_are_modules = true
+follow_imports = "skip"
+disallow_subclassing_any = false
+disallow_untyped_decorators = false

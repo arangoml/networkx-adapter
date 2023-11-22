@@ -1,9 +1,8 @@
 name: build
 on:
   workflow_dispatch:
-  push:
-    branches: [ master ]
   pull_request:
+  push:
     branches: [ master ]
 env:
   PACKAGE_DIR: adbnx_adapter
@@ -13,34 +12,47 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     name: Python ${{ matrix.python }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
       - name: Setup Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
+          cache: 'pip'
+          cache-dependency-path: setup.py
+
       - name: Set up ArangoDB Instance via Docker
-        run: docker create --name adb -p 8529:8529 -e ARANGO_ROOT_PASSWORD= arangodb/arangodb:3.9.1
+        run: docker create --name adb -p 8529:8529 -e ARANGO_ROOT_PASSWORD= arangodb/arangodb
+  
       - name: Start ArangoDB Instance
         run: docker start adb
+
       - name: Setup pip
         run: python -m pip install --upgrade pip setuptools wheel
+
       - name: Install packages
         run: pip install .[dev]
+
       - name: Run black
         run: black --check --verbose --diff --color ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+
       - name: Run flake8
         run: flake8 ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+
       - name: Run isort
         run: isort --check --profile=black ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+
       - name: Run mypy
         run: mypy ${{env.PACKAGE_DIR}} ${{env.TESTS_DIR}}
+
       - name: Run pytest
         run: pytest --cov=${{env.PACKAGE_DIR}} --cov-report xml --cov-report term-missing -v --color=yes --no-cov-on-fail --code-highlight=yes
+
       - name: Publish to coveralls.io
-        if: matrix.python == '3.8'
+        if: matrix.python == '3.10'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github

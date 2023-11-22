@@ -1,7 +1,14 @@
 import logging
 import os
 
-from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 
 logger = logging.getLogger(__package__)
 handler = logging.StreamHandler()
@@ -13,14 +20,30 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def progress(
-    text: str,
-    spinner_name: str = "aesthetic",
-    spinner_style: str = "#5BC0DE",
-) -> Progress:
+def get_export_spinner_progress(text: str) -> Progress:
     return Progress(
         TextColumn(text),
-        SpinnerColumn(spinner_name, spinner_style),
+        SpinnerColumn("aesthetic", "#5BC0DE"),
         TimeElapsedColumn(),
         transient=True,
+    )
+
+
+def get_import_spinner_progress(text: str) -> Progress:
+    return Progress(
+        TextColumn(text),
+        TextColumn("{task.fields[action]}"),
+        SpinnerColumn("aesthetic", "#5BC0DE"),
+        TimeElapsedColumn(),
+        transient=True,
+    )
+
+
+def get_bar_progress(text: str, color: str) -> Progress:
+    return Progress(
+        TextColumn(text),
+        BarColumn(complete_style=color, finished_style=color),
+        TaskProgressColumn(),
+        TextColumn("({task.completed}/{task.total})"),
+        TimeElapsedColumn(),
     )
