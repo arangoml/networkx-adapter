@@ -9,7 +9,8 @@
 
 [![License](https://img.shields.io/github/license/arangoml/networkx-adapter?color=9E2165&style=for-the-badge)](https://github.com/arangoml/networkx-adapter/blob/master/LICENSE)
 [![Code style: black](https://img.shields.io/static/v1?style=for-the-badge&label=code%20style&message=black&color=black)](https://github.com/psf/black)
-[![Downloads](https://img.shields.io/badge/dynamic/json?style=for-the-badge&color=282661&label=Downloads&query=total_downloads&url=https://api.pepy.tech/api/v2/projects/adbnx-adapter)](https://pepy.tech/project/adbnx-adapter)
+[![Downloads](https://img.shields.io/pepy/dt/adbnx-adapter?style=for-the-badge&color=282661
+)](https://pepy.tech/project/adbnx-adapter)
 
 <a href="https://www.arangodb.com/" rel="arangodb.com">![](https://raw.githubusercontent.com/arangoml/networkx-adapter/master/examples/assets/logos/ArangoDB_logo.png)</a>
 <a href="https://networkx.org/" rel="networkx.org">![](https://raw.githubusercontent.com/arangoml/networkx-adapter/master/examples/assets/logos/networkx_logo.svg)</a>
