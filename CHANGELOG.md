@@ -1,3 +1,120 @@
+## 5.0.0 (2023-11-22)
+
+### Fix
+
+* Missing docstring entry. [aMahanna]
+
+### Other
+
+* Misc: update download badge. [Anthony Mahanna]
+
+* Housekeeping (#90) [Anthony Mahanna]
+
+  * initial commit
+
+  * Update adapter.py
+
+  * new: controller example in README
+
+  * new: `track_adb`, `track_nx`
+
+  * Update utils.py
+
+  * fix: isort
+
+  * cleanup: progress tracker
+
+  * reignite pr
+
+  readme badge fix, try for 3.11 support, lock lint/formatter dependency versions
+
+  * remove: python 3.7 support (eol)
+
+  * temp: remove mypy for tests
+
+  * cleanup
+
+  * checkpoint
+
+  * fix: test for batch size (adb to nx)
+
+  * fix: black
+
+  * update notebook
+
+  * fix: `process_adb_cursor`
+
+  * fix: `abc`
+
+  * fix: `nx_graph`, typos
+
+  * cleanup
+
+  * cleanup: `rich`
+
+  * update notebooks
+
+  * fix docstring
+
+  * update readme & notebooks
+
+  * more cleanup
+
+  * cleanup
+
+  * cleanup: `examples` directory
+
+  * cleanup workflows
+
+  * Update build.yml
+
+  * Update build.yml
+
+  * update release action
+
+  * Update README.md
+
+  * Update README.md
+
+  * Update README.md
+
+  * migrate to `pyproject.toml`
+
+  * Update build.yml
+
+  * fix lint
+
+  * fix lint
+
+  * disable python 3.12
+
+  * re-enable 3.12
+
+  * flake8 extend ignore
+
+  trying to workaround 3.12 builds: https://github.com/arangoml/networkx-adapter/actions/runs/6857027442/job/18645348203?pr=90
+
+  * optimize: `__process_adb_vertex`
+
+  * fix var name
+
+  * use `prepare_adb_vertex_method_is_empty` instead of `is_custom_controller`
+
+  * remove breakpoint
+
+* Update README.md. [aMahanna]
+
+* Cleanup. [aMahanna]
+
+* Cleanup: `rich` progress. [aMahanna]
+
+* Cleanup: `rich` spinners. [aMahanna]
+
+* Changelog: release 4.2.0 (#89) [github-actions[bot]]
+
+  !gitchangelog
+
+
 ## 4.2.0 (2022-07-22)
 
 ### New
