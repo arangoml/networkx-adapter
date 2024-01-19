@@ -144,7 +144,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
             # 1. Fetch ArangoDB vertices
             v_col_cursor, v_col_size = self.__fetch_adb_docs(
-                v_col, atribs, explicit_metagraph, **adb_export_kwargs
+                v_col, False, atribs, explicit_metagraph, **adb_export_kwargs
             )
 
             # 2. Process ArangoDB vertices
@@ -162,12 +162,12 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         # Edge Collections #
         ####################
 
-        for e_col, atribs in metagraph["edgeCollections"].items():
+        for e_col, atribs in metagraph.get("edgeCollections", {}).items():
             logger.debug(f"Preparing '{e_col}' edges")
 
             # 1. Fetch ArangoDB edges
             e_col_cursor, e_col_size = self.__fetch_adb_docs(
-                e_col, atribs, explicit_metagraph, **adb_export_kwargs
+                e_col, True, atribs, explicit_metagraph, **adb_export_kwargs
             )
 
             # 2. Process ArangoDB edges
@@ -421,6 +421,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
     def __fetch_adb_docs(
         self,
         col: str,
+        is_edge: bool,
         attributes: Set[str],
         explicit_metagraph: bool,
         **adb_export_kwargs: Any,
@@ -429,6 +430,8 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
 
         :param col: The ArangoDB collection.
         :type col: str
+        :param is_edge: True if **col** is an edge collection.
+        :type is_edge: bool
         :param attributes: The set of document attributes.
         :type attributes: Set[str]
         :param explicit_metagraph: If True, only return the set of **attributes**
@@ -443,13 +446,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """
         aql_return_value = "doc"
         if explicit_metagraph:
-            aql_return_value = f"""
-                MERGE(
-                    KEEP(doc, {list(attributes)}),
-                    {{"_id": doc._id}},
-                    doc._from ? {{"_from": doc._from, "_to": doc._to}}: {{}}
-                )
-            """
+            default_keys = ["_id", "_key"]
+            default_keys += ["_from", "_to"] if is_edge else []
+            aql_return_value = f"KEEP(doc, {list(attributes) + default_keys})"
 
         col_size: int = self.__db.collection(col).count()
 
