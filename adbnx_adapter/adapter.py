@@ -446,13 +446,9 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         """
         aql_return_value = "doc"
         if explicit_metagraph:
-            edge_keys = "_from: doc._from, _to: doc._to" if is_edge else ""
-            aql_return_value = f"""
-                MERGE(
-                    KEEP(doc, {list(attributes)}),
-                    {{"_id": doc._id, {edge_keys}}}
-                )
-            """
+            default_keys = ["_id", "_key"]
+            default_keys += ["_from", "_to"] if is_edge else []
+            aql_return_value = f"KEEP(doc, {list(attributes) + default_keys})"
 
         col_size: int = self.__db.collection(col).count()
 
