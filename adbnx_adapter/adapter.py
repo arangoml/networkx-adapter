@@ -162,7 +162,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         # Edge Collections #
         ####################
 
-        for e_col, atribs in metagraph["edgeCollections"].items():
+        for e_col, atribs in metagraph.get("edgeCollections", {}).items():
             logger.debug(f"Preparing '{e_col}' edges")
 
             # 1. Fetch ArangoDB edges
