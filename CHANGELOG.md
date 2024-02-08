@@ -1,3 +1,28 @@
+## 5.0.1 (2024-01-19)
+
+### Other
+
+* Optimize `__fetch_adb_docs` (#93) [Anthony Mahanna]
+
+  * optimize `__fetch_adb_docs`
+
+  * set `continue-on-error`
+
+  * fix: set metagraph `edgeCollections` as optional
+
+  not sure why anyone would want this, but still technically possible nevertheless..
+
+  * cleanup: `aql_return_value`
+
+* Update Build Distribution Command (#92) [Anthony Mahanna]
+
+  initial commit
+
+* Changelog: release 5.0.0 (#91) [github-actions[bot]]
+
+  !gitchangelog
+
+
 ## 5.0.0 (2023-11-22)
 
 ### Fix
