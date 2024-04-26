@@ -130,7 +130,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         logger.debug(f"--arangodb_to_networkx('{name}')--")
 
         # Create a new NetworkX graph if one is not provided
-        nx_graph = nx_graph or NXMultiDiGraph(name=name)
+        nx_graph = nx_graph if nx_graph is not None else NXMultiDiGraph(name=name)
 
         # This maps the ArangoDB vertex IDs to NetworkX node IDs
         adb_map: Dict[str, NxId] = dict()
