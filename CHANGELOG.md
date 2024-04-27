@@ -1,3 +1,14 @@
+## 5.0.2 (2024-04-26)
+
+### Fix
+
+* `nx_graph` parameter. [Anthony Mahanna]
+
+### Other
+
+* Changelog: release 5.0.1 (#94) [github-actions[bot]]
+
+
 ## 5.0.1 (2024-01-19)
 
 ### Other
