@@ -360,7 +360,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 )
 
                 # 2. Insert batch of nodes
-                if i % node_batch_size == 0:
+                if i and i % node_batch_size == 0:
                     self.__insert_adb_docs(
                         spinner_progress, adb_docs, use_async, **adb_import_kwargs
                     )
@@ -401,7 +401,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
                 )
 
                 # 2. Insert batch of edges
-                if i % edge_batch_size == 0:
+                if i and i % edge_batch_size == 0:
                     self.__insert_adb_docs(
                         spinner_progress, adb_docs, use_async, **adb_import_kwargs
                     )
