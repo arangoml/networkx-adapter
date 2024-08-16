@@ -345,7 +345,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         bar_progress_task = bar_progress.add_task("Nodes", total=len(nx_nodes))
 
         with Live(Group(bar_progress, spinner_progress)):
-            for i, (nx_id, nx_node) in enumerate(nx_nodes, 1):
+            for i, (nx_id, nx_node) in enumerate(nx_nodes):
                 bar_progress.advance(bar_progress_task)
 
                 # 1. Process NetworkX node
@@ -385,7 +385,7 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         bar_progress_task = bar_progress.add_task("Edges", total=len(nx_edges))
 
         with Live(Group(bar_progress, spinner_progress)):
-            for i, (from_node_id, to_node_id, nx_edge) in enumerate(nx_edges, 1):
+            for i, (from_node_id, to_node_id, nx_edge) in enumerate(nx_edges):
                 bar_progress.advance(bar_progress_task)
 
                 # 1. Process NetworkX edge
