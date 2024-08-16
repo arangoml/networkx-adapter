@@ -1,3 +1,20 @@
+## 5.0.3 (2024-08-16)
+
+### Other
+
+* Remove enumerate start (#97) [Anthony Mahanna]
+
+  * remove enumerate start
+
+  * fix: remove 1
+
+  * fix: tricky check
+
+* Changelog: release 5.0.2 (#95) [github-actions[bot]]
+
+  !gitchangelog
+
+
 ## 5.0.2 (2024-04-26)
 
 ### Fix
