@@ -493,7 +493,7 @@ def assert_arangodb_data(
     has_one_vcol = len(adb_v_cols) == 1
     has_one_ecol = len(adb_e_cols) == 1
 
-    for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True), 1):
+    for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True)):
         col = (
             adb_v_cols[0]
             if has_one_vcol
