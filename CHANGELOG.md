@@ -1,3 +1,18 @@
+## 5.0.4 (2024-09-24)
+
+### Fix
+
+* Notebook version. [Anthony Mahanna]
+
+### Other
+
+* Changelog: release 5.0.3 (#98) [github-actions[bot]]
+
+  !gitchangelog
+
+* Remove `_id` field (#99) [Anthony Mahanna]
+
+
 ## 5.0.3 (2024-08-16)
 
 ### Other
