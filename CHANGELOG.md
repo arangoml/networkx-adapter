@@ -1,3 +1,16 @@
+## 5.0.5 (2024-09-24)
+
+### Fix
+
+* Loosen python-arango version (#101) [Anthony Mahanna]
+
+### Other
+
+* Changelog: release 5.0.4 (#100) [github-actions[bot]]
+
+  !gitchangelog
+
+
 ## 5.0.4 (2024-09-24)
 
 ### Fix
