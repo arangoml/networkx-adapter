@@ -32,7 +32,7 @@ classifiers = [
 
 dependencies = [
     "requests>=2.27.1",
-    "python-arango~=7.4",
+    "python-arango>=7.4",
     "networkx>=2.5.1",
     "rich>=12.5.1",
     "setuptools>=45",
