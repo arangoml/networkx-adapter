@@ -4,7 +4,7 @@
 from typing import Any, Dict, List, Tuple
 
 from .abc import Abstract_ADBNX_Controller
-from .typings import Json, NxData, NxId
+from .typings import Json, NxData, NxId, Union
 
 
 class ADBNX_Controller(Abstract_ADBNX_Controller):
@@ -140,7 +140,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         to_node_id: NxId,
         nx_map: Dict[NxId, str],
         col: str,
-    ) -> str | None:
+    ) -> Union[str, None]:
         """Given a NetworkX edge, its collection, and its pair of nodes, derive
         its ArangoDB key. If None is returned, an auto-generated key will be used.
 
