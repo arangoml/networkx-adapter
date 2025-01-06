@@ -92,7 +92,7 @@ class Abstract_ADBNX_Controller(ABC):
         to_node_id: NxId,
         nx_map: Dict[NxId, str],
         col: str,
-    ) -> str:
+    ) -> str | None:
         raise NotImplementedError  # pragma: no cover
 
     def _prepare_networkx_node(
