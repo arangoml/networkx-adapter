@@ -639,7 +639,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
         key = self.__cntrl._keyify_networkx_node(i, nx_id, nx_node, col)
 
         nx_node["_key"] = key
-        nx_map[nx_id] = f"{col}/{key}"
+
+        _id = f"{col}/{key}"
+        if _id != nx_id:
+            nx_map[nx_id] = _id
 
         self.__cntrl._prepare_networkx_node(nx_node, col)
         adb_docs[col].append(nx_node)
@@ -702,9 +705,10 @@ class ADBNX_Adapter(Abstract_ADBNX_Adapter):
             col,
         )
 
-        nx_edge["_key"] = key
-        nx_edge["_from"] = nx_map[from_node_id]
-        nx_edge["_to"] = nx_map[to_node_id]
+        nx_edge["_from"] = nx_map.get(from_node_id, from_node_id)
+        nx_edge["_to"] = nx_map.get(to_node_id, to_node_id)
+        if key:
+            nx_edge["_key"] = key
 
         self.__cntrl._prepare_networkx_edge(nx_edge, col)
         adb_docs[col].append(nx_edge)
