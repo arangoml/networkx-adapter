@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from arango.graph import Graph as ADBGraph
 from networkx.classes.graph import Graph as NXGraph
@@ -92,7 +92,7 @@ class Abstract_ADBNX_Controller(ABC):
         to_node_id: NxId,
         nx_map: Dict[NxId, str],
         col: str,
-    ) -> str:
+    ) -> Union[str, None]:
         raise NotImplementedError  # pragma: no cover
 
     def _prepare_networkx_node(

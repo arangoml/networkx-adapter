@@ -4,7 +4,7 @@
 from typing import Any, Dict, List, Tuple
 
 from .abc import Abstract_ADBNX_Controller
-from .typings import Json, NxData, NxId
+from .typings import Json, NxData, NxId, Union
 
 
 class ADBNX_Controller(Abstract_ADBNX_Controller):
@@ -140,9 +140,9 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         to_node_id: NxId,
         nx_map: Dict[NxId, str],
         col: str,
-    ) -> str:
+    ) -> Union[str, None]:
         """Given a NetworkX edge, its collection, and its pair of nodes, derive
-        its ArangoDB key.
+        its ArangoDB key. If None is returned, an auto-generated key will be used.
 
         NOTE #1: You must override this function if you want to create custom ArangoDB
         _key values for your NetworkX edges.
@@ -169,8 +169,8 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
             i.e, nx_map[from_node_id] will give you the ArangoDB _from value,
             and nx_map[to_node_id] will give you the ArangoDB _to value.
         :type nx_map: Dict[NxId, str]
-        :return: A valid ArangoDB _key value.
-        :rtype: str
+        :return: A valid ArangoDB _key value, or None if you want an auto-generated key.
+        :rtype: str | None
         """
         return str(i)
 
