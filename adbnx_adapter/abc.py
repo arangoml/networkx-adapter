@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from arango.graph import Graph as ADBGraph
 from networkx.classes.graph import Graph as NXGraph
@@ -77,7 +77,7 @@ class Abstract_ADBNX_Controller(ABC):
         nx_edge: NxData,
         adb_e_cols: List[str],
         nx_map: Dict[Any, str],
-    ) -> tuple[str, str | None]:
+    ) -> tuple[str, Union[str, None]]:
         raise NotImplementedError  # pragma: no cover
 
     @property

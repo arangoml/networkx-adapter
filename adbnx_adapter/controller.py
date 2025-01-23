@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 from .abc import Abstract_ADBNX_Controller
 from .typings import Json, NxData, NxId
@@ -69,7 +69,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :type adb_v_cols: List[str]
         :return: A tuple of two values: (1) the ArangoDB collection that this node
             belongs to, and (2) the ArangoDB _key value of the node.
-        :rtype: Tuple[str | None, str | None]
+        :rtype: Tuple[Union[str, None], Union[str, None]]
         """
         if len(adb_v_cols) == 1:
             return adb_v_cols[0], str(nx_node_id)
@@ -89,7 +89,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         nx_edge: Json,
         adb_e_cols: List[str],
         nx_map: Dict[Any, str],
-    ) -> tuple[str, str | None]:
+    ) -> tuple[str, Union[str, None]]:
         """NetworkX --> ArangoDB: UDF to prepare a NetworkX edge before it gets
         inserted into ArangoDB. This method must return a tuple of two values:
         - (1) the ArangoDB collection that this edge belongs to (required).
@@ -123,7 +123,7 @@ class ADBNX_Controller(Abstract_ADBNX_Controller):
         :type nx_map: Dict[NxId, str]
         :return: A tuple of two values: (1) the ArangoDB collection that this edge
             belongs to, and (2) the ArangoDB _key value of the edge.
-        :rtype: Tuple[str | None, str | None]
+        :rtype: Tuple[Union[str, None], Union[str, None]]
         """
         if len(adb_e_cols) == 1:
             return adb_e_cols[0], None
@@ -186,6 +186,6 @@ class ADBNX_Controller_Full_Cycle(ADBNX_Controller):
         nx_edge: NxData,
         adb_e_cols: List[str],
         nx_map: Dict[Any, str],
-    ) -> tuple[str, str | None]:
+    ) -> tuple[str, Union[str, None]]:
         split_id = str(nx_edge["_id"]).split("/")
         return split_id[0], split_id[1]

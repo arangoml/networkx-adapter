@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 import pytest
 from arango.graph import Graph as ADBGraph
@@ -286,7 +286,7 @@ def test_nx_to_adb_invalid_collections() -> None:
             nx_edge: Json,
             adb_e_cols: List[str],
             nx_map: Dict[Any, str],
-        ) -> tuple[str, str | None]:
+        ) -> tuple[str, Union[str, None]]:
             return "invalid_edge_collection", None
 
     custom_adbnx_adapter = ADBNX_Adapter(db, Custom_ADBNX_Controller_2())
@@ -378,7 +378,7 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
             nx_edge: Json,
             adb_e_cols: List[str],
             nx_map: Dict[Any, str],
-        ) -> tuple[str, str | None]:
+        ) -> tuple[str, Union[str, None]]:
             split = str(nx_edge["_id"]).split("/")
             return split[0] + "_new", None
 
