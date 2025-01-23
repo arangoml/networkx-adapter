@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 import pytest
 from arango.graph import Graph as ADBGraph
@@ -238,10 +238,10 @@ def test_nx_to_adb_invalid_collections() -> None:
         adbnx_adapter.networkx_to_arangodb("Drivers", nx_g_1, e_d_1)
 
     class Custom_ADBNX_Controller(ADBNX_Controller):
-        def _identify_networkx_node(
-            self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
-        ) -> str:
-            return "invalid_vertex_collection"
+        def _prepare_networkx_node(
+            self, i: int, nx_node_id: Any, nx_node: NxData, adb_v_cols: List[str]
+        ) -> tuple[str, str]:
+            return "invalid_vertex_collection", str(i)
 
     custom_adbnx_adapter = ADBNX_Adapter(db, Custom_ADBNX_Controller())
 
@@ -273,20 +273,21 @@ def test_nx_to_adb_invalid_collections() -> None:
     db.delete_graph("Feelings", ignore_missing=True, drop_collections=True)
 
     class Custom_ADBNX_Controller_2(ADBNX_Controller):
-        def _identify_networkx_node(
-            self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
-        ) -> str:
-            return str(nx_node["_id"]).split("/")[0]
+        def _prepare_networkx_node(
+            self, i: int, nx_node_id: Any, nx_node: NxData, adb_v_cols: List[str]
+        ) -> tuple[str, str]:
+            return "Person", str(i)
 
-        def _identify_networkx_edge(
+        def _prepare_networkx_edge(
             self,
-            nx_edge: NxData,
+            i: int,
             from_node_id: NxId,
             to_node_id: NxId,
-            nx_map: Dict[NxId, str],
+            nx_edge: Json,
             adb_e_cols: List[str],
-        ) -> str:
-            return "invalid_edge_collection"
+            nx_map: Dict[Any, str],
+        ) -> tuple[str, Union[str, None]]:
+            return "invalid_edge_collection", None
 
     custom_adbnx_adapter = ADBNX_Adapter(db, Custom_ADBNX_Controller_2())
 
@@ -363,20 +364,23 @@ def test_full_cycle_from_arangodb_with_new_collections() -> None:
     ]
 
     class ADBNX_Controller_Full_Cycle_New_Collections(ADBNX_Controller_Full_Cycle):
-        def _identify_networkx_node(
-            self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
-        ) -> str:
-            return str(nx_node_id).split("/")[0] + "_new"
+        def _prepare_networkx_node(
+            self, i: int, nx_node_id: Any, nx_node: NxData, adb_v_cols: List[str]
+        ) -> tuple[str, str]:
+            split = str(nx_node_id).split("/")
+            return split[0] + "_new", str(i)
 
-        def _identify_networkx_edge(
+        def _prepare_networkx_edge(
             self,
-            nx_edge: NxData,
+            i: int,
             from_node_id: NxId,
             to_node_id: NxId,
-            nx_map: Dict[NxId, str],
+            nx_edge: Json,
             adb_e_cols: List[str],
-        ) -> str:
-            return str(nx_edge["_id"]).split("/")[0] + "_new"
+            nx_map: Dict[Any, str],
+        ) -> tuple[str, Union[str, None]]:
+            split = str(nx_edge["_id"]).split("/")
+            return split[0] + "_new", None
 
     fraud_adbnx_adapter = ADBNX_Adapter(
         db, ADBNX_Controller_Full_Cycle_New_Collections()
@@ -485,37 +489,24 @@ def assert_arangodb_data(
     nx_g: NXGraph,
     adb_g: ADBGraph,
 ) -> None:
-    nx_map = dict()
+    nx_map: dict[str, str] = dict()
 
     adb_v_cols: List[str] = adb_g.vertex_collections()
     adb_e_cols: List[str] = [c["edge_collection"] for c in adb_g.edge_definitions()]
 
-    has_one_vcol = len(adb_v_cols) == 1
-    has_one_ecol = len(adb_e_cols) == 1
+    adb_vertex: Json
+    for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True), 1):
+        col, key = adapter.cntrl._prepare_networkx_node(i, nx_id, nx_node, adb_v_cols)
 
-    for i, (nx_id, nx_node) in enumerate(nx_g.nodes(data=True)):
-        col = (
-            adb_v_cols[0]
-            if has_one_vcol
-            else adapter.cntrl._identify_networkx_node(nx_id, nx_node, adb_v_cols)
-        )
-        key = adapter.cntrl._keyify_networkx_node(i, nx_id, nx_node, col)
-
-        adb_v_id = col + "/" + key
-        nx_map[nx_id] = adb_v_id
-
-        adb_vertex: Json = adb_g.vertex_collection(col).get(key)
+        adb_vertex = adb_g.vertex_collection(col).get(key)
         for key, val in nx_node.items():
             assert val == adb_vertex[key]
 
-    for from_node_id, to_node_id, nx_edge in nx_g.edges(data=True):
-        col = (
-            adb_e_cols[0]
-            if has_one_ecol
-            else adapter.cntrl._identify_networkx_edge(
-                nx_edge, from_node_id, to_node_id, nx_map, adb_e_cols
-            )
+    for i, (from_node_id, to_node_id, nx_edge) in enumerate(nx_g.edges(data=True), 1):
+        col, key = adapter.cntrl._prepare_networkx_edge(  # type: ignore
+            i, from_node_id, to_node_id, nx_edge, adb_e_cols, nx_map
         )
+
         adb_edges = adb_g.edge_collection(col).find(
             {
                 "_from": nx_map[from_node_id],

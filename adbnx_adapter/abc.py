@@ -50,7 +50,7 @@ class Abstract_ADBNX_Adapter(ABC):
         edge_definitions: Optional[List[Json]] = None,
         orphan_collections: Optional[List[str]] = None,
         overwrite_graph: bool = False,
-        batch_size: Optional[int] = None,
+        batch_size: int = 1000,
         use_async: bool = False,
         **adb_import_kwargs: Any,
     ) -> ADBGraph:
@@ -64,49 +64,20 @@ class Abstract_ADBNX_Controller(ABC):
     def _prepare_arangodb_edge(self, adb_edge: Json, col: str) -> None:
         raise NotImplementedError  # pragma: no cover
 
-    def _identify_networkx_node(
-        self, nx_node_id: NxId, nx_node: NxData, adb_v_cols: List[str]
-    ) -> str:
-        raise NotImplementedError  # pragma: no cover
-
-    def _identify_networkx_edge(
-        self,
-        nx_edge: NxData,
-        from_node_id: NxId,
-        to_node_id: NxId,
-        nx_map: Dict[NxId, str],
-        adb_e_cols: List[str],
-    ) -> str:
-        raise NotImplementedError  # pragma: no cover
-
-    def _keyify_networkx_node(
-        self, i: int, nx_node_id: NxId, nx_node: NxData, col: str
-    ) -> str:
-        raise NotImplementedError  # pragma: no cover
-
-    def _keyify_networkx_edge(
-        self,
-        i: int,
-        nx_edge: NxData,
-        from_node_id: NxId,
-        to_node_id: NxId,
-        nx_map: Dict[NxId, str],
-        col: str,
-    ) -> Union[str, None]:
-        raise NotImplementedError  # pragma: no cover
-
     def _prepare_networkx_node(
-        self,
-        nx_node: Json,
-        col: str,
-    ) -> None:
+        self, i: int, nx_node_id: Any, nx_node: NxData, adb_v_cols: List[str]
+    ) -> tuple[str, str]:
         raise NotImplementedError  # pragma: no cover
 
     def _prepare_networkx_edge(
         self,
-        nx_edge: Json,
-        col: str,
-    ) -> None:
+        i: int,
+        from_node_id: NxId,
+        to_node_id: NxId,
+        nx_edge: NxData,
+        adb_e_cols: List[str],
+        nx_map: Dict[Any, str],
+    ) -> tuple[str, Union[str, None]]:
         raise NotImplementedError  # pragma: no cover
 
     @property
