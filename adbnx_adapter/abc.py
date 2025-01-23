@@ -8,7 +8,7 @@ from arango.graph import Graph as ADBGraph
 from networkx.classes.graph import Graph as NXGraph
 from networkx.classes.multidigraph import MultiGraph as NXMultiDiGraph
 
-from .typings import ArangoMetagraph, Json, NxId, NxData
+from .typings import ArangoMetagraph, Json, NxData, NxId
 
 
 class Abstract_ADBNX_Adapter(ABC):

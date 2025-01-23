@@ -4,7 +4,7 @@
 from typing import Any, Dict, List, Tuple
 
 from .abc import Abstract_ADBNX_Controller
-from .typings import Json, NxId, NxData
+from .typings import Json, NxData, NxId
 
 
 class ADBNX_Controller(Abstract_ADBNX_Controller):
